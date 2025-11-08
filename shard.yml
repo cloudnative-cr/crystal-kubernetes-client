@@ -1,0 +1,31 @@
+name: kubernetes-client
+version: 0.1.0
+
+authors:
+  - Josephine Pfeiffer <hi@josie.lol>
+
+description: |
+  Comprehensive Kubernetes client for Crystal with full API coverage.
+
+crystal: ">= 1.9.0"
+
+license: Apache-2.0
+
+dependencies:
+  db:
+    github: crystal-lang/crystal-db
+    version: ~> 0.12.0
+  inotify:
+    github: petoem/inotify.cr
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.5.0
+
+targets:
+  kubernetes-client:
+    main: src/kubernetes-client.cr
+
+scripts:
+  postinstall: echo "Run 'make generate' to generate API bindings from Kubernetes OpenAPI spec"

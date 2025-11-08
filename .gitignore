@@ -1,0 +1,21 @@
+/docs/
+/lib/
+/bin/
+/.shards/
+*.dwarf
+
+# Generated files
+/src/api/*.cr
+/src/models/*.cr
+swagger.json
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,17 @@
+# Dependabot configuration for keeping dependencies up to date
+version: 2
+
+updates:
+  # GitHub Actions updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    assignees:
+      - "pfeifferj"
+
+  # Note: Crystal shards don't have native Dependabot support yet
+  # The update-api-spec workflow handles Kubernetes API updates
