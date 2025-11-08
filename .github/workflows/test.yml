@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        crystal:
+          - latest
+          - 1.9.0
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: ${{ matrix.crystal }}
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Run tests
+        run: crystal spec --verbose
+
+      - name: Run linter
+        run: |
+          if [ -f bin/ameba ]; then
+            bin/ameba
+          else
+            echo "Ameba not found, skipping lint"
+          fi
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Build library
+        run: shards build
+
+      - name: Verify generated code compiles
+        run: |
+          crystal build --no-codegen src/kubernetes-client.cr
