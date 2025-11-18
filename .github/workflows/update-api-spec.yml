@@ -24,7 +24,7 @@ jobs:
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
-          crystal: latest
+          crystal: 1.18.2
 
       - name: Download latest Kubernetes OpenAPI spec
         run: |
@@ -54,9 +54,7 @@ jobs:
 
       - name: Run tests
         if: env.spec_changed == 'true'
-        run: |
-          echo "Running test suite to verify generated code..."
-          crystal spec
+        run: make test
 
       - name: Get Kubernetes version
         if: env.spec_changed == 'true'

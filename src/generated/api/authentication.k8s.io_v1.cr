@@ -16,21 +16,21 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/authentication.k8s.io/v1/
-    def get_api_resources(**params, &)
+    def get_authentication_v1_api_resources(**params, &)
       path = "/apis/authentication.k8s.io/v1/"
       get(path) { |res| yield res }
     end
 
     # create a SelfSubjectReview
     # POST /apis/authentication.k8s.io/v1/selfsubjectreviews
-    def create_self_subject_review(**params, &)
+    def create_authentication_v1_self_subject_review(**params, &)
       path = "/apis/authentication.k8s.io/v1/selfsubjectreviews"
       post(path, params) { |res| yield res }
     end
 
     # create a TokenReview
     # POST /apis/authentication.k8s.io/v1/tokenreviews
-    def create_token_review(**params, &)
+    def create_authentication_v1_token_review(**params, &)
       path = "/apis/authentication.k8s.io/v1/tokenreviews"
       post(path, params) { |res| yield res }
     end

@@ -24,7 +24,7 @@ module Kubernetes
 
     # Cached exec credential with expiration
     struct CachedCredential
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property auth : Auth
       property expires_at : Time?
@@ -86,7 +86,7 @@ module Kubernetes
     def self.key_for_exec(exec : Config::UserEntry::ExecConfig) : String
       # Create stable hash of command + args
       content = "#{exec.command}|#{exec.args.try(&.join("|")) || ""}"
-      Digest::SHA256.hexdigest(content)[0..15] # First 16 chars
+      Digest::SHA256.hexdigest(content)[0..15]
     end
 
     # Clear all cached credentials

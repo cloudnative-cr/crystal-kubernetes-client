@@ -15,9 +15,9 @@
 module Kubernetes::Resources
   class Namespaces
     struct Namespace
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "apiVersion")]
+      @[::JSON::Field(key: "apiVersion")]
       property api_version : String?
 
       property kind : String?
@@ -26,7 +26,7 @@ module Kubernetes::Resources
     end
 
     struct NamespaceStatus
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property phase : String?
     end

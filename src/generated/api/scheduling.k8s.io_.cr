@@ -16,7 +16,7 @@ module Kubernetes
   class Client
     # get information of a group
     # GET /apis/scheduling.k8s.io/
-    def get_api_group(**params, &)
+    def get_scheduling_api_group(**params, &)
       path = "/apis/scheduling.k8s.io/"
       get(path) { |res| yield res }
     end

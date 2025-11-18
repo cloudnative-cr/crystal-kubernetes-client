@@ -16,7 +16,7 @@ require "json"
 
 module Kubernetes
   struct Watch(T)
-    include JSON::Serializable
+    include ::JSON::Serializable
     property type : Type
     property object : T
     delegate added?, modified?, deleted?, to: type

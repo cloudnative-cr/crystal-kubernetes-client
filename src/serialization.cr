@@ -18,22 +18,22 @@ require "yaml"
 module Kubernetes
   module Serializable
     macro included
-      include JSON::Serializable
-      include YAML::Serializable
+      include ::JSON::Serializable
+      include ::YAML::Serializable
 
       # Helper macro for defining fields with automatic camelCase conversion
       macro field(name, type = nil, **options, &block)
         \{% if options[:key] %}
-          @[JSON::Field(key: \{{options[:key]}})]
-          @[YAML::Field(key: \{{options[:key]}})]
+          @[::JSON::Field(key: \{{options[:key]}})]
+          @[::YAML::Field(key: \{{options[:key]}})]
         \{% else %}
-          @[JSON::Field(key: \{{name.id.stringify.camelcase(lower: true)}})]
-          @[YAML::Field(key: \{{name.id.stringify.camelcase(lower: true)}})]
+          @[::JSON::Field(key: \{{name.id.stringify.camelcase(lower: true)}})]
+          @[::YAML::Field(key: \{{name.id.stringify.camelcase(lower: true)}})]
         \{% end %}
 
         \{% if options[:ignore_serialize] %}
-          @[JSON::Field(ignore_serialize: true)]
-          @[YAML::Field(ignore_serialize: true)]
+          @[::JSON::Field(ignore_serialize: true)]
+          @[::YAML::Field(ignore_serialize: true)]
         \{% end %}
 
         \{% if type %}
@@ -45,7 +45,6 @@ module Kubernetes
     end
   end
 
-  # Kubernetes resource wrapper with metadata, spec, and status
   struct Resource(T)
     include Serializable
 
@@ -53,13 +52,12 @@ module Kubernetes
     field kind : String { "" }
     field metadata : Metadata
     field spec : T
-    field status : JSON::Any = JSON::Any.new(nil)
+    field status : ::JSON::Any = ::JSON::Any.new(nil)
 
-    def initialize(*, @api_version, @kind, @metadata, @spec, @status = JSON::Any.new(nil))
+    def initialize(*, @api_version, @kind, @metadata, @spec, @status = ::JSON::Any.new(nil))
     end
   end
 
-  # Resource metadata
   struct Metadata
     include Serializable
 
@@ -67,8 +65,8 @@ module Kubernetes
 
     field name : String = ""
     field namespace : String { "" }
-    field labels : Hash(String, String) { {} of String => String }
-    field annotations : Hash(String, String) { {} of String => String }
+    field labels : ::Hash(String, String) { {} of String => String }
+    field annotations : ::Hash(String, String) { {} of String => String }
     field resource_version : String, ignore_serialize: true { "" }
     field uid : String, ignore_serialize: true { "" }
 
@@ -84,34 +82,33 @@ module Kubernetes
     field uid : String?
   end
 
-  # Metadata for list responses
   struct ListMetadata
-    include JSON::Serializable
-    include YAML::Serializable
+    include ::JSON::Serializable
+    include ::YAML::Serializable
 
-    @[JSON::Field(key: "resourceVersion")]
-    @[YAML::Field(key: "resourceVersion")]
+    @[::JSON::Field(key: "resourceVersion")]
+    @[::YAML::Field(key: "resourceVersion")]
     property resource_version : String?
 
     property continue : String?
 
-    @[JSON::Field(key: "remainingItemCount")]
-    @[YAML::Field(key: "remainingItemCount")]
+    @[::JSON::Field(key: "remainingItemCount")]
+    @[::YAML::Field(key: "remainingItemCount")]
     property remaining_item_count : Int64?
   end
 
   struct List(T)
-    include JSON::Serializable
-    include YAML::Serializable
+    include ::JSON::Serializable
+    include ::YAML::Serializable
     include Enumerable(T)
 
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
     property api_version : String?
 
     property kind : String?
     property metadata : ListMetadata?
-    property items : Array(T)
+    property items : ::Array(T)
 
     delegate each, to: items
   end

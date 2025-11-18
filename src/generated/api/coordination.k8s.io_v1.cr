@@ -16,21 +16,21 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/coordination.k8s.io/v1/
-    def get_api_resources(**params, &)
+    def get_coordination_v1_api_resources(**params, &)
       path = "/apis/coordination.k8s.io/v1/"
       get(path) { |res| yield res }
     end
 
     # list or watch objects of kind Lease
     # GET /apis/coordination.k8s.io/v1/leases
-    def list_lease_for_all_namespaces(**params, &)
+    def list_coordination_v1_lease_for_all_namespaces(**params, &)
       path = "/apis/coordination.k8s.io/v1/leases"
       get(path) { |res| yield res }
     end
 
     # delete collection of Lease
     # DELETE /apis/coordination.k8s.io/v1/namespaces/{namespace}/leases
-    def delete_collection_namespaced_lease(**params, &)
+    def delete_coordination_v1_collection_namespaced_lease(**params, &)
       path = "/apis/coordination.k8s.io/v1/namespaces/{namespace}/leases"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -38,7 +38,7 @@ module Kubernetes
 
     # list or watch objects of kind Lease
     # GET /apis/coordination.k8s.io/v1/namespaces/{namespace}/leases
-    def list_namespaced_lease(**params, &)
+    def list_coordination_v1_namespaced_lease(**params, &)
       path = "/apis/coordination.k8s.io/v1/namespaces/{namespace}/leases"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -46,7 +46,7 @@ module Kubernetes
 
     # create a Lease
     # POST /apis/coordination.k8s.io/v1/namespaces/{namespace}/leases
-    def create_namespaced_lease(**params, &)
+    def create_coordination_v1_namespaced_lease(**params, &)
       path = "/apis/coordination.k8s.io/v1/namespaces/{namespace}/leases"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       post(path, params) { |res| yield res }
@@ -54,7 +54,7 @@ module Kubernetes
 
     # delete a Lease
     # DELETE /apis/coordination.k8s.io/v1/namespaces/{namespace}/leases/{name}
-    def delete_namespaced_lease(**params, &)
+    def delete_coordination_v1_namespaced_lease(**params, &)
       path = "/apis/coordination.k8s.io/v1/namespaces/{namespace}/leases/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -62,7 +62,7 @@ module Kubernetes
 
     # read the specified Lease
     # GET /apis/coordination.k8s.io/v1/namespaces/{namespace}/leases/{name}
-    def read_namespaced_lease(**params, &)
+    def read_coordination_v1_namespaced_lease(**params, &)
       path = "/apis/coordination.k8s.io/v1/namespaces/{namespace}/leases/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -70,7 +70,7 @@ module Kubernetes
 
     # partially update the specified Lease
     # PATCH /apis/coordination.k8s.io/v1/namespaces/{namespace}/leases/{name}
-    def patch_namespaced_lease(**params, &)
+    def patch_coordination_v1_namespaced_lease(**params, &)
       path = "/apis/coordination.k8s.io/v1/namespaces/{namespace}/leases/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -78,10 +78,33 @@ module Kubernetes
 
     # replace the specified Lease
     # PUT /apis/coordination.k8s.io/v1/namespaces/{namespace}/leases/{name}
-    def replace_namespaced_lease(**params, &)
+    def replace_coordination_v1_namespaced_lease(**params, &)
       path = "/apis/coordination.k8s.io/v1/namespaces/{namespace}/leases/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
+    end
+
+    # watch individual changes to a list of Lease. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/coordination.k8s.io/v1/watch/leases
+    def watch_coordination_v1_lease_list_for_all_namespaces(**params, &)
+      path = "/apis/coordination.k8s.io/v1/watch/leases"
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of Lease. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/coordination.k8s.io/v1/watch/namespaces/{namespace}/leases
+    def watch_coordination_v1_namespaced_lease_list(**params, &)
+      path = "/apis/coordination.k8s.io/v1/watch/namespaces/{namespace}/leases"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind Lease. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/coordination.k8s.io/v1/watch/namespaces/{namespace}/leases/{name}
+    def watch_coordination_v1_namespaced_lease(**params, &)
+      path = "/apis/coordination.k8s.io/v1/watch/namespaces/{namespace}/leases/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
     end
   end
 end

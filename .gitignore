@@ -1,4 +1,4 @@
-/docs/
+notes/
 /lib/
 /bin/
 /.shards/
@@ -8,6 +8,7 @@
 /src/api/*.cr
 /src/models/*.cr
 swagger.json
+/docs/
 
 # Editor files
 .vscode/

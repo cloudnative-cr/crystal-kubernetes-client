@@ -24,7 +24,7 @@ module Kubernetes
   # ```
   # # Define your CRD type
   # struct MyCronTab
-  #   include JSON::Serializable
+  #   include ::JSON::Serializable
   #   property api_version : String
   #   property kind : String
   #   property metadata : Kubernetes::Metadata
@@ -33,14 +33,14 @@ module Kubernetes
   # end
   #
   # struct MyCronTabSpec
-  #   include JSON::Serializable
+  #   include ::JSON::Serializable
   #   property cron_spec : String
   #   property image : String
   #   property replicas : Int32
   # end
   #
   # struct MyCronTabStatus
-  #   include JSON::Serializable
+  #   include ::JSON::Serializable
   #   property active : Int32?
   # end
   #

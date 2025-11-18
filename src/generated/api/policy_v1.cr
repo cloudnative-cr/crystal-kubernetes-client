@@ -16,14 +16,14 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/policy/v1/
-    def get_api_resources(**params, &)
+    def get_policy_v1_api_resources(**params, &)
       path = "/apis/policy/v1/"
       get(path) { |res| yield res }
     end
 
     # delete collection of PodDisruptionBudget
     # DELETE /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets
-    def delete_collection_namespaced_pod_disruption_budget(**params, &)
+    def delete_policy_v1_collection_namespaced_pod_disruption_budget(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -31,7 +31,7 @@ module Kubernetes
 
     # list or watch objects of kind PodDisruptionBudget
     # GET /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets
-    def list_namespaced_pod_disruption_budget(**params, &)
+    def list_policy_v1_namespaced_pod_disruption_budget(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -39,7 +39,7 @@ module Kubernetes
 
     # create a PodDisruptionBudget
     # POST /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets
-    def create_namespaced_pod_disruption_budget(**params, &)
+    def create_policy_v1_namespaced_pod_disruption_budget(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       post(path, params) { |res| yield res }
@@ -47,7 +47,7 @@ module Kubernetes
 
     # delete a PodDisruptionBudget
     # DELETE /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}
-    def delete_namespaced_pod_disruption_budget(**params, &)
+    def delete_policy_v1_namespaced_pod_disruption_budget(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -55,7 +55,7 @@ module Kubernetes
 
     # read the specified PodDisruptionBudget
     # GET /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}
-    def read_namespaced_pod_disruption_budget(**params, &)
+    def read_policy_v1_namespaced_pod_disruption_budget(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -63,7 +63,7 @@ module Kubernetes
 
     # partially update the specified PodDisruptionBudget
     # PATCH /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}
-    def patch_namespaced_pod_disruption_budget(**params, &)
+    def patch_policy_v1_namespaced_pod_disruption_budget(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -71,7 +71,7 @@ module Kubernetes
 
     # replace the specified PodDisruptionBudget
     # PUT /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}
-    def replace_namespaced_pod_disruption_budget(**params, &)
+    def replace_policy_v1_namespaced_pod_disruption_budget(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
@@ -79,7 +79,7 @@ module Kubernetes
 
     # read status of the specified PodDisruptionBudget
     # GET /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}/status
-    def read_namespaced_pod_disruption_budget_status(**params, &)
+    def read_policy_v1_namespaced_pod_disruption_budget_status(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -87,7 +87,7 @@ module Kubernetes
 
     # partially update status of the specified PodDisruptionBudget
     # PATCH /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}/status
-    def patch_namespaced_pod_disruption_budget_status(**params, &)
+    def patch_policy_v1_namespaced_pod_disruption_budget_status(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -95,7 +95,7 @@ module Kubernetes
 
     # replace status of the specified PodDisruptionBudget
     # PUT /apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}/status
-    def replace_namespaced_pod_disruption_budget_status(**params, &)
+    def replace_policy_v1_namespaced_pod_disruption_budget_status(**params, &)
       path = "/apis/policy/v1/namespaces/{namespace}/poddisruptionbudgets/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
@@ -103,8 +103,31 @@ module Kubernetes
 
     # list or watch objects of kind PodDisruptionBudget
     # GET /apis/policy/v1/poddisruptionbudgets
-    def list_pod_disruption_budget_for_all_namespaces(**params, &)
+    def list_policy_v1_pod_disruption_budget_for_all_namespaces(**params, &)
       path = "/apis/policy/v1/poddisruptionbudgets"
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of PodDisruptionBudget. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/policy/v1/watch/namespaces/{namespace}/poddisruptionbudgets
+    def watch_policy_v1_namespaced_pod_disruption_budget_list(**params, &)
+      path = "/apis/policy/v1/watch/namespaces/{namespace}/poddisruptionbudgets"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind PodDisruptionBudget. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/policy/v1/watch/namespaces/{namespace}/poddisruptionbudgets/{name}
+    def watch_policy_v1_namespaced_pod_disruption_budget(**params, &)
+      path = "/apis/policy/v1/watch/namespaces/{namespace}/poddisruptionbudgets/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of PodDisruptionBudget. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/policy/v1/watch/poddisruptionbudgets
+    def watch_policy_v1_pod_disruption_budget_list_for_all_namespaces(**params, &)
+      path = "/apis/policy/v1/watch/poddisruptionbudgets"
       get(path) { |res| yield res }
     end
   end

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require "time"
 require "http"
 require "json"
 require "yaml"

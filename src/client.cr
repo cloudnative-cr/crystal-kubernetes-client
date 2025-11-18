@@ -30,7 +30,6 @@ module Kubernetes
     getter server : URI
     getter log : Log
 
-    # Token caching for in-cluster ServiceAccount tokens
     @cached_token : String?
     @token_file_path : String?
     @token_watcher : Inotify::Watcher?
@@ -38,10 +37,9 @@ module Kubernetes
     @http_pool : DB::Pool(HTTP::Client)
     @credential_cache : CredentialCache?
 
-    # Connection pool configuration
     @pool_size : Int32
-    @pool_timeout : Time::Span
-    @request_timeout : Time::Span
+    @pool_timeout : ::Time::Span
+    @request_timeout : ::Time::Span
 
     def self.new
       if host = ENV["KUBERNETES_SERVICE_HOST"]?
@@ -77,25 +75,19 @@ module Kubernetes
       config = File.open(file) { |f| Config.from_yaml f }
       context ||= config.current_context
 
-      # Find context with proper error handling
       ctx = config.contexts.find { |c| c.name == context }
       raise ConfigError.new("Context '#{context}' not found in kubeconfig") unless ctx
 
-      # Find cluster with proper error handling
       cluster = config.clusters.find { |c| c.name == ctx.context.cluster }
       raise ConfigError.new("Cluster '#{ctx.context.cluster}' not found in kubeconfig") unless cluster
 
-      # Find user with proper error handling
       user = config.users.find { |u| u.name == ctx.context.user }
       raise ConfigError.new("User '#{ctx.context.user}' not found in kubeconfig") unless user
 
-      # Initialize credential cache if enabled
       credential_cache = cache_credentials ? CredentialCache.new(log) : nil
 
-      # Build authentication from user config
       auth = Auth.from_user(user.user, log, credential_cache)
 
-      # Build TLS context from cluster config
       tls = build_tls_context(cluster.cluster, auth, log)
 
       new(server: cluster.cluster.server, auth: auth, tls: tls, log: log, credential_cache: credential_cache)
@@ -109,7 +101,6 @@ module Kubernetes
     ) : OpenSSL::SSL::Context::Client?
       ctx = OpenSSL::SSL::Context::Client.new
 
-      # Configure CA certificate
       if ca_data = cluster.certificate_authority_data
         # Write CA cert to temporary file with secure permissions
         ca_pem = Base64.decode_string(ca_data)
@@ -122,7 +113,6 @@ module Kubernetes
         ctx.ca_certificates = File.expand_path(ca_file)
       end
 
-      # Configure client certificate/key if present
       if cert_file = auth.client_cert_file
         ctx.certificate_chain = cert_file
         if key_file = auth.client_key_file
@@ -130,7 +120,6 @@ module Kubernetes
         end
       end
 
-      # Handle insecure skip TLS verify
       if cluster.insecure_skip_tls_verify
         log.warn { "SECURITY WARNING: TLS certificate verification is disabled (insecure-skip-tls-verify=true). This is insecure and should only be used for development/testing." }
         ctx.verify_mode = OpenSSL::SSL::VerifyMode::NONE
@@ -148,13 +137,13 @@ module Kubernetes
       @log = Log.for("k8s"),
       credential_cache : CredentialCache? = nil,
       pool_size : Int32 = 25,
-      pool_timeout : Time::Span = 30.seconds,
-      request_timeout : Time::Span = 30.seconds,
+      pool_timeout : ::Time::Span = 30.seconds,
+      request_timeout : ::Time::Span = 30.seconds,
     )
       # Validate pool parameters
       raise ArgumentError.new("pool_size must be positive (got #{pool_size})") if pool_size <= 0
-      raise ArgumentError.new("pool_timeout must be positive") if pool_timeout <= Time::Span.zero
-      raise ArgumentError.new("request_timeout must be positive") if request_timeout <= Time::Span.zero
+      raise ArgumentError.new("pool_timeout must be positive") if pool_timeout <= 0.seconds
+      raise ArgumentError.new("request_timeout must be positive") if request_timeout <= 0.seconds
       # Build auth from token if auth not provided (backwards compatibility)
       @auth = auth || (token.presence ? Auth.new(token: token) : Auth.new)
       @credential_cache = credential_cache

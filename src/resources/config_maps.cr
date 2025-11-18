@@ -15,9 +15,9 @@
 module Kubernetes::Resources
   class ConfigMaps
     struct ConfigMap
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "apiVersion")]
+      @[::JSON::Field(key: "apiVersion")]
       property api_version : String?
 
       property kind : String?

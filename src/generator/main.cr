@@ -58,6 +58,8 @@ module Generator
         File.open(file_path, "w") do |f|
           f.puts copyright_header
           f.puts
+          f.puts %{require "json"}
+          f.puts %{require "yaml"}
           f.puts %{require "../../serialization"}
           f.puts
           f.puts "module Kubernetes"
@@ -96,9 +98,6 @@ module Generator
       properties = definition["properties"]?.try(&.as_h) || {} of String => JSON::Any
       type = definition["type"]?.try(&.as_s) || "object"
 
-      # Skip if no properties
-      return if properties.empty? && type == "object"
-
       # Extract simple type name (last part after dots)
       simple_name = name.split(".").last
 
@@ -121,10 +120,13 @@ module Generator
         io.puts "  struct #{simple_name}"
       end
       io.puts "    include Kubernetes::Serializable"
-      io.puts
 
-      properties.each do |prop_name, prop_def|
-        generate_property(io, prop_name, prop_def.as_h)
+      # Only add blank line and properties if there are properties
+      if properties.any?
+        io.puts
+        properties.each do |prop_name, prop_def|
+          generate_property(io, prop_name, prop_def.as_h)
+        end
       end
 
       io.puts "  end"
@@ -176,8 +178,8 @@ module Generator
 
       # Handle special fields that need custom JSON keys
       if crystal_name != name
-        io.puts "    @[JSON::Field(key: \"#{name}\")]"
-        io.puts "    @[YAML::Field(key: \"#{name}\")]"
+        io.puts "    @[::JSON::Field(key: \"#{name}\")]"
+        io.puts "    @[::YAML::Field(key: \"#{name}\")]"
       end
 
       # Make optional unless required

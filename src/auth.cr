@@ -19,7 +19,7 @@ require "base64"
 module Kubernetes
   # Authentication credentials for Kubernetes API
   class Auth
-    include JSON::Serializable
+    include ::JSON::Serializable
 
     property token : String?
     property username : String?
@@ -29,10 +29,10 @@ module Kubernetes
 
     # Track temporary files created for embedded certificates
     # These should be cleaned up when no longer needed
-    @[JSON::Field(ignore: true)]
+    @[::JSON::Field(ignore: true)]
     @temp_files : Array(String) = [] of String
 
-    @[JSON::Field(ignore: true)]
+    @[::JSON::Field(ignore: true)]
     @temp_files_mutex : Mutex = Mutex.new
 
     def initialize(
@@ -45,8 +45,6 @@ module Kubernetes
     end
 
     # Clean up temporary certificate files
-    # This should be called when the Auth object is no longer needed,
-    # typically when closing the client connection.
     def cleanup_temp_files
       @temp_files_mutex.synchronize do
         @temp_files.each do |file|
@@ -60,24 +58,20 @@ module Kubernetes
       end
     end
 
-    # Track a temporary file for cleanup (internal use only)
     protected def track_temp_file(path : String)
       @temp_files_mutex.synchronize do
         @temp_files << path
       end
     end
 
-    # Build auth from kubeconfig User
     # ameba:disable Metrics/CyclomaticComplexity
     def self.from_user(user : Config::UserEntry::User, log : Log = Log.for("k8s.auth"), cache : CredentialCache? = nil) : Auth
       # Priority order: exec > token/tokenFile > client-cert > basic auth
 
-      # 1. Exec provider (highest priority for dynamic credentials)
       if exec = user.exec
         return from_exec(exec, log, cache)
       end
 
-      # 2. Token authentication
       if token = user.token
         return Auth.new(token: token)
       elsif token_file = user.token_file
@@ -85,7 +79,6 @@ module Kubernetes
         return Auth.new(token: token)
       end
 
-      # 3. Client certificate authentication
       if user.client_certificate || user.client_certificate_data
         auth = Auth.new
 
@@ -219,13 +212,12 @@ module Kubernetes
         end
 
         auth
-      rescue ex : JSON::ParseException
+      rescue ex : ::JSON::ParseException
         log.error { "Failed to parse exec provider output: #{ex.message}" }
         raise AuthError.new("Failed to parse exec provider output: #{ex.message}")
       end
     end
 
-    # Apply authentication to HTTP headers
     def apply_headers(headers : HTTP::Headers)
       if token = @token
         headers["Authorization"] = "Bearer #{token}"
@@ -236,27 +228,27 @@ module Kubernetes
       # Note: Client cert/key are applied to TLS context, not headers
     end
 
-    # ExecCredential Status - extracted to avoid visibility issues in Crystal 1.9.0
-    private struct ExecCredentialStatus
-      include JSON::Serializable
+    # ExecCredential Status - must be public to avoid serialization errors
+    struct ExecCredentialStatus
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "expirationTimestamp")]
+      @[::JSON::Field(key: "expirationTimestamp")]
       property expiration_timestamp : String?
 
       property token : String?
 
-      @[JSON::Field(key: "clientCertificateData")]
+      @[::JSON::Field(key: "clientCertificateData")]
       property client_certificate_data : String?
 
-      @[JSON::Field(key: "clientKeyData")]
+      @[::JSON::Field(key: "clientKeyData")]
       property client_key_data : String?
     end
 
     # ExecCredential response format (client.authentication.k8s.io/v1)
     private struct ExecCredential
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "apiVersion")]
+      @[::JSON::Field(key: "apiVersion")]
       property api_version : String
 
       property kind : String

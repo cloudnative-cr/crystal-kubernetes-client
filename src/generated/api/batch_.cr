@@ -16,7 +16,7 @@ module Kubernetes
   class Client
     # get information of a group
     # GET /apis/batch/
-    def get_api_group(**params, &)
+    def get_batch_api_group(**params, &)
       path = "/apis/batch/"
       get(path) { |res| yield res }
     end

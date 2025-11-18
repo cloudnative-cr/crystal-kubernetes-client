@@ -17,11 +17,10 @@ module Kubernetes::Resources
   #
   # Provides type-safe methods plus helpful utilities like scale and restart.
   class Deployments
-    # Simple Deployment structure for type-safe operations
     struct Deployment
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "apiVersion")]
+      @[::JSON::Field(key: "apiVersion")]
       property api_version : String?
 
       property kind : String?
@@ -31,7 +30,7 @@ module Kubernetes::Resources
     end
 
     struct DeploymentSpec
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property replicas : Int32?
       property selector : LabelSelector?
@@ -39,31 +38,31 @@ module Kubernetes::Resources
     end
 
     struct LabelSelector
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "matchLabels")]
+      @[::JSON::Field(key: "matchLabels")]
       property match_labels : Hash(String, String)?
     end
 
     struct PodTemplateSpec
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property metadata : Kubernetes::Metadata?
       property spec : Kubernetes::Resources::Pods::PodSpec?
     end
 
     struct DeploymentStatus
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property replicas : Int32?
 
-      @[JSON::Field(key: "readyReplicas")]
+      @[::JSON::Field(key: "readyReplicas")]
       property ready_replicas : Int32?
 
-      @[JSON::Field(key: "availableReplicas")]
+      @[::JSON::Field(key: "availableReplicas")]
       property available_replicas : Int32?
 
-      @[JSON::Field(key: "updatedReplicas")]
+      @[::JSON::Field(key: "updatedReplicas")]
       property updated_replicas : Int32?
     end
 

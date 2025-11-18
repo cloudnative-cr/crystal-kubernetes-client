@@ -15,9 +15,9 @@
 module Kubernetes::Resources
   class Secrets
     struct Secret
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "apiVersion")]
+      @[::JSON::Field(key: "apiVersion")]
       property api_version : String?
 
       property kind : String?

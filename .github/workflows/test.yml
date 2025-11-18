@@ -11,12 +11,6 @@ jobs:
     name: Test Suite
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        crystal:
-          - latest
-          - 1.9.0
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,21 +18,16 @@ jobs:
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
-          crystal: ${{ matrix.crystal }}
+          crystal: 1.18.2
 
       - name: Install dependencies
         run: shards install
 
       - name: Run tests
-        run: crystal spec --verbose
+        run: make test
 
       - name: Run linter
-        run: |
-          if [ -f bin/ameba ]; then
-            bin/ameba
-          else
-            echo "Ameba not found, skipping lint"
-          fi
+        run: make lint
 
   build:
     name: Build Check
@@ -51,7 +40,7 @@ jobs:
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
-          crystal: latest
+          crystal: 1.18.2
 
       - name: Install dependencies
         run: shards install

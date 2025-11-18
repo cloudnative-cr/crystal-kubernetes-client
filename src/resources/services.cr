@@ -15,9 +15,9 @@
 module Kubernetes::Resources
   class Services
     struct Service
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "apiVersion")]
+      @[::JSON::Field(key: "apiVersion")]
       property api_version : String?
 
       property kind : String?
@@ -26,24 +26,24 @@ module Kubernetes::Resources
     end
 
     struct ServiceSpec
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property ports : Array(ServicePort)?
       property selector : Hash(String, String)?
       property type : String?
 
-      @[JSON::Field(key: "clusterIP")]
+      @[::JSON::Field(key: "clusterIP")]
       property cluster_ip : String?
     end
 
     struct ServicePort
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property name : String?
       property port : Int32
       property protocol : String?
 
-      @[JSON::Field(key: "targetPort")]
+      @[::JSON::Field(key: "targetPort")]
       property target_port : Int32 | String | Nil
     end
 

@@ -16,7 +16,7 @@ module Kubernetes
   class Client
     # get information of a group
     # GET /apis/storage.k8s.io/
-    def get_api_group(**params, &)
+    def get_storage_api_group(**params, &)
       path = "/apis/storage.k8s.io/"
       get(path) { |res| yield res }
     end

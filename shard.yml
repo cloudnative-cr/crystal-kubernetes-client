@@ -7,7 +7,7 @@ authors:
 description: |
   Comprehensive Kubernetes client for Crystal with full API coverage.
 
-crystal: ">= 1.9.0"
+crystal: ">= 1.18.2"
 
 license: Apache-2.0
 

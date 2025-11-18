@@ -18,11 +18,10 @@ module Kubernetes::Resources
   # Provides type-safe methods for working with Pods without blocks,
   # plus helpful utility methods like waiting for readiness and fetching logs.
   class Pods
-    # Simple Pod structure for type-safe operations
     struct Pod
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "apiVersion")]
+      @[::JSON::Field(key: "apiVersion")]
       property api_version : String?
 
       property kind : String?
@@ -32,20 +31,20 @@ module Kubernetes::Resources
     end
 
     struct PodSpec
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property containers : Array(Container)?
       property node_name : String?
 
-      @[JSON::Field(key: "restartPolicy")]
+      @[::JSON::Field(key: "restartPolicy")]
       property restart_policy : String?
 
-      @[JSON::Field(key: "serviceAccountName")]
+      @[::JSON::Field(key: "serviceAccountName")]
       property service_account_name : String?
     end
 
     struct Container
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property name : String
       property image : String
@@ -54,19 +53,19 @@ module Kubernetes::Resources
     end
 
     struct PodStatus
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property phase : String?
 
-      @[JSON::Field(key: "podIP")]
+      @[::JSON::Field(key: "podIP")]
       property pod_ip : String?
 
-      @[JSON::Field(key: "containerStatuses")]
+      @[::JSON::Field(key: "containerStatuses")]
       property container_statuses : Array(ContainerStatus)?
     end
 
     struct ContainerStatus
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property name : String
       property? ready : Bool
@@ -74,7 +73,7 @@ module Kubernetes::Resources
     end
 
     struct ContainerState
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property running : ContainerStateRunning?
       property waiting : ContainerStateWaiting?
@@ -82,23 +81,23 @@ module Kubernetes::Resources
     end
 
     struct ContainerStateRunning
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "startedAt")]
+      @[::JSON::Field(key: "startedAt")]
       property started_at : String?
     end
 
     struct ContainerStateWaiting
-      include JSON::Serializable
+      include ::JSON::Serializable
 
       property reason : String?
       property message : String?
     end
 
     struct ContainerStateTerminated
-      include JSON::Serializable
+      include ::JSON::Serializable
 
-      @[JSON::Field(key: "exitCode")]
+      @[::JSON::Field(key: "exitCode")]
       property exit_code : Int32?
 
       property reason : String?
