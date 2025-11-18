@@ -89,7 +89,7 @@ module Kubernetes
 
   # HPAScalingRules configures the scaling behavior for one direction via scaling Policy Rules and a configurable metric tolerance.
   # Scaling Policy Rules are applied after calculating DesiredReplicas from metrics for the HPA. They can limit the scaling velocity by specifying scaling policies. They can prevent flapping by specifying the stabilization window, so that the number of replicas is not set instantly, instead, the safest value from the stabilization window is chosen.
-  # The tolerance is applied to the metric values and prevents scaling too eagerly for small metric variations. (Note that setting a tolerance requires enabling the alpha HPAConfigurableTolerance feature gate.)
+  # The tolerance is applied to the metric values and prevents scaling too eagerly for small metric variations. (Note that setting a tolerance requires the beta HPAConfigurableTolerance feature gate to be enabled.)
   struct HPAScalingRules
     include Kubernetes::Serializable
 
@@ -105,8 +105,8 @@ module Kubernetes
     property stabilization_window_seconds : Int32?
     # tolerance is the tolerance on the ratio between the current and desired metric value under which no updates are made to the desired number of replicas (e.g. 0.01 for 1%). Must be greater than or equal to zero. If not set, the default cluster-wide tolerance is applied (by default 10%).
     # For example, if autoscaling is configured with a memory consumption target of 100Mi, and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
-    # This is an alpha field and requires enabling the HPAConfigurableTolerance feature gate.
-    property tolerance : String?
+    # This is an beta field and requires the HPAConfigurableTolerance feature gate to be enabled.
+    property tolerance : Quantity?
   end
 
   # HorizontalPodAutoscaler is the configuration for a horizontal pod autoscaler, which automatically manages the replica count of any resource implementing the scale subresource based on the metrics specified.
@@ -289,11 +289,11 @@ module Kubernetes
     # averageValue is the target value of the average of the metric across all relevant pods (as a quantity)
     @[JSON::Field(key: "averageValue")]
     @[YAML::Field(key: "averageValue")]
-    property average_value : String?
+    property average_value : Quantity?
     # type represents whether the metric type is Utilization, Value, or AverageValue
     property type : String?
     # value is the target value of the metric (as a quantity).
-    property value : String?
+    property value : Quantity?
   end
 
   # MetricValueStatus holds the current value for a metric
@@ -307,9 +307,9 @@ module Kubernetes
     # averageValue is the current value of the average of the metric across all relevant pods (as a quantity)
     @[JSON::Field(key: "averageValue")]
     @[YAML::Field(key: "averageValue")]
-    property average_value : String?
+    property average_value : Quantity?
     # value is the current value of the metric (as a quantity).
-    property value : String?
+    property value : Quantity?
   end
 
   # ObjectMetricSource indicates how to scale on a metric describing a kubernetes object (for example, hits-per-second on an Ingress object).

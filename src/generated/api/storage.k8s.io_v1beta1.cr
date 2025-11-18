@@ -16,35 +16,35 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/storage.k8s.io/v1beta1/
-    def get_api_resources(**params, &)
+    def get_storage_v1beta1_api_resources(**params, &)
       path = "/apis/storage.k8s.io/v1beta1/"
       get(path) { |res| yield res }
     end
 
     # delete collection of VolumeAttributesClass
     # DELETE /apis/storage.k8s.io/v1beta1/volumeattributesclasses
-    def delete_collection_volume_attributes_class(**params, &)
+    def delete_storage_v1beta1_collection_volume_attributes_class(**params, &)
       path = "/apis/storage.k8s.io/v1beta1/volumeattributesclasses"
       delete(path) { |res| yield res }
     end
 
     # list or watch objects of kind VolumeAttributesClass
     # GET /apis/storage.k8s.io/v1beta1/volumeattributesclasses
-    def list_volume_attributes_class(**params, &)
+    def list_storage_v1beta1_volume_attributes_class(**params, &)
       path = "/apis/storage.k8s.io/v1beta1/volumeattributesclasses"
       get(path) { |res| yield res }
     end
 
     # create a VolumeAttributesClass
     # POST /apis/storage.k8s.io/v1beta1/volumeattributesclasses
-    def create_volume_attributes_class(**params, &)
+    def create_storage_v1beta1_volume_attributes_class(**params, &)
       path = "/apis/storage.k8s.io/v1beta1/volumeattributesclasses"
       post(path, params) { |res| yield res }
     end
 
     # delete a VolumeAttributesClass
     # DELETE /apis/storage.k8s.io/v1beta1/volumeattributesclasses/{name}
-    def delete_volume_attributes_class(**params, &)
+    def delete_storage_v1beta1_volume_attributes_class(**params, &)
       path = "/apis/storage.k8s.io/v1beta1/volumeattributesclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -52,7 +52,7 @@ module Kubernetes
 
     # read the specified VolumeAttributesClass
     # GET /apis/storage.k8s.io/v1beta1/volumeattributesclasses/{name}
-    def read_volume_attributes_class(**params, &)
+    def read_storage_v1beta1_volume_attributes_class(**params, &)
       path = "/apis/storage.k8s.io/v1beta1/volumeattributesclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -60,7 +60,7 @@ module Kubernetes
 
     # partially update the specified VolumeAttributesClass
     # PATCH /apis/storage.k8s.io/v1beta1/volumeattributesclasses/{name}
-    def patch_volume_attributes_class(**params, &)
+    def patch_storage_v1beta1_volume_attributes_class(**params, &)
       path = "/apis/storage.k8s.io/v1beta1/volumeattributesclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -68,10 +68,25 @@ module Kubernetes
 
     # replace the specified VolumeAttributesClass
     # PUT /apis/storage.k8s.io/v1beta1/volumeattributesclasses/{name}
-    def replace_volume_attributes_class(**params, &)
+    def replace_storage_v1beta1_volume_attributes_class(**params, &)
       path = "/apis/storage.k8s.io/v1beta1/volumeattributesclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
+    end
+
+    # watch individual changes to a list of VolumeAttributesClass. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/storage.k8s.io/v1beta1/watch/volumeattributesclasses
+    def watch_storage_v1beta1_volume_attributes_class_list(**params, &)
+      path = "/apis/storage.k8s.io/v1beta1/watch/volumeattributesclasses"
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind VolumeAttributesClass. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/storage.k8s.io/v1beta1/watch/volumeattributesclasses/{name}
+    def watch_storage_v1beta1_volume_attributes_class(**params, &)
+      path = "/apis/storage.k8s.io/v1beta1/watch/volumeattributesclasses/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
     end
   end
 end

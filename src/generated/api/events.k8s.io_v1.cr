@@ -16,21 +16,21 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/events.k8s.io/v1/
-    def get_api_resources(**params, &)
+    def get_events_v1_api_resources(**params, &)
       path = "/apis/events.k8s.io/v1/"
       get(path) { |res| yield res }
     end
 
     # list or watch objects of kind Event
     # GET /apis/events.k8s.io/v1/events
-    def list_event_for_all_namespaces(**params, &)
+    def list_events_v1_event_for_all_namespaces(**params, &)
       path = "/apis/events.k8s.io/v1/events"
       get(path) { |res| yield res }
     end
 
     # delete collection of Event
     # DELETE /apis/events.k8s.io/v1/namespaces/{namespace}/events
-    def delete_collection_namespaced_event(**params, &)
+    def delete_events_v1_collection_namespaced_event(**params, &)
       path = "/apis/events.k8s.io/v1/namespaces/{namespace}/events"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -38,7 +38,7 @@ module Kubernetes
 
     # list or watch objects of kind Event
     # GET /apis/events.k8s.io/v1/namespaces/{namespace}/events
-    def list_namespaced_event(**params, &)
+    def list_events_v1_namespaced_event(**params, &)
       path = "/apis/events.k8s.io/v1/namespaces/{namespace}/events"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -46,7 +46,7 @@ module Kubernetes
 
     # create an Event
     # POST /apis/events.k8s.io/v1/namespaces/{namespace}/events
-    def create_namespaced_event(**params, &)
+    def create_events_v1_namespaced_event(**params, &)
       path = "/apis/events.k8s.io/v1/namespaces/{namespace}/events"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       post(path, params) { |res| yield res }
@@ -54,7 +54,7 @@ module Kubernetes
 
     # delete an Event
     # DELETE /apis/events.k8s.io/v1/namespaces/{namespace}/events/{name}
-    def delete_namespaced_event(**params, &)
+    def delete_events_v1_namespaced_event(**params, &)
       path = "/apis/events.k8s.io/v1/namespaces/{namespace}/events/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -62,7 +62,7 @@ module Kubernetes
 
     # read the specified Event
     # GET /apis/events.k8s.io/v1/namespaces/{namespace}/events/{name}
-    def read_namespaced_event(**params, &)
+    def read_events_v1_namespaced_event(**params, &)
       path = "/apis/events.k8s.io/v1/namespaces/{namespace}/events/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -70,7 +70,7 @@ module Kubernetes
 
     # partially update the specified Event
     # PATCH /apis/events.k8s.io/v1/namespaces/{namespace}/events/{name}
-    def patch_namespaced_event(**params, &)
+    def patch_events_v1_namespaced_event(**params, &)
       path = "/apis/events.k8s.io/v1/namespaces/{namespace}/events/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -78,10 +78,33 @@ module Kubernetes
 
     # replace the specified Event
     # PUT /apis/events.k8s.io/v1/namespaces/{namespace}/events/{name}
-    def replace_namespaced_event(**params, &)
+    def replace_events_v1_namespaced_event(**params, &)
       path = "/apis/events.k8s.io/v1/namespaces/{namespace}/events/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
+    end
+
+    # watch individual changes to a list of Event. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/events.k8s.io/v1/watch/events
+    def watch_events_v1_event_list_for_all_namespaces(**params, &)
+      path = "/apis/events.k8s.io/v1/watch/events"
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of Event. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/events.k8s.io/v1/watch/namespaces/{namespace}/events
+    def watch_events_v1_namespaced_event_list(**params, &)
+      path = "/apis/events.k8s.io/v1/watch/namespaces/{namespace}/events"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind Event. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/events.k8s.io/v1/watch/namespaces/{namespace}/events/{name}
+    def watch_events_v1_namespaced_event(**params, &)
+      path = "/apis/events.k8s.io/v1/watch/namespaces/{namespace}/events/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
     end
   end
 end

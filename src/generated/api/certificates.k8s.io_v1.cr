@@ -16,35 +16,35 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/certificates.k8s.io/v1/
-    def get_api_resources(**params, &)
+    def get_certificates_v1_api_resources(**params, &)
       path = "/apis/certificates.k8s.io/v1/"
       get(path) { |res| yield res }
     end
 
     # delete collection of CertificateSigningRequest
     # DELETE /apis/certificates.k8s.io/v1/certificatesigningrequests
-    def delete_collection_certificate_signing_request(**params, &)
+    def delete_certificates_v1_collection_certificate_signing_request(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests"
       delete(path) { |res| yield res }
     end
 
     # list or watch objects of kind CertificateSigningRequest
     # GET /apis/certificates.k8s.io/v1/certificatesigningrequests
-    def list_certificate_signing_request(**params, &)
+    def list_certificates_v1_certificate_signing_request(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests"
       get(path) { |res| yield res }
     end
 
     # create a CertificateSigningRequest
     # POST /apis/certificates.k8s.io/v1/certificatesigningrequests
-    def create_certificate_signing_request(**params, &)
+    def create_certificates_v1_certificate_signing_request(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests"
       post(path, params) { |res| yield res }
     end
 
     # delete a CertificateSigningRequest
     # DELETE /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}
-    def delete_certificate_signing_request(**params, &)
+    def delete_certificates_v1_certificate_signing_request(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -52,7 +52,7 @@ module Kubernetes
 
     # read the specified CertificateSigningRequest
     # GET /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}
-    def read_certificate_signing_request(**params, &)
+    def read_certificates_v1_certificate_signing_request(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -60,7 +60,7 @@ module Kubernetes
 
     # partially update the specified CertificateSigningRequest
     # PATCH /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}
-    def patch_certificate_signing_request(**params, &)
+    def patch_certificates_v1_certificate_signing_request(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -68,7 +68,7 @@ module Kubernetes
 
     # replace the specified CertificateSigningRequest
     # PUT /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}
-    def replace_certificate_signing_request(**params, &)
+    def replace_certificates_v1_certificate_signing_request(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
@@ -76,7 +76,7 @@ module Kubernetes
 
     # read approval of the specified CertificateSigningRequest
     # GET /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/approval
-    def read_certificate_signing_request_approval(**params, &)
+    def read_certificates_v1_certificate_signing_request_approval(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/approval"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -84,7 +84,7 @@ module Kubernetes
 
     # partially update approval of the specified CertificateSigningRequest
     # PATCH /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/approval
-    def patch_certificate_signing_request_approval(**params, &)
+    def patch_certificates_v1_certificate_signing_request_approval(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/approval"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -92,7 +92,7 @@ module Kubernetes
 
     # replace approval of the specified CertificateSigningRequest
     # PUT /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/approval
-    def replace_certificate_signing_request_approval(**params, &)
+    def replace_certificates_v1_certificate_signing_request_approval(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/approval"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
@@ -100,7 +100,7 @@ module Kubernetes
 
     # read status of the specified CertificateSigningRequest
     # GET /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/status
-    def read_certificate_signing_request_status(**params, &)
+    def read_certificates_v1_certificate_signing_request_status(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -108,7 +108,7 @@ module Kubernetes
 
     # partially update status of the specified CertificateSigningRequest
     # PATCH /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/status
-    def patch_certificate_signing_request_status(**params, &)
+    def patch_certificates_v1_certificate_signing_request_status(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -116,10 +116,25 @@ module Kubernetes
 
     # replace status of the specified CertificateSigningRequest
     # PUT /apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/status
-    def replace_certificate_signing_request_status(**params, &)
+    def replace_certificates_v1_certificate_signing_request_status(**params, &)
       path = "/apis/certificates.k8s.io/v1/certificatesigningrequests/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
+    end
+
+    # watch individual changes to a list of CertificateSigningRequest. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/certificates.k8s.io/v1/watch/certificatesigningrequests
+    def watch_certificates_v1_certificate_signing_request_list(**params, &)
+      path = "/apis/certificates.k8s.io/v1/watch/certificatesigningrequests"
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind CertificateSigningRequest. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/certificates.k8s.io/v1/watch/certificatesigningrequests/{name}
+    def watch_certificates_v1_certificate_signing_request(**params, &)
+      path = "/apis/certificates.k8s.io/v1/watch/certificatesigningrequests/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
     end
   end
 end

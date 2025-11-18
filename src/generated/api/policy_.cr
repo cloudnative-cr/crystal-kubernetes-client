@@ -16,7 +16,7 @@ module Kubernetes
   class Client
     # get information of a group
     # GET /apis/policy/
-    def get_api_group(**params, &)
+    def get_policy_api_group(**params, &)
       path = "/apis/policy/"
       get(path) { |res| yield res }
     end

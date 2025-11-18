@@ -16,21 +16,21 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/autoscaling/v1/
-    def get_api_resources(**params, &)
+    def get_autoscaling_v1_api_resources(**params, &)
       path = "/apis/autoscaling/v1/"
       get(path) { |res| yield res }
     end
 
     # list or watch objects of kind HorizontalPodAutoscaler
     # GET /apis/autoscaling/v1/horizontalpodautoscalers
-    def list_horizontal_pod_autoscaler_for_all_namespaces(**params, &)
+    def list_autoscaling_v1_horizontal_pod_autoscaler_for_all_namespaces(**params, &)
       path = "/apis/autoscaling/v1/horizontalpodautoscalers"
       get(path) { |res| yield res }
     end
 
     # delete collection of HorizontalPodAutoscaler
     # DELETE /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers
-    def delete_collection_namespaced_horizontal_pod_autoscaler(**params, &)
+    def delete_autoscaling_v1_collection_namespaced_horizontal_pod_autoscaler(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -38,7 +38,7 @@ module Kubernetes
 
     # list or watch objects of kind HorizontalPodAutoscaler
     # GET /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers
-    def list_namespaced_horizontal_pod_autoscaler(**params, &)
+    def list_autoscaling_v1_namespaced_horizontal_pod_autoscaler(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -46,7 +46,7 @@ module Kubernetes
 
     # create a HorizontalPodAutoscaler
     # POST /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers
-    def create_namespaced_horizontal_pod_autoscaler(**params, &)
+    def create_autoscaling_v1_namespaced_horizontal_pod_autoscaler(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       post(path, params) { |res| yield res }
@@ -54,7 +54,7 @@ module Kubernetes
 
     # delete a HorizontalPodAutoscaler
     # DELETE /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}
-    def delete_namespaced_horizontal_pod_autoscaler(**params, &)
+    def delete_autoscaling_v1_namespaced_horizontal_pod_autoscaler(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -62,7 +62,7 @@ module Kubernetes
 
     # read the specified HorizontalPodAutoscaler
     # GET /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}
-    def read_namespaced_horizontal_pod_autoscaler(**params, &)
+    def read_autoscaling_v1_namespaced_horizontal_pod_autoscaler(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -70,7 +70,7 @@ module Kubernetes
 
     # partially update the specified HorizontalPodAutoscaler
     # PATCH /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}
-    def patch_namespaced_horizontal_pod_autoscaler(**params, &)
+    def patch_autoscaling_v1_namespaced_horizontal_pod_autoscaler(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -78,7 +78,7 @@ module Kubernetes
 
     # replace the specified HorizontalPodAutoscaler
     # PUT /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}
-    def replace_namespaced_horizontal_pod_autoscaler(**params, &)
+    def replace_autoscaling_v1_namespaced_horizontal_pod_autoscaler(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
@@ -86,7 +86,7 @@ module Kubernetes
 
     # read status of the specified HorizontalPodAutoscaler
     # GET /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}/status
-    def read_namespaced_horizontal_pod_autoscaler_status(**params, &)
+    def read_autoscaling_v1_namespaced_horizontal_pod_autoscaler_status(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -94,7 +94,7 @@ module Kubernetes
 
     # partially update status of the specified HorizontalPodAutoscaler
     # PATCH /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}/status
-    def patch_namespaced_horizontal_pod_autoscaler_status(**params, &)
+    def patch_autoscaling_v1_namespaced_horizontal_pod_autoscaler_status(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -102,10 +102,33 @@ module Kubernetes
 
     # replace status of the specified HorizontalPodAutoscaler
     # PUT /apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}/status
-    def replace_namespaced_horizontal_pod_autoscaler_status(**params, &)
+    def replace_autoscaling_v1_namespaced_horizontal_pod_autoscaler_status(**params, &)
       path = "/apis/autoscaling/v1/namespaces/{namespace}/horizontalpodautoscalers/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
+    end
+
+    # watch individual changes to a list of HorizontalPodAutoscaler. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/autoscaling/v1/watch/horizontalpodautoscalers
+    def watch_autoscaling_v1_horizontal_pod_autoscaler_list_for_all_namespaces(**params, &)
+      path = "/apis/autoscaling/v1/watch/horizontalpodautoscalers"
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of HorizontalPodAutoscaler. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/autoscaling/v1/watch/namespaces/{namespace}/horizontalpodautoscalers
+    def watch_autoscaling_v1_namespaced_horizontal_pod_autoscaler_list(**params, &)
+      path = "/apis/autoscaling/v1/watch/namespaces/{namespace}/horizontalpodautoscalers"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind HorizontalPodAutoscaler. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/autoscaling/v1/watch/namespaces/{namespace}/horizontalpodautoscalers/{name}
+    def watch_autoscaling_v1_namespaced_horizontal_pod_autoscaler(**params, &)
+      path = "/apis/autoscaling/v1/watch/namespaces/{namespace}/horizontalpodautoscalers/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
     end
   end
 end

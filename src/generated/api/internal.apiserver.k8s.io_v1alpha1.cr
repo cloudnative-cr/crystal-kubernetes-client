@@ -16,35 +16,35 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/internal.apiserver.k8s.io/v1alpha1/
-    def get_api_resources(**params, &)
+    def get_internal_apiserver_v1alpha1_api_resources(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/"
       get(path) { |res| yield res }
     end
 
     # delete collection of StorageVersion
     # DELETE /apis/internal.apiserver.k8s.io/v1alpha1/storageversions
-    def delete_collection_storage_version(**params, &)
+    def delete_internal_apiserver_v1alpha1_collection_storage_version(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions"
       delete(path) { |res| yield res }
     end
 
     # list or watch objects of kind StorageVersion
     # GET /apis/internal.apiserver.k8s.io/v1alpha1/storageversions
-    def list_storage_version(**params, &)
+    def list_internal_apiserver_v1alpha1_storage_version(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions"
       get(path) { |res| yield res }
     end
 
     # create a StorageVersion
     # POST /apis/internal.apiserver.k8s.io/v1alpha1/storageversions
-    def create_storage_version(**params, &)
+    def create_internal_apiserver_v1alpha1_storage_version(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions"
       post(path, params) { |res| yield res }
     end
 
     # delete a StorageVersion
     # DELETE /apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}
-    def delete_storage_version(**params, &)
+    def delete_internal_apiserver_v1alpha1_storage_version(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -52,7 +52,7 @@ module Kubernetes
 
     # read the specified StorageVersion
     # GET /apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}
-    def read_storage_version(**params, &)
+    def read_internal_apiserver_v1alpha1_storage_version(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -60,7 +60,7 @@ module Kubernetes
 
     # partially update the specified StorageVersion
     # PATCH /apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}
-    def patch_storage_version(**params, &)
+    def patch_internal_apiserver_v1alpha1_storage_version(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -68,7 +68,7 @@ module Kubernetes
 
     # replace the specified StorageVersion
     # PUT /apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}
-    def replace_storage_version(**params, &)
+    def replace_internal_apiserver_v1alpha1_storage_version(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
@@ -76,7 +76,7 @@ module Kubernetes
 
     # read status of the specified StorageVersion
     # GET /apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}/status
-    def read_storage_version_status(**params, &)
+    def read_internal_apiserver_v1alpha1_storage_version_status(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -84,7 +84,7 @@ module Kubernetes
 
     # partially update status of the specified StorageVersion
     # PATCH /apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}/status
-    def patch_storage_version_status(**params, &)
+    def patch_internal_apiserver_v1alpha1_storage_version_status(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -92,10 +92,25 @@ module Kubernetes
 
     # replace status of the specified StorageVersion
     # PUT /apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}/status
-    def replace_storage_version_status(**params, &)
+    def replace_internal_apiserver_v1alpha1_storage_version_status(**params, &)
       path = "/apis/internal.apiserver.k8s.io/v1alpha1/storageversions/{name}/status"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
+    end
+
+    # watch individual changes to a list of StorageVersion. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/internal.apiserver.k8s.io/v1alpha1/watch/storageversions
+    def watch_internal_apiserver_v1alpha1_storage_version_list(**params, &)
+      path = "/apis/internal.apiserver.k8s.io/v1alpha1/watch/storageversions"
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind StorageVersion. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/internal.apiserver.k8s.io/v1alpha1/watch/storageversions/{name}
+    def watch_internal_apiserver_v1alpha1_storage_version(**params, &)
+      path = "/apis/internal.apiserver.k8s.io/v1alpha1/watch/storageversions/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
     end
   end
 end

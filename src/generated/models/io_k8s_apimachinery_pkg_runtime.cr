@@ -15,15 +15,4 @@
 require "../../serialization"
 
 module Kubernetes
-  # ServiceReference holds a reference to Service.legacy.k8s.io
-  struct ServiceReference
-    include Kubernetes::Serializable
-
-    # Name is the name of the service
-    property name : String?
-    # Namespace is the namespace of the service
-    property namespace : String?
-    # If specified, the port on the service that hosting webhook. Default to 443 for backward compatibility. `port` should be a valid port number (1-65535, inclusive).
-    property port : Int32?
-  end
 end

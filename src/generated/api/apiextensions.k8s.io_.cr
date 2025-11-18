@@ -16,7 +16,7 @@ module Kubernetes
   class Client
     # get information of a group
     # GET /apis/apiextensions.k8s.io/
-    def get_api_group(**params, &)
+    def get_apiextensions_api_group(**params, &)
       path = "/apis/apiextensions.k8s.io/"
       get(path) { |res| yield res }
     end

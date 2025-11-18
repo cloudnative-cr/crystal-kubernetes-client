@@ -15,590 +15,6 @@
 require "../../serialization"
 
 module Kubernetes
-  # ApplyConfiguration defines the desired configuration values of an object.
-  struct ApplyConfiguration
-    include Kubernetes::Serializable
-
-    # expression will be evaluated by CEL to create an apply configuration. ref: https://github.com/google/cel-spec
-    # Apply configurations are declared in CEL using object initialization. For example, this CEL expression returns an apply configuration to set a single field:
-    # Object{
-    # spec: Object.spec{
-    # serviceAccountName: "example"
-    # }
-    # }
-    # Apply configurations may not modify atomic structs, maps or arrays due to the risk of accidental deletion of values not included in the apply configuration.
-    # CEL expressions have access to the object types needed to create apply configurations:
-    # - 'Object' - CEL type of the resource object. - 'Object.<fieldName>' - CEL type of object field (such as 'Object.spec') - 'Object.<fieldName1>.<fieldName2>...<fieldNameN>` - CEL type of nested field (such as 'Object.spec.containers')
-    # CEL expressions have access to the contents of the API request, organized into CEL variables as well as some other useful variables:
-    # - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
-    # For example, a variable named 'foo' can be accessed as 'variables.foo'.
-    # - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
-    # See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
-    # - 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
-    # request resource.
-    # The `apiVersion`, `kind`, `metadata.name` and `metadata.generateName` are always accessible from the root of the object. No other metadata properties are accessible.
-    # Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible. Required.
-    property expression : String?
-  end
-
-  # JSONPatch defines a JSON Patch.
-  struct JSONPatch
-    include Kubernetes::Serializable
-
-    # expression will be evaluated by CEL to create a [JSON patch](https://jsonpatch.com/). ref: https://github.com/google/cel-spec
-    # expression must return an array of JSONPatch values.
-    # For example, this CEL expression returns a JSON patch to conditionally modify a value:
-    # [
-    # JSONPatch{op: "test", path: "/spec/example", value: "Red"},
-    # JSONPatch{op: "replace", path: "/spec/example", value: "Green"}
-    # ]
-    # To define an object for the patch value, use Object types. For example:
-    # [
-    # JSONPatch{
-    # op: "add",
-    # path: "/spec/selector",
-    # value: Object.spec.selector{matchLabels: {"environment": "test"}}
-    # }
-    # ]
-    # To use strings containing '/' and '~' as JSONPatch path keys, use "jsonpatch.escapeKey". For example:
-    # [
-    # JSONPatch{
-    # op: "add",
-    # path: "/metadata/labels/" + jsonpatch.escapeKey("example.com/environment"),
-    # value: "test"
-    # },
-    # ]
-    # CEL expressions have access to the types needed to create JSON patches and objects:
-    # - 'JSONPatch' - CEL type of JSON Patch operations. JSONPatch has the fields 'op', 'from', 'path' and 'value'.
-    # See [JSON patch](https://jsonpatch.com/) for more details. The 'value' field may be set to any of: string,
-    # integer, array, map or object.  If set, the 'path' and 'from' fields must be set to a
-    # [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901/) string, where the 'jsonpatch.escapeKey()' CEL
-    # function may be used to escape path keys containing '/' and '~'.
-    # - 'Object' - CEL type of the resource object. - 'Object.<fieldName>' - CEL type of object field (such as 'Object.spec') - 'Object.<fieldName1>.<fieldName2>...<fieldNameN>` - CEL type of nested field (such as 'Object.spec.containers')
-    # CEL expressions have access to the contents of the API request, organized into CEL variables as well as some other useful variables:
-    # - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
-    # For example, a variable named 'foo' can be accessed as 'variables.foo'.
-    # - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
-    # See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
-    # - 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
-    # request resource.
-    # CEL expressions have access to [Kubernetes CEL function libraries](https://kubernetes.io/docs/reference/using-api/cel/#cel-options-language-features-and-libraries) as well as:
-    # - 'jsonpatch.escapeKey' - Performs JSONPatch key escaping. '~' and  '/' are escaped as '~0' and `~1' respectively).
-    # Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible. Required.
-    property expression : String?
-  end
-
-  # MatchCondition represents a condition which must be fulfilled for a request to be sent to a webhook.
-  struct MatchCondition
-    include Kubernetes::Serializable
-
-    # Expression represents the expression which will be evaluated by CEL. Must evaluate to bool. CEL expressions have access to the contents of the AdmissionRequest and Authorizer, organized into CEL variables:
-    # 'object' - The object from the incoming request. The value is null for DELETE requests. 'oldObject' - The existing object. The value is null for CREATE requests. 'request' - Attributes of the admission request(/pkg/apis/admission/types.go#AdmissionRequest). 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
-    # See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
-    # 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
-    # request resource.
-    # Documentation on CEL: https://kubernetes.io/docs/reference/using-api/cel/
-    # Required.
-    property expression : String?
-    # Name is an identifier for this match condition, used for strategic merging of MatchConditions, as well as providing an identifier for logging purposes. A good name should be descriptive of the associated expression. Name must be a qualified name consisting of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]') with an optional DNS subdomain prefix and '/' (e.g. 'example.com/MyName')
-    # Required.
-    property name : String?
-  end
-
-  # MatchResources decides whether to run the admission control policy on an object based on whether it meets the match criteria. The exclude rules take precedence over include rules (if a resource matches both, it is excluded)
-  struct MatchResources
-    include Kubernetes::Serializable
-
-    # ExcludeResourceRules describes what operations on what resources/subresources the ValidatingAdmissionPolicy should not care about. The exclude rules take precedence over include rules (if a resource matches both, it is excluded)
-    @[JSON::Field(key: "excludeResourceRules")]
-    @[YAML::Field(key: "excludeResourceRules")]
-    property exclude_resource_rules : Array(NamedRuleWithOperations)?
-    # matchPolicy defines how the "MatchResources" list is used to match incoming requests. Allowed values are "Exact" or "Equivalent".
-    # - Exact: match a request only if it exactly matches a specified rule. For example, if deployments can be modified via apps/v1, apps/v1beta1, and extensions/v1beta1, but "rules" only included `apiGroups:["apps"], apiVersions:["v1"], resources: ["deployments"]`, a request to apps/v1beta1 or extensions/v1beta1 would not be sent to the ValidatingAdmissionPolicy.
-    # - Equivalent: match a request if modifies a resource listed in rules, even via another API group or version. For example, if deployments can be modified via apps/v1, apps/v1beta1, and extensions/v1beta1, and "rules" only included `apiGroups:["apps"], apiVersions:["v1"], resources: ["deployments"]`, a request to apps/v1beta1 or extensions/v1beta1 would be converted to apps/v1 and sent to the ValidatingAdmissionPolicy.
-    # Defaults to "Equivalent"
-    @[JSON::Field(key: "matchPolicy")]
-    @[YAML::Field(key: "matchPolicy")]
-    property match_policy : String?
-    # NamespaceSelector decides whether to run the admission control policy on an object based on whether the namespace for that object matches the selector. If the object itself is a namespace, the matching is performed on object.metadata.labels. If the object is another cluster scoped resource, it never skips the policy.
-    # For example, to run the webhook on any objects whose namespace is not associated with "runlevel" of "0" or "1";  you will set the selector as follows: "namespaceSelector": {
-    # "matchExpressions": [
-    # {
-    # "key": "runlevel",
-    # "operator": "NotIn",
-    # "values": [
-    # "0",
-    # "1"
-    # ]
-    # }
-    # ]
-    # }
-    # If instead you want to only run the policy on any objects whose namespace is associated with the "environment" of "prod" or "staging"; you will set the selector as follows: "namespaceSelector": {
-    # "matchExpressions": [
-    # {
-    # "key": "environment",
-    # "operator": "In",
-    # "values": [
-    # "prod",
-    # "staging"
-    # ]
-    # }
-    # ]
-    # }
-    # See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/ for more examples of label selectors.
-    # Default to the empty LabelSelector, which matches everything.
-    @[JSON::Field(key: "namespaceSelector")]
-    @[YAML::Field(key: "namespaceSelector")]
-    property namespace_selector : LabelSelector?
-    # ObjectSelector decides whether to run the validation based on if the object has matching labels. objectSelector is evaluated against both the oldObject and newObject that would be sent to the cel validation, and is considered to match if either object matches the selector. A null object (oldObject in the case of create, or newObject in the case of delete) or an object that cannot have labels (like a DeploymentRollback or a PodProxyOptions object) is not considered to match. Use the object selector only if the webhook is opt-in, because end users may skip the admission webhook by setting the labels. Default to the empty LabelSelector, which matches everything.
-    @[JSON::Field(key: "objectSelector")]
-    @[YAML::Field(key: "objectSelector")]
-    property object_selector : LabelSelector?
-    # ResourceRules describes what operations on what resources/subresources the ValidatingAdmissionPolicy matches. The policy cares about an operation if it matches _any_ Rule.
-    @[JSON::Field(key: "resourceRules")]
-    @[YAML::Field(key: "resourceRules")]
-    property resource_rules : Array(NamedRuleWithOperations)?
-  end
-
-  # MutatingAdmissionPolicy describes the definition of an admission mutation policy that mutates the object coming into admission chain.
-  struct MutatingAdmissionPolicy
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
-    property metadata : ObjectMeta?
-    # Specification of the desired behavior of the MutatingAdmissionPolicy.
-    property spec : MutatingAdmissionPolicySpec?
-  end
-
-  # MutatingAdmissionPolicyBinding binds the MutatingAdmissionPolicy with parametrized resources. MutatingAdmissionPolicyBinding and the optional parameter resource together define how cluster administrators configure policies for clusters.
-  # For a given admission request, each binding will cause its policy to be evaluated N times, where N is 1 for policies/bindings that don't use params, otherwise N is the number of parameters selected by the binding. Each evaluation is constrained by a [runtime cost budget](https://kubernetes.io/docs/reference/using-api/cel/#runtime-cost-budget).
-  # Adding/removing policies, bindings, or params can not affect whether a given (policy, binding, param) combination is within its own CEL budget.
-  struct MutatingAdmissionPolicyBinding
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
-    property metadata : ObjectMeta?
-    # Specification of the desired behavior of the MutatingAdmissionPolicyBinding.
-    property spec : MutatingAdmissionPolicyBindingSpec?
-  end
-
-  # MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
-  struct MutatingAdmissionPolicyBindingList
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # List of PolicyBinding.
-    property items : Array(MutatingAdmissionPolicyBinding)?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property metadata : ListMeta?
-  end
-
-  # MutatingAdmissionPolicyBindingSpec is the specification of the MutatingAdmissionPolicyBinding.
-  struct MutatingAdmissionPolicyBindingSpec
-    include Kubernetes::Serializable
-
-    # matchResources limits what resources match this binding and may be mutated by it. Note that if matchResources matches a resource, the resource must also match a policy's matchConstraints and matchConditions before the resource may be mutated. When matchResources is unset, it does not constrain resource matching, and only the policy's matchConstraints and matchConditions must match for the resource to be mutated. Additionally, matchResources.resourceRules are optional and do not constraint matching when unset. Note that this is differs from MutatingAdmissionPolicy matchConstraints, where resourceRules are required. The CREATE, UPDATE and CONNECT operations are allowed.  The DELETE operation may not be matched. '*' matches CREATE, UPDATE and CONNECT.
-    @[JSON::Field(key: "matchResources")]
-    @[YAML::Field(key: "matchResources")]
-    property match_resources : MatchResources?
-    # paramRef specifies the parameter resource used to configure the admission control policy. It should point to a resource of the type specified in spec.ParamKind of the bound MutatingAdmissionPolicy. If the policy specifies a ParamKind and the resource referred to by ParamRef does not exist, this binding is considered mis-configured and the FailurePolicy of the MutatingAdmissionPolicy applied. If the policy does not specify a ParamKind then this field is ignored, and the rules are evaluated without a param.
-    @[JSON::Field(key: "paramRef")]
-    @[YAML::Field(key: "paramRef")]
-    property param_ref : ParamRef?
-    # policyName references a MutatingAdmissionPolicy name which the MutatingAdmissionPolicyBinding binds to. If the referenced resource does not exist, this binding is considered invalid and will be ignored Required.
-    @[JSON::Field(key: "policyName")]
-    @[YAML::Field(key: "policyName")]
-    property policy_name : String?
-  end
-
-  # MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
-  struct MutatingAdmissionPolicyList
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # List of ValidatingAdmissionPolicy.
-    property items : Array(MutatingAdmissionPolicy)?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property metadata : ListMeta?
-  end
-
-  # MutatingAdmissionPolicySpec is the specification of the desired behavior of the admission policy.
-  struct MutatingAdmissionPolicySpec
-    include Kubernetes::Serializable
-
-    # failurePolicy defines how to handle failures for the admission policy. Failures can occur from CEL expression parse errors, type check errors, runtime errors and invalid or mis-configured policy definitions or bindings.
-    # A policy is invalid if paramKind refers to a non-existent Kind. A binding is invalid if paramRef.name refers to a non-existent resource.
-    # failurePolicy does not define how validations that evaluate to false are handled.
-    # Allowed values are Ignore or Fail. Defaults to Fail.
-    @[JSON::Field(key: "failurePolicy")]
-    @[YAML::Field(key: "failurePolicy")]
-    property failure_policy : String?
-    # matchConditions is a list of conditions that must be met for a request to be validated. Match conditions filter requests that have already been matched by the matchConstraints. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
-    # If a parameter object is provided, it can be accessed via the `params` handle in the same manner as validation expressions.
-    # The exact matching logic is (in order):
-    # 1. If ANY matchCondition evaluates to FALSE, the policy is skipped.
-    # 2. If ALL matchConditions evaluate to TRUE, the policy is evaluated.
-    # 3. If any matchCondition evaluates to an error (but none are FALSE):
-    # - If failurePolicy=Fail, reject the request
-    # - If failurePolicy=Ignore, the policy is skipped
-    @[JSON::Field(key: "matchConditions")]
-    @[YAML::Field(key: "matchConditions")]
-    property match_conditions : Array(MatchCondition)?
-    # matchConstraints specifies what resources this policy is designed to validate. The MutatingAdmissionPolicy cares about a request if it matches _all_ Constraints. However, in order to prevent clusters from being put into an unstable state that cannot be recovered from via the API MutatingAdmissionPolicy cannot match MutatingAdmissionPolicy and MutatingAdmissionPolicyBinding. The CREATE, UPDATE and CONNECT operations are allowed.  The DELETE operation may not be matched. '*' matches CREATE, UPDATE and CONNECT. Required.
-    @[JSON::Field(key: "matchConstraints")]
-    @[YAML::Field(key: "matchConstraints")]
-    property match_constraints : MatchResources?
-    # mutations contain operations to perform on matching objects. mutations may not be empty; a minimum of one mutation is required. mutations are evaluated in order, and are reinvoked according to the reinvocationPolicy. The mutations of a policy are invoked for each binding of this policy and reinvocation of mutations occurs on a per binding basis.
-    property mutations : Array(Mutation)?
-    # paramKind specifies the kind of resources used to parameterize this policy. If absent, there are no parameters for this policy and the param CEL variable will not be provided to validation expressions. If paramKind refers to a non-existent kind, this policy definition is mis-configured and the FailurePolicy is applied. If paramKind is specified but paramRef is unset in MutatingAdmissionPolicyBinding, the params variable will be null.
-    @[JSON::Field(key: "paramKind")]
-    @[YAML::Field(key: "paramKind")]
-    property param_kind : ParamKind?
-    # reinvocationPolicy indicates whether mutations may be called multiple times per MutatingAdmissionPolicyBinding as part of a single admission evaluation. Allowed values are "Never" and "IfNeeded".
-    # Never: These mutations will not be called more than once per binding in a single admission evaluation.
-    # IfNeeded: These mutations may be invoked more than once per binding for a single admission request and there is no guarantee of order with respect to other admission plugins, admission webhooks, bindings of this policy and admission policies.  Mutations are only reinvoked when mutations change the object after this mutation is invoked. Required.
-    @[JSON::Field(key: "reinvocationPolicy")]
-    @[YAML::Field(key: "reinvocationPolicy")]
-    property reinvocation_policy : String?
-    # variables contain definitions of variables that can be used in composition of other expressions. Each variable is defined as a named CEL expression. The variables defined here will be available under `variables` in other expressions of the policy except matchConditions because matchConditions are evaluated before the rest of the policy.
-    # The expression of a variable can refer to other variables defined earlier in the list but not those after. Thus, variables must be sorted by the order of first appearance and acyclic.
-    property variables : Array(Variable)?
-  end
-
-  # Mutation specifies the CEL expression which is used to apply the Mutation.
-  struct Mutation
-    include Kubernetes::Serializable
-
-    # applyConfiguration defines the desired configuration values of an object. The configuration is applied to the admission object using [structured merge diff](https://github.com/kubernetes-sigs/structured-merge-diff). A CEL expression is used to create apply configuration.
-    @[JSON::Field(key: "applyConfiguration")]
-    @[YAML::Field(key: "applyConfiguration")]
-    property apply_configuration : ApplyConfiguration?
-    # jsonPatch defines a [JSON patch](https://jsonpatch.com/) operation to perform a mutation to the object. A CEL expression is used to create the JSON patch.
-    @[JSON::Field(key: "jsonPatch")]
-    @[YAML::Field(key: "jsonPatch")]
-    property json_patch : JSONPatch?
-    # patchType indicates the patch strategy used. Allowed values are "ApplyConfiguration" and "JSONPatch". Required.
-    @[JSON::Field(key: "patchType")]
-    @[YAML::Field(key: "patchType")]
-    property patch_type : String?
-  end
-
-  # NamedRuleWithOperations is a tuple of Operations and Resources with ResourceNames.
-  struct NamedRuleWithOperations
-    include Kubernetes::Serializable
-
-    # APIGroups is the API groups the resources belong to. '*' is all groups. If '*' is present, the length of the slice must be one. Required.
-    @[JSON::Field(key: "apiGroups")]
-    @[YAML::Field(key: "apiGroups")]
-    property api_groups : Array(String)?
-    # APIVersions is the API versions the resources belong to. '*' is all versions. If '*' is present, the length of the slice must be one. Required.
-    @[JSON::Field(key: "apiVersions")]
-    @[YAML::Field(key: "apiVersions")]
-    property api_versions : Array(String)?
-    # Operations is the operations the admission hook cares about - CREATE, UPDATE, DELETE, CONNECT or * for all of those operations and any future admission operations that are added. If '*' is present, the length of the slice must be one. Required.
-    property operations : Array(String)?
-    # ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
-    @[JSON::Field(key: "resourceNames")]
-    @[YAML::Field(key: "resourceNames")]
-    property resource_names : Array(String)?
-    # Resources is a list of resources this rule applies to.
-    # For example: 'pods' means pods. 'pods/log' means the log subresource of pods. '*' means all resources, but not subresources. 'pods/*' means all subresources of pods. '*/scale' means all scale subresources. '*/*' means all resources and their subresources.
-    # If wildcard is present, the validation rule will ensure resources do not overlap with each other.
-    # Depending on the enclosing object, subresources might not be allowed. Required.
-    property resources : Array(String)?
-    # scope specifies the scope of this rule. Valid values are "Cluster", "Namespaced", and "*" "Cluster" means that only cluster-scoped resources will match this rule. Namespace API objects are cluster-scoped. "Namespaced" means that only namespaced resources will match this rule. "*" means that there are no scope restrictions. Subresources match the scope of their parent resource. Default is "*".
-    property scope : String?
-  end
-
-  # ParamKind is a tuple of Group Kind and Version.
-  struct ParamKind
-    include Kubernetes::Serializable
-
-    # APIVersion is the API group version the resources belong to. In format of "group/version". Required.
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Kind is the API kind the resources belong to. Required.
-    property kind : String?
-  end
-
-  # ParamRef describes how to locate the params to be used as input to expressions of rules applied by a policy binding.
-  struct ParamRef
-    include Kubernetes::Serializable
-
-    # name is the name of the resource being referenced.
-    # One of `name` or `selector` must be set, but `name` and `selector` are mutually exclusive properties. If one is set, the other must be unset.
-    # A single parameter used for all admission requests can be configured by setting the `name` field, leaving `selector` blank, and setting namespace if `paramKind` is namespace-scoped.
-    property name : String?
-    # namespace is the namespace of the referenced resource. Allows limiting the search for params to a specific namespace. Applies to both `name` and `selector` fields.
-    # A per-namespace parameter may be used by specifying a namespace-scoped `paramKind` in the policy and leaving this field empty.
-    # - If `paramKind` is cluster-scoped, this field MUST be unset. Setting this field results in a configuration error.
-    # - If `paramKind` is namespace-scoped, the namespace of the object being evaluated for admission will be used when this field is left unset. Take care that if this is left empty the binding must not match any cluster-scoped resources, which will result in an error.
-    property namespace : String?
-    # `parameterNotFoundAction` controls the behavior of the binding when the resource exists, and name or selector is valid, but there are no parameters matched by the binding. If the value is set to `Allow`, then no matched parameters will be treated as successful validation by the binding. If set to `Deny`, then no matched parameters will be subject to the `failurePolicy` of the policy.
-    # Allowed values are `Allow` or `Deny`
-    # Required
-    @[JSON::Field(key: "parameterNotFoundAction")]
-    @[YAML::Field(key: "parameterNotFoundAction")]
-    property parameter_not_found_action : String?
-    # selector can be used to match multiple param objects based on their labels. Supply selector: {} to match all resources of the ParamKind.
-    # If multiple params are found, they are all evaluated with the policy expressions and the results are ANDed together.
-    # One of `name` or `selector` must be set, but `name` and `selector` are mutually exclusive properties. If one is set, the other must be unset.
-    property selector : LabelSelector?
-  end
-
-  # Variable is the definition of a variable that is used for composition. A variable is defined as a named expression.
-  struct Variable
-    include Kubernetes::Serializable
-
-    # Expression is the expression that will be evaluated as the value of the variable. The CEL expression has access to the same identifiers as the CEL expressions in Validation.
-    property expression : String?
-    # Name is the name of the variable. The name must be a valid CEL identifier and unique among all variables. The variable can be accessed in other expressions through `variables` For example, if name is "foo", the variable will be available as `variables.foo`
-    property name : String?
-  end
-
-  # ClusterTrustBundle is a cluster-scoped container for X.509 trust anchors (root certificates).
-  # ClusterTrustBundle objects are considered to be readable by any authenticated user in the cluster, because they can be mounted by pods using the `clusterTrustBundle` projection.  All service accounts have read access to ClusterTrustBundles by default.  Users who only have namespace-level access to a cluster can read ClusterTrustBundles by impersonating a serviceaccount that they have access to.
-  # It can be optionally associated with a particular assigner, in which case it contains one valid set of trust anchors for that signer. Signers may have multiple associated ClusterTrustBundles; each is an independent set of trust anchors for that signer. Admission control is used to enforce that only users with permissions on the signer can create or modify the corresponding bundle.
-  struct ClusterTrustBundle
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # metadata contains the object metadata.
-    property metadata : ObjectMeta?
-    # spec contains the signer (if any) and trust anchors.
-    property spec : ClusterTrustBundleSpec?
-  end
-
-  # ClusterTrustBundleList is a collection of ClusterTrustBundle objects
-  struct ClusterTrustBundleList
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # items is a collection of ClusterTrustBundle objects
-    property items : Array(ClusterTrustBundle)?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # metadata contains the list metadata.
-    property metadata : ListMeta?
-  end
-
-  # ClusterTrustBundleSpec contains the signer and trust anchors.
-  struct ClusterTrustBundleSpec
-    include Kubernetes::Serializable
-
-    # signerName indicates the associated signer, if any.
-    # In order to create or update a ClusterTrustBundle that sets signerName, you must have the following cluster-scoped permission: group=certificates.k8s.io resource=signers resourceName=<the signer name> verb=attest.
-    # If signerName is not empty, then the ClusterTrustBundle object must be named with the signer name as a prefix (translating slashes to colons). For example, for the signer name `example.com/foo`, valid ClusterTrustBundle object names include `example.com:foo:abc` and `example.com:foo:v1`.
-    # If signerName is empty, then the ClusterTrustBundle object's name must not have such a prefix.
-    # List/watch requests for ClusterTrustBundles can filter on this field using a `spec.signerName=NAME` field selector.
-    @[JSON::Field(key: "signerName")]
-    @[YAML::Field(key: "signerName")]
-    property signer_name : String?
-    # trustBundle contains the individual X.509 trust anchors for this bundle, as PEM bundle of PEM-wrapped, DER-formatted X.509 certificates.
-    # The data must consist only of PEM certificate blocks that parse as valid X.509 certificates.  Each certificate must include a basic constraints extension with the CA bit set.  The API server will reject objects that contain duplicate certificates, or that use PEM block headers.
-    # Users of ClusterTrustBundles, including Kubelet, are free to reorder and deduplicate certificate blocks in this file according to their own logic, as well as to drop PEM block headers and inter-block data.
-    @[JSON::Field(key: "trustBundle")]
-    @[YAML::Field(key: "trustBundle")]
-    property trust_bundle : String?
-  end
-
-  # LeaseCandidate defines a candidate for a Lease object. Candidates are created such that coordinated leader election will pick the best leader from the list of candidates.
-  struct LeaseCandidate
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ObjectMeta?
-    # spec contains the specification of the Lease. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
-    property spec : LeaseCandidateSpec?
-  end
-
-  # LeaseCandidateList is a list of Lease objects.
-  struct LeaseCandidateList
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # items is a list of schema objects.
-    property items : Array(LeaseCandidate)?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ListMeta?
-  end
-
-  # LeaseCandidateSpec is a specification of a Lease.
-  struct LeaseCandidateSpec
-    include Kubernetes::Serializable
-
-    # BinaryVersion is the binary version. It must be in a semver format without leading `v`. This field is required.
-    @[JSON::Field(key: "binaryVersion")]
-    @[YAML::Field(key: "binaryVersion")]
-    property binary_version : String?
-    # EmulationVersion is the emulation version. It must be in a semver format without leading `v`. EmulationVersion must be less than or equal to BinaryVersion. This field is required when strategy is "OldestEmulationVersion"
-    @[JSON::Field(key: "emulationVersion")]
-    @[YAML::Field(key: "emulationVersion")]
-    property emulation_version : String?
-    # LeaseName is the name of the lease for which this candidate is contending. The limits on this field are the same as on Lease.name. Multiple lease candidates may reference the same Lease.name. This field is immutable.
-    @[JSON::Field(key: "leaseName")]
-    @[YAML::Field(key: "leaseName")]
-    property lease_name : String?
-    # PingTime is the last time that the server has requested the LeaseCandidate to renew. It is only done during leader election to check if any LeaseCandidates have become ineligible. When PingTime is updated, the LeaseCandidate will respond by updating RenewTime.
-    @[JSON::Field(key: "pingTime")]
-    @[YAML::Field(key: "pingTime")]
-    property ping_time : Time?
-    # RenewTime is the time that the LeaseCandidate was last updated. Any time a Lease needs to do leader election, the PingTime field is updated to signal to the LeaseCandidate that they should update the RenewTime. Old LeaseCandidate objects are also garbage collected if it has been hours since the last renew. The PingTime field is updated regularly to prevent garbage collection for still active LeaseCandidates.
-    @[JSON::Field(key: "renewTime")]
-    @[YAML::Field(key: "renewTime")]
-    property renew_time : Time?
-    # Strategy is the strategy that coordinated leader election will use for picking the leader. If multiple candidates for the same Lease return different strategies, the strategy provided by the candidate with the latest BinaryVersion will be used. If there is still conflict, this is a user error and coordinated leader election will not operate the Lease until resolved.
-    property strategy : String?
-  end
-
-  # IPAddress represents a single IP of a single IP Family. The object is designed to be used by APIs that operate on IP addresses. The object is used by the Service core API for allocation of IP addresses. An IP address can be represented in different formats, to guarantee the uniqueness of the IP, the name of the object is the IP address in canonical format, four decimal digits separated by dots suppressing leading zeros for IPv4 and the representation defined by RFC 5952 for IPv6. Valid: 192.168.1.5 or 2001:db8::1 or 2001:db8:aaaa:bbbb:cccc:dddd:eeee:1 Invalid: 10.01.2.3 or 2001:db8:0:0:0::1
-  struct IPAddress
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ObjectMeta?
-    # spec is the desired state of the IPAddress. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
-    property spec : IPAddressSpec?
-  end
-
-  # IPAddressList contains a list of IPAddress.
-  struct IPAddressList
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # items is the list of IPAddresses.
-    property items : Array(IPAddress)?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ListMeta?
-  end
-
-  # IPAddressSpec describe the attributes in an IP Address.
-  struct IPAddressSpec
-    include Kubernetes::Serializable
-
-    # ParentRef references the resource that an IPAddress is attached to. An IPAddress must reference a parent object.
-    @[JSON::Field(key: "parentRef")]
-    @[YAML::Field(key: "parentRef")]
-    property parent_ref : ParentReference?
-  end
-
-  # ParentReference describes a reference to a parent object.
-  struct ParentReference
-    include Kubernetes::Serializable
-
-    # Group is the group of the object being referenced.
-    property group : String?
-    # Name is the name of the object being referenced.
-    property name : String?
-    # Namespace is the namespace of the object being referenced.
-    property namespace : String?
-    # Resource is the resource of the object being referenced.
-    property resource : String?
-  end
-
-  # ServiceCIDR defines a range of IP addresses using CIDR format (e.g. 192.168.0.0/24 or 2001:db2::/64). This range is used to allocate ClusterIPs to Service objects.
-  struct ServiceCIDR
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ObjectMeta?
-    # spec is the desired state of the ServiceCIDR. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
-    property spec : ServiceCIDRSpec?
-    # status represents the current state of the ServiceCIDR. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
-    property status : ServiceCIDRStatus?
-  end
-
-  # ServiceCIDRList contains a list of ServiceCIDR objects.
-  struct ServiceCIDRList
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # items is the list of ServiceCIDRs.
-    property items : Array(ServiceCIDR)?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ListMeta?
-  end
-
-  # ServiceCIDRSpec define the CIDRs the user wants to use for allocating ClusterIPs for Services.
-  struct ServiceCIDRSpec
-    include Kubernetes::Serializable
-
-    # CIDRs defines the IP blocks in CIDR notation (e.g. "192.168.0.0/24" or "2001:db8::/64") from which to assign service cluster IPs. Max of two CIDRs is allowed, one of each IP family. This field is immutable.
-    property cidrs : Array(String)?
-  end
-
-  # ServiceCIDRStatus describes the current state of the ServiceCIDR.
-  struct ServiceCIDRStatus
-    include Kubernetes::Serializable
-
-    # conditions holds an array of metav1.Condition that describe the state of the ServiceCIDR. Current service state
-    property conditions : Array(Condition)?
-  end
-
   # AllocatedDeviceStatus contains the status of an allocated device, if the driver chooses to report it. This may include driver-specific information.
   # The combination of Driver, Pool, Device, and ShareID must match the corresponding key in Status.Allocation.Devices.
   struct AllocatedDeviceStatus
@@ -609,11 +25,11 @@ module Kubernetes
     property conditions : Array(Condition)?
     # Data contains arbitrary driver-specific data.
     # The length of the raw data must be smaller or equal to 10 Ki.
-    property data : Hash(String, JSON::Any)?
+    property data : RawExtension?
     # Device references one device instance via its name in the driver's resource pool. It must be a DNS label.
     property device : String?
     # Driver specifies the name of the DRA driver whose kubelet plugin should be invoked to process the allocation once the claim is needed on a node.
-    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver.
+    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters.
     property driver : String?
     # NetworkData contains network-related information specific to the device.
     @[JSON::Field(key: "networkData")]
@@ -686,7 +102,7 @@ module Kubernetes
     property capacity : Hash(String, DeviceCapacity)?
     # ConsumesCounters defines a list of references to sharedCounters and the set of counters that the device will consume from those counter sets.
     # There can only be a single entry per counterSet.
-    # The total number of device counter consumption entries must be <= 32. In addition, the total number in the entire ResourceSlice must be <= 1024 (for example, 64 devices with 16 counters each).
+    # The maximum number of device counter consumptions per device is 2.
     @[JSON::Field(key: "consumesCounters")]
     @[YAML::Field(key: "consumesCounters")]
     property consumes_counters : Array(DeviceCounterConsumption)?
@@ -702,7 +118,7 @@ module Kubernetes
     @[YAML::Field(key: "nodeSelector")]
     property node_selector : NodeSelector?
     # If specified, these are the driver-defined taints.
-    # The maximum number of taints is 4.
+    # The maximum number of taints is 16. If taints are set for any device in a ResourceSlice, then the maximum number of allowed devices per ResourceSlice is 64 instead of 128.
     # This is an alpha field and requires enabling the DRADeviceTaints feature gate.
     property taints : Array(DeviceTaint)?
   end
@@ -741,7 +157,7 @@ module Kubernetes
     include Kubernetes::Serializable
 
     # Default specifies how much of this capacity is consumed by a request that does not contain an entry for it in DeviceRequest's Capacity.
-    property default : String?
+    property default : Quantity?
     # ValidRange defines an acceptable quantity value range in consuming requests.
     # If this field is set, Default must be defined and it must fall within the defined ValidRange.
     # If the requested amount does not fall within the defined range, the request violates the policy, and this device cannot be allocated.
@@ -756,7 +172,7 @@ module Kubernetes
     # If the requested amount exceeds all valid values, the request violates the policy, and this device cannot be allocated.
     @[JSON::Field(key: "validValues")]
     @[YAML::Field(key: "validValues")]
-    property valid_values : Array(String)?
+    property valid_values : Array(Quantity)?
   end
 
   # CapacityRequestPolicyRange defines a valid range for consumable capacity values.
@@ -771,13 +187,13 @@ module Kubernetes
 
     # Max defines the upper limit for capacity that can be requested.
     # Max must be less than or equal to the capacity value. Min and requestPolicy.default must be less than or equal to the maximum.
-    property max : String?
+    property max : Quantity?
     # Min specifies the minimum capacity allowed for a consumption request.
     # Min must be greater than or equal to zero, and less than or equal to the capacity value. requestPolicy.default must be more than or equal to the minimum.
-    property min : String?
+    property min : Quantity?
     # Step defines the step size between valid capacity amounts within the range.
     # Max (if set) and requestPolicy.default must be a multiple of Step. Min + Step must be less than or equal to the capacity value.
-    property step : String?
+    property step : Quantity?
   end
 
   # CapacityRequirements defines the capacity requirements for a specific device request.
@@ -791,7 +207,7 @@ module Kubernetes
     # (i.e., the whole device is claimed).
     # - If a requestPolicy is set, the default consumed capacity is determined according to that policy.
     # If the device allows multiple allocation, the aggregated amount across all requests must not exceed the capacity value. The consumed capacity, which may be adjusted based on the requestPolicy if defined, is recorded in the resource claim’s status.devices[*].consumedCapacity field.
-    property requests : Hash(String, String)?
+    property requests : Hash(String, Quantity)?
   end
 
   # Counter describes a quantity associated with a device.
@@ -799,10 +215,10 @@ module Kubernetes
     include Kubernetes::Serializable
 
     # Value defines how much of a certain device counter is available.
-    property value : String?
+    property value : Quantity?
   end
 
-  # CounterSet defines a named set of counters that are available to be used by devices defined in the ResourceSlice.
+  # CounterSet defines a named set of counters that are available to be used by devices defined in the ResourcePool.
   # The counters are not allocatable by themselves, but can be referenced by devices. When a device is allocated, the portion of counters it uses will no longer be available for use by other devices.
   struct CounterSet
     include Kubernetes::Serializable
@@ -874,7 +290,7 @@ module Kubernetes
     property request_policy : CapacityRequestPolicy?
     # Value defines how much of a certain capacity that device has.
     # This field reflects the fixed total capacity and does not change. The consumed amount is tracked separately by scheduler and does not affect this value.
-    property value : String?
+    property value : Quantity?
   end
 
   # DeviceClaim defines how to request devices with a ResourceClaim.
@@ -990,7 +406,7 @@ module Kubernetes
     @[YAML::Field(key: "counterSet")]
     property counter_set : String?
     # Counters defines the counters that will be consumed by the device.
-    # The maximum number counters in a device is 32. In addition, the maximum number of all counters in all devices is 1024 (for example, 64 devices with 16 counters each).
+    # The maximum number of counters is 32.
     property counters : Hash(String, Counter)?
   end
 
@@ -1076,11 +492,11 @@ module Kubernetes
     # This field is populated only for devices that allow multiple allocations. All capacity entries are included, even if the consumed amount is zero.
     @[JSON::Field(key: "consumedCapacity")]
     @[YAML::Field(key: "consumedCapacity")]
-    property consumed_capacity : Hash(String, String)?
+    property consumed_capacity : Hash(String, Quantity)?
     # Device references one device instance via its name in the driver's resource pool. It must be a DNS label.
     property device : String?
     # Driver specifies the name of the DRA driver whose kubelet plugin should be invoked to process the allocation once the claim is needed on a node.
-    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver.
+    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters.
     property driver : String?
     # This name together with the driver name and the device name field identify which device was allocated (`<driver name>/<pool name>/<device name>`).
     # Must not be longer than 253 characters and may contain one or more DNS sub-domains separated by slashes.
@@ -1152,7 +568,8 @@ module Kubernetes
   struct DeviceTaint
     include Kubernetes::Serializable
 
-    # The effect of the taint on claims that do not tolerate the taint and through such claims on the pods using them. Valid effects are NoSchedule and NoExecute. PreferNoSchedule as used for nodes is not valid here.
+    # The effect of the taint on claims that do not tolerate the taint and through such claims on the pods using them.
+    # Valid effects are None, NoSchedule and NoExecute. PreferNoSchedule as used for nodes is not valid here. More effects may get added in the future. Consumers must treat unknown effects like None.
     property effect : String?
     # The taint key to be applied to a device. Must be a label name.
     property key : String?
@@ -1207,11 +624,11 @@ module Kubernetes
 
     # Driver is used to determine which kubelet plugin needs to be passed these configuration parameters.
     # An admission policy provided by the driver developer could use this to decide whether it needs to validate them.
-    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver.
+    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters.
     property driver : String?
     # Parameters can contain arbitrary data. It is the responsibility of the driver developer to handle validation and versioning. Typically this includes self-identification and a version ("kind" + "apiVersion" for Kubernetes types), with conversion between different versions.
     # The length of the raw data must be smaller or equal to 10 Ki.
-    property parameters : Hash(String, JSON::Any)?
+    property parameters : RawExtension?
   end
 
   # ResourceClaim describes a request for access to resources in the cluster, for use by workloads. For example, if a workload needs an accelerator device with specific properties, this is how that request is expressed. The status stanza tracks whether this claim has been satisfied and what specific resources have been allocated.
@@ -1399,10 +816,11 @@ module Kubernetes
     @[YAML::Field(key: "allNodes")]
     property all_nodes : Bool?
     # Devices lists some or all of the devices in this pool.
-    # Must not have more than 128 entries.
+    # Must not have more than 128 entries. If any device uses taints or consumes counters the limit is 64.
+    # Only one of Devices and SharedCounters can be set in a ResourceSlice.
     property devices : Array(Device)?
     # Driver identifies the DRA driver providing the capacity information. A field selector can be used to list only ResourceSlice objects with a certain driver name.
-    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. This field is immutable.
+    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters. This field is immutable.
     property driver : String?
     # NodeName identifies the node which provides the resources in this pool. A field selector can be used to list only ResourceSlice objects belonging to a certain node.
     # This field can be used to limit access from nodes to ResourceSlices with the same node name. It also indicates to autoscalers that adding new nodes of the same type as some old node might also make new resources available.
@@ -1424,47 +842,11 @@ module Kubernetes
     # Pool describes the pool that this ResourceSlice belongs to.
     property pool : ResourcePool?
     # SharedCounters defines a list of counter sets, each of which has a name and a list of counters available.
-    # The names of the SharedCounters must be unique in the ResourceSlice.
-    # The maximum number of SharedCounters is 32.
+    # The names of the counter sets must be unique in the ResourcePool.
+    # Only one of Devices and SharedCounters can be set in a ResourceSlice.
+    # The maximum number of counter sets is 8.
     @[JSON::Field(key: "sharedCounters")]
     @[YAML::Field(key: "sharedCounters")]
     property shared_counters : Array(CounterSet)?
-  end
-
-  # VolumeAttributesClass represents a specification of mutable volume attributes defined by the CSI driver. The class can be specified during dynamic provisioning of PersistentVolumeClaims, and changed in the PersistentVolumeClaim spec after provisioning.
-  struct VolumeAttributesClass
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Name of the CSI driver This field is immutable.
-    @[JSON::Field(key: "driverName")]
-    @[YAML::Field(key: "driverName")]
-    property driver_name : String?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ObjectMeta?
-    # parameters hold volume attributes defined by the CSI driver. These values are opaque to the Kubernetes and are passed directly to the CSI driver. The underlying storage provider supports changing these attributes on an existing volume, however the parameters field itself is immutable. To invoke a volume update, a new VolumeAttributesClass should be created with new parameters, and the PersistentVolumeClaim should be updated to reference the new VolumeAttributesClass.
-    # This field is required and must contain at least one key/value pair. The keys cannot be empty, and the maximum number of parameters is 512, with a cumulative max size of 256K. If the CSI driver rejects invalid parameters, the target PersistentVolumeClaim will be set to an "Infeasible" state in the modifyVolumeStatus field.
-    property parameters : Hash(String, String)?
-  end
-
-  # VolumeAttributesClassList is a collection of VolumeAttributesClass objects.
-  struct VolumeAttributesClassList
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[JSON::Field(key: "apiVersion")]
-    @[YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # items is the list of VolumeAttributesClass objects.
-    property items : Array(VolumeAttributesClass)?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard list metadata More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ListMeta?
   end
 end

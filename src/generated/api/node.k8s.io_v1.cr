@@ -16,35 +16,35 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/node.k8s.io/v1/
-    def get_api_resources(**params, &)
+    def get_node_v1_api_resources(**params, &)
       path = "/apis/node.k8s.io/v1/"
       get(path) { |res| yield res }
     end
 
     # delete collection of RuntimeClass
     # DELETE /apis/node.k8s.io/v1/runtimeclasses
-    def delete_collection_runtime_class(**params, &)
+    def delete_node_v1_collection_runtime_class(**params, &)
       path = "/apis/node.k8s.io/v1/runtimeclasses"
       delete(path) { |res| yield res }
     end
 
     # list or watch objects of kind RuntimeClass
     # GET /apis/node.k8s.io/v1/runtimeclasses
-    def list_runtime_class(**params, &)
+    def list_node_v1_runtime_class(**params, &)
       path = "/apis/node.k8s.io/v1/runtimeclasses"
       get(path) { |res| yield res }
     end
 
     # create a RuntimeClass
     # POST /apis/node.k8s.io/v1/runtimeclasses
-    def create_runtime_class(**params, &)
+    def create_node_v1_runtime_class(**params, &)
       path = "/apis/node.k8s.io/v1/runtimeclasses"
       post(path, params) { |res| yield res }
     end
 
     # delete a RuntimeClass
     # DELETE /apis/node.k8s.io/v1/runtimeclasses/{name}
-    def delete_runtime_class(**params, &)
+    def delete_node_v1_runtime_class(**params, &)
       path = "/apis/node.k8s.io/v1/runtimeclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -52,7 +52,7 @@ module Kubernetes
 
     # read the specified RuntimeClass
     # GET /apis/node.k8s.io/v1/runtimeclasses/{name}
-    def read_runtime_class(**params, &)
+    def read_node_v1_runtime_class(**params, &)
       path = "/apis/node.k8s.io/v1/runtimeclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -60,7 +60,7 @@ module Kubernetes
 
     # partially update the specified RuntimeClass
     # PATCH /apis/node.k8s.io/v1/runtimeclasses/{name}
-    def patch_runtime_class(**params, &)
+    def patch_node_v1_runtime_class(**params, &)
       path = "/apis/node.k8s.io/v1/runtimeclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -68,10 +68,25 @@ module Kubernetes
 
     # replace the specified RuntimeClass
     # PUT /apis/node.k8s.io/v1/runtimeclasses/{name}
-    def replace_runtime_class(**params, &)
+    def replace_node_v1_runtime_class(**params, &)
       path = "/apis/node.k8s.io/v1/runtimeclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
+    end
+
+    # watch individual changes to a list of RuntimeClass. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/node.k8s.io/v1/watch/runtimeclasses
+    def watch_node_v1_runtime_class_list(**params, &)
+      path = "/apis/node.k8s.io/v1/watch/runtimeclasses"
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind RuntimeClass. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/node.k8s.io/v1/watch/runtimeclasses/{name}
+    def watch_node_v1_runtime_class(**params, &)
+      path = "/apis/node.k8s.io/v1/watch/runtimeclasses/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
     end
   end
 end

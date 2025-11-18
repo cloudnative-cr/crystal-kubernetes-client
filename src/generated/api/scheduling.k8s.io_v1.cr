@@ -16,35 +16,35 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/scheduling.k8s.io/v1/
-    def get_api_resources(**params, &)
+    def get_scheduling_v1_api_resources(**params, &)
       path = "/apis/scheduling.k8s.io/v1/"
       get(path) { |res| yield res }
     end
 
     # delete collection of PriorityClass
     # DELETE /apis/scheduling.k8s.io/v1/priorityclasses
-    def delete_collection_priority_class(**params, &)
+    def delete_scheduling_v1_collection_priority_class(**params, &)
       path = "/apis/scheduling.k8s.io/v1/priorityclasses"
       delete(path) { |res| yield res }
     end
 
     # list or watch objects of kind PriorityClass
     # GET /apis/scheduling.k8s.io/v1/priorityclasses
-    def list_priority_class(**params, &)
+    def list_scheduling_v1_priority_class(**params, &)
       path = "/apis/scheduling.k8s.io/v1/priorityclasses"
       get(path) { |res| yield res }
     end
 
     # create a PriorityClass
     # POST /apis/scheduling.k8s.io/v1/priorityclasses
-    def create_priority_class(**params, &)
+    def create_scheduling_v1_priority_class(**params, &)
       path = "/apis/scheduling.k8s.io/v1/priorityclasses"
       post(path, params) { |res| yield res }
     end
 
     # delete a PriorityClass
     # DELETE /apis/scheduling.k8s.io/v1/priorityclasses/{name}
-    def delete_priority_class(**params, &)
+    def delete_scheduling_v1_priority_class(**params, &)
       path = "/apis/scheduling.k8s.io/v1/priorityclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -52,7 +52,7 @@ module Kubernetes
 
     # read the specified PriorityClass
     # GET /apis/scheduling.k8s.io/v1/priorityclasses/{name}
-    def read_priority_class(**params, &)
+    def read_scheduling_v1_priority_class(**params, &)
       path = "/apis/scheduling.k8s.io/v1/priorityclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -60,7 +60,7 @@ module Kubernetes
 
     # partially update the specified PriorityClass
     # PATCH /apis/scheduling.k8s.io/v1/priorityclasses/{name}
-    def patch_priority_class(**params, &)
+    def patch_scheduling_v1_priority_class(**params, &)
       path = "/apis/scheduling.k8s.io/v1/priorityclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -68,10 +68,25 @@ module Kubernetes
 
     # replace the specified PriorityClass
     # PUT /apis/scheduling.k8s.io/v1/priorityclasses/{name}
-    def replace_priority_class(**params, &)
+    def replace_scheduling_v1_priority_class(**params, &)
       path = "/apis/scheduling.k8s.io/v1/priorityclasses/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
+    end
+
+    # watch individual changes to a list of PriorityClass. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/scheduling.k8s.io/v1/watch/priorityclasses
+    def watch_scheduling_v1_priority_class_list(**params, &)
+      path = "/apis/scheduling.k8s.io/v1/watch/priorityclasses"
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind PriorityClass. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/scheduling.k8s.io/v1/watch/priorityclasses/{name}
+    def watch_scheduling_v1_priority_class(**params, &)
+      path = "/apis/scheduling.k8s.io/v1/watch/priorityclasses/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
     end
   end
 end

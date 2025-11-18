@@ -14,9 +14,16 @@
 
 module Kubernetes
   class Client
+    # get service account issuer OpenID configuration, also known as the 'OIDC discovery doc'
+    # GET /.well-known/openid-configuration/
+    def get_service_account_issuer_open_id_configuration(**params, &)
+      path = "/.well-known/openid-configuration/"
+      get(path) { |res| yield res }
+    end
+
     # get available API versions
     # GET /api/
-    def get_api_versions(**params, &)
+    def get_core_api_versions(**params, &)
       path = "/api/"
       get(path) { |res| yield res }
     end
@@ -34,24 +41,17 @@ module Kubernetes
       get(path) { |res| yield res }
     end
 
+    # get service account issuer OpenID JSON Web Key Set (contains public token verification keys)
+    # GET /openid/v1/jwks/
+    def get_service_account_issuer_open_id_keyset(**params, &)
+      path = "/openid/v1/jwks/"
+      get(path) { |res| yield res }
+    end
+
     # get the version information for this server
     # GET /version/
-    def get_code(**params, &)
+    def get_code_version(**params, &)
       path = "/version/"
-      get(path) { |res| yield res }
-    end
-
-    # get service account issuer OpenID configuration, also known as the 'OIDC discovery doc'
-    # GET /.well-known/openid-configuration
-    def get_service_account_issuer_open_id_configuration(**params, &)
-      path = "/.well-known/openid-configuration"
-      get(path) { |res| yield res }
-    end
-
-    # get service account issuer OpenID JSON Web Key Set (contains public token verification keys)
-    # GET /openid/v1/jwks
-    def get_service_account_issuer_open_id_keyset(**params, &)
-      path = "/openid/v1/jwks"
       get(path) { |res| yield res }
     end
   end

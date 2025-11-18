@@ -44,7 +44,7 @@ module Kubernetes
     # eventTime is the time when this Event was first observed. It is required.
     @[JSON::Field(key: "eventTime")]
     @[YAML::Field(key: "eventTime")]
-    property event_time : Time?
+    property event_time : MicroTime?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
     # Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
@@ -96,6 +96,6 @@ module Kubernetes
     # lastObservedTime is the time when last Event from the series was seen before last heartbeat.
     @[JSON::Field(key: "lastObservedTime")]
     @[YAML::Field(key: "lastObservedTime")]
-    property last_observed_time : Time?
+    property last_observed_time : MicroTime?
   end
 end

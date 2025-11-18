@@ -25,11 +25,11 @@ module Kubernetes
     property conditions : Array(Condition)?
     # Data contains arbitrary driver-specific data.
     # The length of the raw data must be smaller or equal to 10 Ki.
-    property data : Hash(String, JSON::Any)?
+    property data : RawExtension?
     # Device references one device instance via its name in the driver's resource pool. It must be a DNS label.
     property device : String?
     # Driver specifies the name of the DRA driver whose kubelet plugin should be invoked to process the allocation once the claim is needed on a node.
-    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver.
+    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters.
     property driver : String?
     # NetworkData contains network-related information specific to the device.
     @[JSON::Field(key: "networkData")]
@@ -95,7 +95,7 @@ module Kubernetes
     include Kubernetes::Serializable
 
     # Default specifies how much of this capacity is consumed by a request that does not contain an entry for it in DeviceRequest's Capacity.
-    property default : String?
+    property default : Quantity?
     # ValidRange defines an acceptable quantity value range in consuming requests.
     # If this field is set, Default must be defined and it must fall within the defined ValidRange.
     # If the requested amount does not fall within the defined range, the request violates the policy, and this device cannot be allocated.
@@ -110,7 +110,7 @@ module Kubernetes
     # If the requested amount exceeds all valid values, the request violates the policy, and this device cannot be allocated.
     @[JSON::Field(key: "validValues")]
     @[YAML::Field(key: "validValues")]
-    property valid_values : Array(String)?
+    property valid_values : Array(Quantity)?
   end
 
   # CapacityRequestPolicyRange defines a valid range for consumable capacity values.
@@ -125,13 +125,13 @@ module Kubernetes
 
     # Max defines the upper limit for capacity that can be requested.
     # Max must be less than or equal to the capacity value. Min and requestPolicy.default must be less than or equal to the maximum.
-    property max : String?
+    property max : Quantity?
     # Min specifies the minimum capacity allowed for a consumption request.
     # Min must be greater than or equal to zero, and less than or equal to the capacity value. requestPolicy.default must be more than or equal to the minimum.
-    property min : String?
+    property min : Quantity?
     # Step defines the step size between valid capacity amounts within the range.
     # Max (if set) and requestPolicy.default must be a multiple of Step. Min + Step must be less than or equal to the capacity value.
-    property step : String?
+    property step : Quantity?
   end
 
   # CapacityRequirements defines the capacity requirements for a specific device request.
@@ -145,7 +145,7 @@ module Kubernetes
     # (i.e., the whole device is claimed).
     # - If a requestPolicy is set, the default consumed capacity is determined according to that policy.
     # If the device allows multiple allocation, the aggregated amount across all requests must not exceed the capacity value. The consumed capacity, which may be adjusted based on the requestPolicy if defined, is recorded in the resource claim’s status.devices[*].consumedCapacity field.
-    property requests : Hash(String, String)?
+    property requests : Hash(String, Quantity)?
   end
 
   # Counter describes a quantity associated with a device.
@@ -153,16 +153,16 @@ module Kubernetes
     include Kubernetes::Serializable
 
     # Value defines how much of a certain device counter is available.
-    property value : String?
+    property value : Quantity?
   end
 
-  # CounterSet defines a named set of counters that are available to be used by devices defined in the ResourceSlice.
+  # CounterSet defines a named set of counters that are available to be used by devices defined in the ResourcePool.
   # The counters are not allocatable by themselves, but can be referenced by devices. When a device is allocated, the portion of counters it uses will no longer be available for use by other devices.
   struct CounterSet
     include Kubernetes::Serializable
 
     # Counters defines the set of counters for this CounterSet The name of each counter must be unique in that set and must be a DNS label.
-    # The maximum number of counters in all sets is 32.
+    # The maximum number of counters is 32.
     property counters : Hash(String, Counter)?
     # Name defines the name of the counter set. It must be a DNS label.
     property name : String?
@@ -209,7 +209,7 @@ module Kubernetes
     property capacity : Hash(String, DeviceCapacity)?
     # ConsumesCounters defines a list of references to sharedCounters and the set of counters that the device will consume from those counter sets.
     # There can only be a single entry per counterSet.
-    # The total number of device counter consumption entries must be <= 32. In addition, the total number in the entire ResourceSlice must be <= 1024 (for example, 64 devices with 16 counters each).
+    # The maximum number of device counter consumptions per device is 2.
     @[JSON::Field(key: "consumesCounters")]
     @[YAML::Field(key: "consumesCounters")]
     property consumes_counters : Array(DeviceCounterConsumption)?
@@ -227,7 +227,7 @@ module Kubernetes
     @[YAML::Field(key: "nodeSelector")]
     property node_selector : NodeSelector?
     # If specified, these are the driver-defined taints.
-    # The maximum number of taints is 4.
+    # The maximum number of taints is 16. If taints are set for any device in a ResourceSlice, then the maximum number of allowed devices per ResourceSlice is 64 instead of 128.
     # This is an alpha field and requires enabling the DRADeviceTaints feature gate.
     property taints : Array(DeviceTaint)?
   end
@@ -282,7 +282,7 @@ module Kubernetes
     property request_policy : CapacityRequestPolicy?
     # Value defines how much of a certain capacity that device has.
     # This field reflects the fixed total capacity and does not change. The consumed amount is tracked separately by scheduler and does not affect this value.
-    property value : String?
+    property value : Quantity?
   end
 
   # DeviceClaim defines how to request devices with a ResourceClaim.
@@ -398,7 +398,7 @@ module Kubernetes
     @[YAML::Field(key: "counterSet")]
     property counter_set : String?
     # Counters defines the counters that will be consumed by the device.
-    # The maximum number counters in a device is 32. In addition, the maximum number of all counters in all devices is 1024 (for example, 64 devices with 16 counters each).
+    # The maximum number of counters is 32.
     property counters : Hash(String, Counter)?
   end
 
@@ -444,11 +444,11 @@ module Kubernetes
     # This field is populated only for devices that allow multiple allocations. All capacity entries are included, even if the consumed amount is zero.
     @[JSON::Field(key: "consumedCapacity")]
     @[YAML::Field(key: "consumedCapacity")]
-    property consumed_capacity : Hash(String, String)?
+    property consumed_capacity : Hash(String, Quantity)?
     # Device references one device instance via its name in the driver's resource pool. It must be a DNS label.
     property device : String?
     # Driver specifies the name of the DRA driver whose kubelet plugin should be invoked to process the allocation once the claim is needed on a node.
-    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver.
+    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters.
     property driver : String?
     # This name together with the driver name and the device name field identify which device was allocated (`<driver name>/<pool name>/<device name>`).
     # Must not be longer than 253 characters and may contain one or more DNS sub-domains separated by slashes.
@@ -520,7 +520,8 @@ module Kubernetes
   struct DeviceTaint
     include Kubernetes::Serializable
 
-    # The effect of the taint on claims that do not tolerate the taint and through such claims on the pods using them. Valid effects are NoSchedule and NoExecute. PreferNoSchedule as used for nodes is not valid here.
+    # The effect of the taint on claims that do not tolerate the taint and through such claims on the pods using them.
+    # Valid effects are None, NoSchedule and NoExecute. PreferNoSchedule as used for nodes is not valid here. More effects may get added in the future. Consumers must treat unknown effects like None.
     property effect : String?
     # The taint key to be applied to a device. Must be a label name.
     property key : String?
@@ -618,11 +619,11 @@ module Kubernetes
 
     # Driver is used to determine which kubelet plugin needs to be passed these configuration parameters.
     # An admission policy provided by the driver developer could use this to decide whether it needs to validate them.
-    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver.
+    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters.
     property driver : String?
     # Parameters can contain arbitrary data. It is the responsibility of the driver developer to handle validation and versioning. Typically this includes self-identification and a version ("kind" + "apiVersion" for Kubernetes types), with conversion between different versions.
     # The length of the raw data must be smaller or equal to 10 Ki.
-    property parameters : Hash(String, JSON::Any)?
+    property parameters : RawExtension?
   end
 
   # ResourceClaim describes a request for access to resources in the cluster, for use by workloads. For example, if a workload needs an accelerator device with specific properties, this is how that request is expressed. The status stanza tracks whether this claim has been satisfied and what specific resources have been allocated.
@@ -810,10 +811,11 @@ module Kubernetes
     @[YAML::Field(key: "allNodes")]
     property all_nodes : Bool?
     # Devices lists some or all of the devices in this pool.
-    # Must not have more than 128 entries.
+    # Must not have more than 128 entries. If any device uses taints or consumes counters the limit is 64.
+    # Only one of Devices and SharedCounters can be set in a ResourceSlice.
     property devices : Array(Device)?
     # Driver identifies the DRA driver providing the capacity information. A field selector can be used to list only ResourceSlice objects with a certain driver name.
-    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. This field is immutable.
+    # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters. This field is immutable.
     property driver : String?
     # NodeName identifies the node which provides the resources in this pool. A field selector can be used to list only ResourceSlice objects belonging to a certain node.
     # This field can be used to limit access from nodes to ResourceSlices with the same node name. It also indicates to autoscalers that adding new nodes of the same type as some old node might also make new resources available.
@@ -835,8 +837,9 @@ module Kubernetes
     # Pool describes the pool that this ResourceSlice belongs to.
     property pool : ResourcePool?
     # SharedCounters defines a list of counter sets, each of which has a name and a list of counters available.
-    # The names of the SharedCounters must be unique in the ResourceSlice.
-    # The maximum number of counters in all sets is 32.
+    # The names of the counter sets must be unique in the ResourcePool.
+    # Only one of Devices and SharedCounters can be set in a ResourceSlice.
+    # The maximum number of counter sets is 8.
     @[JSON::Field(key: "sharedCounters")]
     @[YAML::Field(key: "sharedCounters")]
     property shared_counters : Array(CounterSet)?

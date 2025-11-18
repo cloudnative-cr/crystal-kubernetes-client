@@ -16,35 +16,35 @@ module Kubernetes
   class Client
     # get available resources
     # GET /apis/certificates.k8s.io/v1alpha1/
-    def get_api_resources(**params, &)
+    def get_certificates_v1alpha1_api_resources(**params, &)
       path = "/apis/certificates.k8s.io/v1alpha1/"
       get(path) { |res| yield res }
     end
 
     # delete collection of ClusterTrustBundle
     # DELETE /apis/certificates.k8s.io/v1alpha1/clustertrustbundles
-    def delete_collection_cluster_trust_bundle(**params, &)
+    def delete_certificates_v1alpha1_collection_cluster_trust_bundle(**params, &)
       path = "/apis/certificates.k8s.io/v1alpha1/clustertrustbundles"
       delete(path) { |res| yield res }
     end
 
     # list or watch objects of kind ClusterTrustBundle
     # GET /apis/certificates.k8s.io/v1alpha1/clustertrustbundles
-    def list_cluster_trust_bundle(**params, &)
+    def list_certificates_v1alpha1_cluster_trust_bundle(**params, &)
       path = "/apis/certificates.k8s.io/v1alpha1/clustertrustbundles"
       get(path) { |res| yield res }
     end
 
     # create a ClusterTrustBundle
     # POST /apis/certificates.k8s.io/v1alpha1/clustertrustbundles
-    def create_cluster_trust_bundle(**params, &)
+    def create_certificates_v1alpha1_cluster_trust_bundle(**params, &)
       path = "/apis/certificates.k8s.io/v1alpha1/clustertrustbundles"
       post(path, params) { |res| yield res }
     end
 
     # delete a ClusterTrustBundle
     # DELETE /apis/certificates.k8s.io/v1alpha1/clustertrustbundles/{name}
-    def delete_cluster_trust_bundle(**params, &)
+    def delete_certificates_v1alpha1_cluster_trust_bundle(**params, &)
       path = "/apis/certificates.k8s.io/v1alpha1/clustertrustbundles/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       delete(path) { |res| yield res }
@@ -52,7 +52,7 @@ module Kubernetes
 
     # read the specified ClusterTrustBundle
     # GET /apis/certificates.k8s.io/v1alpha1/clustertrustbundles/{name}
-    def read_cluster_trust_bundle(**params, &)
+    def read_certificates_v1alpha1_cluster_trust_bundle(**params, &)
       path = "/apis/certificates.k8s.io/v1alpha1/clustertrustbundles/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
@@ -60,7 +60,7 @@ module Kubernetes
 
     # partially update the specified ClusterTrustBundle
     # PATCH /apis/certificates.k8s.io/v1alpha1/clustertrustbundles/{name}
-    def patch_cluster_trust_bundle(**params, &)
+    def patch_certificates_v1alpha1_cluster_trust_bundle(**params, &)
       path = "/apis/certificates.k8s.io/v1alpha1/clustertrustbundles/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       patch(path, params) { |res| yield res }
@@ -68,96 +68,24 @@ module Kubernetes
 
     # replace the specified ClusterTrustBundle
     # PUT /apis/certificates.k8s.io/v1alpha1/clustertrustbundles/{name}
-    def replace_cluster_trust_bundle(**params, &)
+    def replace_certificates_v1alpha1_cluster_trust_bundle(**params, &)
       path = "/apis/certificates.k8s.io/v1alpha1/clustertrustbundles/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       put(path, params) { |res| yield res }
     end
 
-    # delete collection of PodCertificateRequest
-    # DELETE /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests
-    def delete_collection_namespaced_pod_certificate_request(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      delete(path) { |res| yield res }
-    end
-
-    # list or watch objects of kind PodCertificateRequest
-    # GET /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests
-    def list_namespaced_pod_certificate_request(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+    # watch individual changes to a list of ClusterTrustBundle. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/certificates.k8s.io/v1alpha1/watch/clustertrustbundles
+    def watch_certificates_v1alpha1_cluster_trust_bundle_list(**params, &)
+      path = "/apis/certificates.k8s.io/v1alpha1/watch/clustertrustbundles"
       get(path) { |res| yield res }
     end
 
-    # create a PodCertificateRequest
-    # POST /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests
-    def create_namespaced_pod_certificate_request(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests"
+    # watch changes to an object of kind ClusterTrustBundle. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/certificates.k8s.io/v1alpha1/watch/clustertrustbundles/{name}
+    def watch_certificates_v1alpha1_cluster_trust_bundle(**params, &)
+      path = "/apis/certificates.k8s.io/v1alpha1/watch/clustertrustbundles/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      post(path, params) { |res| yield res }
-    end
-
-    # delete a PodCertificateRequest
-    # DELETE /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}
-    def delete_namespaced_pod_certificate_request(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      delete(path) { |res| yield res }
-    end
-
-    # read the specified PodCertificateRequest
-    # GET /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}
-    def read_namespaced_pod_certificate_request(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      get(path) { |res| yield res }
-    end
-
-    # partially update the specified PodCertificateRequest
-    # PATCH /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}
-    def patch_namespaced_pod_certificate_request(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      patch(path, params) { |res| yield res }
-    end
-
-    # replace the specified PodCertificateRequest
-    # PUT /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}
-    def replace_namespaced_pod_certificate_request(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      put(path, params) { |res| yield res }
-    end
-
-    # read status of the specified PodCertificateRequest
-    # GET /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}/status
-    def read_namespaced_pod_certificate_request_status(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}/status"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      get(path) { |res| yield res }
-    end
-
-    # partially update status of the specified PodCertificateRequest
-    # PATCH /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}/status
-    def patch_namespaced_pod_certificate_request_status(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}/status"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      patch(path, params) { |res| yield res }
-    end
-
-    # replace status of the specified PodCertificateRequest
-    # PUT /apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}/status
-    def replace_namespaced_pod_certificate_request_status(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/namespaces/{namespace}/podcertificaterequests/{name}/status"
-      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
-      put(path, params) { |res| yield res }
-    end
-
-    # list or watch objects of kind PodCertificateRequest
-    # GET /apis/certificates.k8s.io/v1alpha1/podcertificaterequests
-    def list_pod_certificate_request_for_all_namespaces(**params, &)
-      path = "/apis/certificates.k8s.io/v1alpha1/podcertificaterequests"
       get(path) { |res| yield res }
     end
   end

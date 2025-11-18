@@ -16,7 +16,7 @@ module Kubernetes
   class Client
     # get information of a group
     # GET /apis/autoscaling/
-    def get_api_group(**params, &)
+    def get_autoscaling_api_group(**params, &)
       path = "/apis/autoscaling/"
       get(path) { |res| yield res }
     end
