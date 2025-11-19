@@ -129,7 +129,7 @@ module Kubernetes::Resources
           "template" => {
             "metadata" => {
               "annotations" => {
-                "kubectl.kubernetes.io/restartedAt" => Time.utc.to_rfc3339,
+                "kubectl.kubernetes.io/restartedAt" => ::Time.utc.to_rfc3339,
               },
             },
           },
@@ -152,7 +152,7 @@ module Kubernetes::Resources
     # puts "Deployment is ready!"
     # ```
     def wait_until_ready(namespace : String, name : String, timeout = 5.minutes) : Deployment
-      deadline = Time.utc + timeout
+      deadline = ::Time.utc + timeout
 
       loop do
         deployment = read_namespaced(namespace, name)
@@ -169,7 +169,7 @@ module Kubernetes::Resources
           end
         end
 
-        raise Error.new("Timeout waiting for deployment #{name}") if Time.utc > deadline
+        raise Error.new("Timeout waiting for deployment #{name}") if ::Time.utc > deadline
 
         sleep 2.seconds
       end

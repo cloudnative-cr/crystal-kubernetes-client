@@ -169,7 +169,7 @@ module Kubernetes
 
         # Parse expiration
         expires_at = if exp_str = credential.status.expiration_timestamp
-                       Time.parse_rfc3339(exp_str)
+                       ::Time.parse_rfc3339(exp_str)
                      end
 
         # Extract token from credential

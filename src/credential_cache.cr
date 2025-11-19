@@ -27,14 +27,14 @@ module Kubernetes
       include ::JSON::Serializable
 
       property auth : Auth
-      property expires_at : Time?
+      property expires_at : ::Time?
 
-      def initialize(@auth : Auth, @expires_at : Time? = nil)
+      def initialize(@auth : Auth, @expires_at : ::Time? = nil)
       end
 
       def expired? : Bool
         if exp = @expires_at
-          Time.utc >= exp
+          ::Time.utc >= exp
         else
           false # No expiration = never expires
         end
@@ -69,7 +69,7 @@ module Kubernetes
     end
 
     # Store credential in cache
-    def set(key : String, auth : Auth, expires_at : Time? = nil)
+    def set(key : String, auth : Auth, expires_at : ::Time? = nil)
       cache_file = cache_path(key)
       cached = CachedCredential.new(auth: auth, expires_at: expires_at)
 

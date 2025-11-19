@@ -159,7 +159,7 @@ module Kubernetes::Resources
     # puts "Pod is ready!"
     # ```
     def wait_until_ready(namespace : String, name : String, timeout = 5.minutes) : Pod
-      deadline = Time.utc + timeout
+      deadline = ::Time.utc + timeout
 
       loop do
         pod = read_namespaced(namespace, name)
@@ -173,7 +173,7 @@ module Kubernetes::Resources
           end
         end
 
-        raise Error.new("Timeout waiting for pod #{name} to be ready") if Time.utc > deadline
+        raise Error.new("Timeout waiting for pod #{name} to be ready") if ::Time.utc > deadline
 
         sleep 1.second
       end
@@ -186,7 +186,7 @@ module Kubernetes::Resources
     # pod = k8s.v1.pods.wait_until_running("default", "nginx")
     # ```
     def wait_until_running(namespace : String, name : String, timeout = 5.minutes) : Pod
-      deadline = Time.utc + timeout
+      deadline = ::Time.utc + timeout
 
       loop do
         pod = read_namespaced(namespace, name)
@@ -195,7 +195,7 @@ module Kubernetes::Resources
           return pod
         end
 
-        raise Error.new("Timeout waiting for pod #{name} to be running") if Time.utc > deadline
+        raise Error.new("Timeout waiting for pod #{name} to be running") if ::Time.utc > deadline
 
         sleep 1.second
       end

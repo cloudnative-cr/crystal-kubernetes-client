@@ -2,7 +2,7 @@
 
 Type-safe Kubernetes client with full API coverage generated from the OpenAPI spec.
 
-**Documentation**: https://cloudnative-cr.github.io/kubernetes-client/
+**Documentation**: https://crystal-kubernetes-client.cloudnative.cr/
 
 ## Features
 

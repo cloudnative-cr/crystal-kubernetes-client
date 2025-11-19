@@ -61,7 +61,7 @@ module Kubernetes
   struct Metadata
     include Serializable
 
-    DEFAULT_TIME = Time.new(seconds: 0, nanoseconds: 0, location: Time::Location::UTC)
+    DEFAULT_TIME = ::Time.new(seconds: 0, nanoseconds: 0, location: Time::Location::UTC)
 
     field name : String = ""
     field namespace : String { "" }
