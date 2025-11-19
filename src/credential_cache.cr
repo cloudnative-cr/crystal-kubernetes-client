@@ -34,7 +34,7 @@ module Kubernetes
 
       def expired? : Bool
         if exp = @expires_at
-          ::Time.utc >= exp
+          ::Time.utc.to_unix >= exp.to_unix
         else
           false # No expiration = never expires
         end
