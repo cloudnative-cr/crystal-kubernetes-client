@@ -96,7 +96,6 @@ module Generator
     private def generate_model(io, name, definition)
       description = definition["description"]?.try(&.as_s) || ""
       properties = definition["properties"]?.try(&.as_h) || {} of String => JSON::Any
-      type = definition["type"]?.try(&.as_s) || "object"
 
       # Extract simple type name (last part after dots)
       simple_name = name.split(".").last
@@ -122,7 +121,7 @@ module Generator
       io.puts "    include Kubernetes::Serializable"
 
       # Only add blank line and properties if there are properties
-      if properties.any?
+      if !properties.empty?
         io.puts
         properties.each do |prop_name, prop_def|
           generate_property(io, prop_name, prop_def.as_h)
