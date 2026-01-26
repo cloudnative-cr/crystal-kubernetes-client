@@ -1580,6 +1580,16 @@ module Kubernetes
     property reference : String?
   end
 
+  # ImageVolumeStatus represents the image-based volume status.
+  struct ImageVolumeStatus
+    include Kubernetes::Serializable
+
+    # ImageRef is the digest of the image used for this volume. It should have a value that's similar to the pod's status.containerStatuses[i].imageID. The ImageRef length should not exceed 256 characters.
+    @[::JSON::Field(key: "imageRef")]
+    @[::YAML::Field(key: "imageRef")]
+    property image_ref : String?
+  end
+
   # Maps a string key to a path within a volume.
   struct KeyToPath
     include Kubernetes::Serializable
@@ -2503,7 +2513,7 @@ module Kubernetes
     @[::JSON::Field(key: "photonPersistentDisk")]
     @[::YAML::Field(key: "photonPersistentDisk")]
     property photon_persistent_disk : PhotonPersistentDiskVolumeSource?
-    # portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate is on.
+    # portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver.
     @[::JSON::Field(key: "portworxVolume")]
     @[::YAML::Field(key: "portworxVolume")]
     property portworx_volume : PortworxVolumeSource?
@@ -4371,7 +4381,7 @@ module Kubernetes
     @[::JSON::Field(key: "photonPersistentDisk")]
     @[::YAML::Field(key: "photonPersistentDisk")]
     property photon_persistent_disk : PhotonPersistentDiskVolumeSource?
-    # portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate is on.
+    # portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver.
     @[::JSON::Field(key: "portworxVolume")]
     @[::YAML::Field(key: "portworxVolume")]
     property portworx_volume : PortworxVolumeSource?
@@ -4461,6 +4471,10 @@ module Kubernetes
     @[::JSON::Field(key: "recursiveReadOnly")]
     @[::YAML::Field(key: "recursiveReadOnly")]
     property recursive_read_only : String?
+    # volumeStatus represents volume-type-specific status about the mounted volume.
+    @[::JSON::Field(key: "volumeStatus")]
+    @[::YAML::Field(key: "volumeStatus")]
+    property volume_status : VolumeStatus?
   end
 
   # VolumeNodeAffinity defines constraints that limit what nodes this volume can be accessed from.
@@ -4516,6 +4530,14 @@ module Kubernetes
     property limits : Hash(String, Quantity)?
     # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
     property requests : Hash(String, Quantity)?
+  end
+
+  # VolumeStatus represents the status of a mounted volume. At most one of its members must be specified.
+  struct VolumeStatus
+    include Kubernetes::Serializable
+
+    # image represents an OCI object (a container image or artifact) pulled and mounted on the kubelet's host machine.
+    property image : ImageVolumeStatus?
   end
 
   # Represents a vSphere volume resource.
