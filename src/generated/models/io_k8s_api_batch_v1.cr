@@ -259,7 +259,6 @@ module Kubernetes
     # The number of pods which reached phase Succeeded. The value increases monotonically for a given spec. However, it may decrease in reaction to scale down of elastic indexed jobs.
     property succeeded : Int32?
     # The number of pods which are terminating (in phase Pending or Running and have a deletionTimestamp).
-    # This field is beta-level. The job controller populates the field when the feature gate JobPodReplacementPolicy is enabled (enabled by default).
     property terminating : Int32?
     # uncountedTerminatedPods holds the UIDs of Pods that have terminated but the job controller hasn't yet accounted for in the status counters.
     # The job controller creates pods with a finalizer. When a pod terminates (succeeded or failed), the controller does three steps to account for it in the job status:

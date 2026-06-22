@@ -421,7 +421,7 @@ module Kubernetes
     @[::JSON::Field(key: "apiVersion")]
     @[::YAML::Field(key: "apiVersion")]
     property api_version : String?
-    # BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
+    # BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet. Note: BinaryData keys are not currently propagated to container env vars via ConfigMapKeyRef or ConfigMapRef env sources; only Data keys are used.
     @[::JSON::Field(key: "binaryData")]
     @[::YAML::Field(key: "binaryData")]
     property binary_data : Hash(String, String)?
@@ -436,7 +436,7 @@ module Kubernetes
   end
 
   # ConfigMapEnvSource selects a ConfigMap to populate the environment variables with.
-  # The contents of the target ConfigMap's Data field will represent the key-value pairs as environment variables.
+  # The contents of the target ConfigMap's Data field will represent the key-value pairs as environment variables. Keys in the BinaryData field are not currently propagated to container env vars.
   struct ConfigMapEnvSource
     include Kubernetes::Serializable
 
@@ -450,7 +450,7 @@ module Kubernetes
   struct ConfigMapKeySelector
     include Kubernetes::Serializable
 
-    # The key to select.
+    # The key to select from the ConfigMap's Data field. Keys in the BinaryData field are not currently propagated to container env vars.
     property key : String?
     # Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
     property name : String?
@@ -1580,6 +1580,16 @@ module Kubernetes
     property reference : String?
   end
 
+  # ImageVolumeStatus represents the image-based volume status.
+  struct ImageVolumeStatus
+    include Kubernetes::Serializable
+
+    # ImageRef is the digest of the image used for this volume. It should have a value that's similar to the pod's status.containerStatuses[i].imageID. The ImageRef length should not exceed 256 characters.
+    @[::JSON::Field(key: "imageRef")]
+    @[::YAML::Field(key: "imageRef")]
+    property image_ref : String?
+  end
+
   # Maps a string key to a path within a volume.
   struct KeyToPath
     include Kubernetes::Serializable
@@ -1893,6 +1903,20 @@ module Kubernetes
     @[::JSON::Field(key: "requiredDuringSchedulingIgnoredDuringExecution")]
     @[::YAML::Field(key: "requiredDuringSchedulingIgnoredDuringExecution")]
     property required_during_scheduling_ignored_during_execution : NodeSelector?
+  end
+
+  # NodeAllocatableResourceClaimStatus describes the status of node allocatable resources allocated via DRA.
+  struct NodeAllocatableResourceClaimStatus
+    include Kubernetes::Serializable
+
+    # Containers lists the names of all containers in this pod that reference the claim.
+    property containers : Array(String)?
+    # ResourceClaimName is the resource claim referenced by the pod that resulted in this node allocatable resource allocation.
+    @[::JSON::Field(key: "resourceClaimName")]
+    @[::YAML::Field(key: "resourceClaimName")]
+    property resource_claim_name : String?
+    # Resources is a map of the node-allocatable resource name to the aggregate quantity allocated to the claim.
+    property resources : Hash(String, Quantity)?
   end
 
   # NodeCondition contains condition information for a node.
@@ -2291,7 +2315,7 @@ module Kubernetes
     @[::JSON::Field(key: "accessModes")]
     @[::YAML::Field(key: "accessModes")]
     property access_modes : Array(String)?
-    # dataSource field can be used to specify either: * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot) * An existing PVC (PersistentVolumeClaim) If the provisioner or an external controller can support the specified data source, it will create a new volume based on the contents of the specified data source. When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified. If the namespace is specified, then dataSourceRef will not be copied to dataSource.
+    # dataSource field can be used to specify either: * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot) * An existing PVC (PersistentVolumeClaim) If the provisioner or an external controller can support the specified data source, it will create a new volume based on the contents of the specified data source. dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified. If the namespace is specified, then dataSourceRef will not be copied to dataSource.
     @[::JSON::Field(key: "dataSource")]
     @[::YAML::Field(key: "dataSource")]
     property data_source : TypedLocalObjectReference?
@@ -2302,7 +2326,7 @@ module Kubernetes
     # specified.
     # * While dataSource only allows local objects, dataSourceRef allows objects
     # in any namespaces.
-    # (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled. (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
+    # (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
     @[::JSON::Field(key: "dataSourceRef")]
     @[::YAML::Field(key: "dataSourceRef")]
     property data_source_ref : TypedObjectReference?
@@ -2503,7 +2527,7 @@ module Kubernetes
     @[::JSON::Field(key: "photonPersistentDisk")]
     @[::YAML::Field(key: "photonPersistentDisk")]
     property photon_persistent_disk : PhotonPersistentDiskVolumeSource?
-    # portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate is on.
+    # portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver.
     @[::JSON::Field(key: "portworxVolume")]
     @[::YAML::Field(key: "portworxVolume")]
     property portworx_volume : PortworxVolumeSource?
@@ -2699,7 +2723,7 @@ module Kubernetes
     property last_transition_time : Time?
     # Human-readable message indicating details about last transition.
     property message : String?
-    # If set, this represents the .metadata.generation that the pod condition was set based upon. The PodObservedGenerationTracking feature gate must be enabled to use this field.
+    # If set, this represents the .metadata.generation that the pod condition was set based upon.
     @[::JSON::Field(key: "observedGeneration")]
     @[::YAML::Field(key: "observedGeneration")]
     property observed_generation : Int64?
@@ -2791,6 +2815,7 @@ module Kubernetes
 
   # PodResourceClaim references exactly one ResourceClaim, either directly or by naming a ResourceClaimTemplate which is then turned into a ResourceClaim for the pod.
   # It adds a name to it that uniquely identifies the ResourceClaim inside the Pod. Containers that need access to the ResourceClaim reference it with this name.
+  # When the DRAWorkloadResourceClaims feature gate is enabled and this Pod belongs to a PodGroup, a PodResourceClaim is matched to a PodGroupResourceClaim if all of their fields are equal (Name, ResourceClaimName, and ResourceClaimTemplateName). A matched claim references a single ResourceClaim shared across all Pods in the PodGroup, reserved for the PodGroup in ResourceClaimStatus.ReservedFor rather than for individual Pods.
   struct PodResourceClaim
     include Kubernetes::Serializable
 
@@ -2803,6 +2828,7 @@ module Kubernetes
     property resource_claim_name : String?
     # ResourceClaimTemplateName is the name of a ResourceClaimTemplate object in the same namespace as this pod.
     # The template will be used to create a new ResourceClaim, which will be bound to this pod. When this pod is deleted, the ResourceClaim will also be deleted. The pod name and resource name, along with a generated component, will be used to form a unique name for the ResourceClaim, which will be recorded in pod.status.resourceClaimStatuses.
+    # When the DRAWorkloadResourceClaims feature gate is enabled and the pod belongs to a PodGroup that defines a PodGroupResourceClaim with the same Name and ResourceClaimTemplateName, this PodResourceClaim resolves to the ResourceClaim generated for the PodGroup. All pods in the group that define an equivalent PodResourceClaim matching the PodGroupResourceClaim's Name and ResourceClaimTemplateName share the same generated ResourceClaim. ResourceClaims generated for a PodGroup are owned by the PodGroup and their lifecycles are tied to the PodGroup instead of any individual pod.
     # This field is immutable and no changes will be made to the corresponding ResourceClaim by the control plane after creating the ResourceClaim.
     # Exactly one of ResourceClaimName and ResourceClaimTemplateName must be set.
     @[::JSON::Field(key: "resourceClaimTemplateName")]
@@ -2816,7 +2842,9 @@ module Kubernetes
 
     # Name uniquely identifies this resource claim inside the pod. This must match the name of an entry in pod.spec.resourceClaims, which implies that the string must be a DNS_LABEL.
     property name : String?
-    # ResourceClaimName is the name of the ResourceClaim that was generated for the Pod in the namespace of the Pod. If this is unset, then generating a ResourceClaim was not necessary. The pod.spec.resourceClaims entry can be ignored in this case.
+    # ResourceClaimName is the name of the ResourceClaim that was generated for the Pod in the namespace of the Pod.
+    # When the DRAWorkloadResourceClaims feature is enabled and the corresponding PodResourceClaim matches a PodGroupResourceClaim made by the Pod's PodGroup, then this is the name of the ResourceClaim generated and reserved for the PodGroup.
+    # If this is unset, then generating a ResourceClaim was not necessary. The pod.spec.resourceClaims entry can be ignored in this case.
     @[::JSON::Field(key: "resourceClaimName")]
     @[::YAML::Field(key: "resourceClaimName")]
     property resource_claim_name : String?
@@ -2828,6 +2856,16 @@ module Kubernetes
 
     # Name of the scheduling gate. Each scheduling gate must have a unique name field.
     property name : String?
+  end
+
+  # PodSchedulingGroup identifies the runtime scheduling group instance that a Pod belongs to. The scheduler uses this information to apply workload-aware scheduling semantics. Exactly one field must be specified.
+  struct PodSchedulingGroup
+    include Kubernetes::Serializable
+
+    # PodGroupName specifies the name of the standalone PodGroup object that represents the runtime instance of this group. Must be a DNS subdomain.
+    @[::JSON::Field(key: "podGroupName")]
+    @[::YAML::Field(key: "podGroupName")]
+    property pod_group_name : String?
   end
 
   # PodSecurityContext holds pod-level security attributes and common container settings. Some fields are also present in container.securityContext.  Field values of container.securityContext take precedence over field values of PodSecurityContext.
@@ -2941,7 +2979,7 @@ module Kubernetes
     @[::JSON::Field(key: "hostPID")]
     @[::YAML::Field(key: "hostPID")]
     property host_pid : Bool?
-    # Use the host's user namespace. Optional: Default to true. If set to true or not present, the pod will be run in the host user namespace, useful for when the pod needs a feature only available to the host user namespace, such as loading a kernel module with CAP_SYS_MODULE. When set to false, a new userns is created for the pod. Setting false is useful for mitigating container breakout vulnerabilities even allowing users to run their containers as root without actually having root privileges on the host. This field is alpha-level and is only honored by servers that enable the UserNamespacesSupport feature.
+    # Use the host's user namespace. Optional: Default to true. If set to true or not present, the pod will be run in the host user namespace, useful for when the pod needs a feature only available to the host user namespace, such as loading a kernel module with CAP_SYS_MODULE. When set to false, a new userns is created for the pod. Setting false is useful for mitigating container breakout vulnerabilities even allowing users to run their containers as root without actually having root privileges on the host.
     @[::JSON::Field(key: "hostUsers")]
     @[::YAML::Field(key: "hostUsers")]
     property host_users : Bool?
@@ -2974,7 +3012,7 @@ module Kubernetes
     property os : PodOS?
     # Overhead represents the resource overhead associated with running a pod for a given RuntimeClass. This field will be autopopulated at admission time by the RuntimeClass admission controller. If the RuntimeClass admission controller is enabled, overhead must not be set in Pod create requests. The RuntimeClass admission controller will reject Pod create requests which have the overhead already set. If RuntimeClass is configured and selected in the PodSpec, Overhead will be set to the value defined in the corresponding RuntimeClass, otherwise it will remain unset and treated as zero. More info: https://git.k8s.io/enhancements/keps/sig-node/688-pod-overhead/README.md
     property overhead : Hash(String, Quantity)?
-    # PreemptionPolicy is the Policy for preempting pods with lower priority. One of Never, PreemptLowerPriority. Defaults to PreemptLowerPriority if unset.
+    # PreemptionPolicy is the Policy for preempting pods with lower priority. One of Never, PreemptLowerPriority. When Priority Admission Controller is enabled, it prevents users from setting this field. The admission controller populates this field from PriorityClassName. Defaults to PreemptLowerPriority if unset.
     @[::JSON::Field(key: "preemptionPolicy")]
     @[::YAML::Field(key: "preemptionPolicy")]
     property preemption_policy : String?
@@ -3015,6 +3053,10 @@ module Kubernetes
     @[::JSON::Field(key: "schedulingGates")]
     @[::YAML::Field(key: "schedulingGates")]
     property scheduling_gates : Array(PodSchedulingGate)?
+    # SchedulingGroup provides a reference to the immediate scheduling runtime grouping object that this Pod belongs to. This field is used by the scheduler to identify the group and apply the correct group scheduling policies. The association with a group also impacts other lifecycle aspects of a Pod that are relevant in a wider context of scheduling like preemption, resource attachment, etc. If not specified, the Pod is treated as a single unit in all of these aspects. The group object referenced by this field may not exist at the time the Pod is created. This field is immutable, but a group object with the same name may be recreated with different policies. Doing this during pod scheduling may result in the placement not conforming to the expected policies.
+    @[::JSON::Field(key: "schedulingGroup")]
+    @[::YAML::Field(key: "schedulingGroup")]
+    property scheduling_group : PodSchedulingGroup?
     # SecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty.  See type description for default values of each field.
     @[::JSON::Field(key: "securityContext")]
     @[::YAML::Field(key: "securityContext")]
@@ -3049,10 +3091,6 @@ module Kubernetes
     property topology_spread_constraints : Array(TopologySpreadConstraint)?
     # List of volumes that can be mounted by containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes
     property volumes : Array(Volume)?
-    # WorkloadRef provides a reference to the Workload object that this Pod belongs to. This field is used by the scheduler to identify the PodGroup and apply the correct group scheduling policies. The Workload object referenced by this field may not exist at the time the Pod is created. This field is immutable, but a Workload object with the same name may be recreated with different policies. Doing this during pod scheduling may result in the placement not conforming to the expected policies.
-    @[::JSON::Field(key: "workloadRef")]
-    @[::YAML::Field(key: "workloadRef")]
-    property workload_ref : WorkloadReference?
   end
 
   # PodStatus represents information about the status of a pod. Status may trail the actual state of a system, especially if the node that hosts the pod cannot contact the control plane.
@@ -3091,6 +3129,10 @@ module Kubernetes
     property init_container_statuses : Array(ContainerStatus)?
     # A human readable message indicating details about why the pod is in this condition.
     property message : String?
+    # NodeAllocatableResourceClaimStatuses contains the status of node-allocatable resources that were allocated for this pod through DRA claims. This includes resources currently reported in v1.Node `status.allocatable` that are not extended resources (see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#extended-resources). Examples include "cpu", "memory", "ephemeral-storage", and hugepages.
+    @[::JSON::Field(key: "nodeAllocatableResourceClaimStatuses")]
+    @[::YAML::Field(key: "nodeAllocatableResourceClaimStatuses")]
+    property node_allocatable_resource_claim_statuses : Array(NodeAllocatableResourceClaimStatus)?
     # nominatedNodeName is set only when this pod preempts other pods on the node, but it cannot be scheduled right away as preemption victims receive their graceful termination periods. This field does not guarantee that the pod will be scheduled on this node. Scheduler may decide to place the pod elsewhere if other nodes become available sooner. Scheduler may also decide to give the resources on this node to a higher priority pod that is created after preemption. As a result, this field may be different than PodSpec.nodeName when the pod is scheduled.
     @[::JSON::Field(key: "nominatedNodeName")]
     @[::YAML::Field(key: "nominatedNodeName")]
@@ -3477,6 +3519,8 @@ module Kubernetes
     # For example, Device Plugin got unregistered and hasn't been re-registered since.
     # In future we may want to introduce the PermanentlyUnhealthy Status.
     property health : String?
+    # Message provides human-readable context for Health (e.g. "ECC error count exceeded threshold"). This field is populated by the kubelet when ResourceHealthStatusMessage is enabled if the DRA plugin returns a message, and is null otherwise.
+    property message : String?
     # ResourceID is the unique identifier of the resource. See the ResourceID type for more information.
     @[::JSON::Field(key: "resourceID")]
     @[::YAML::Field(key: "resourceID")]
@@ -3821,7 +3865,7 @@ module Kubernetes
     property capabilities : Capabilities?
     # Run container in privileged mode. Processes in privileged containers are essentially equivalent to root on the host. Defaults to false. Note that this field cannot be set when spec.os.name is windows.
     property privileged : Bool?
-    # procMount denotes the type of proc mount to use for the containers. The default value is Default which uses the container runtime defaults for readonly paths and masked paths. This requires the ProcMountType feature flag to be enabled. Note that this field cannot be set when spec.os.name is windows.
+    # procMount denotes the type of proc mount to use for the containers. The default value is Default which uses the container runtime defaults for readonly paths and masked paths. Note that this field cannot be set when spec.os.name is windows.
     @[::JSON::Field(key: "procMount")]
     @[::YAML::Field(key: "procMount")]
     property proc_mount : String?
@@ -4355,7 +4399,7 @@ module Kubernetes
     property host_path : HostPathVolumeSource?
     # image represents an OCI object (a container image or artifact) pulled and mounted on the kubelet's host machine. The volume is resolved at pod startup depending on which PullPolicy value is provided:
     # - Always: the kubelet always attempts to pull the reference. Container creation will fail If the pull fails. - Never: the kubelet never pulls the reference and only uses a local image or artifact. Container creation will fail if the reference isn't present. - IfNotPresent: the kubelet pulls if the reference isn't already present on disk. Container creation will fail if the reference isn't present and the pull fails.
-    # The volume gets re-resolved if the pod gets deleted and recreated, which means that new remote content will become available on pod recreation. A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message. The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field. The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images. The volume will be mounted read-only (ro) and non-executable files (noexec). Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33. The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
+    # The volume gets re-resolved if the pod gets deleted and recreated, which means that new remote content will become available on pod recreation. A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message. The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field. The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images. The volume will be mounted read-only (ro). Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33. The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
     property image : ImageVolumeSource?
     # iscsi represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes/#iscsi
     property iscsi : ISCSIVolumeSource?
@@ -4371,7 +4415,7 @@ module Kubernetes
     @[::JSON::Field(key: "photonPersistentDisk")]
     @[::YAML::Field(key: "photonPersistentDisk")]
     property photon_persistent_disk : PhotonPersistentDiskVolumeSource?
-    # portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate is on.
+    # portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver.
     @[::JSON::Field(key: "portworxVolume")]
     @[::YAML::Field(key: "portworxVolume")]
     property portworx_volume : PortworxVolumeSource?
@@ -4411,7 +4455,7 @@ module Kubernetes
   struct VolumeMount
     include Kubernetes::Serializable
 
-    # Path within the container at which the volume should be mounted.  Must not contain ':'.
+    # Path within the container at which the volume should be mounted.
     @[::JSON::Field(key: "mountPath")]
     @[::YAML::Field(key: "mountPath")]
     property mount_path : String?
@@ -4461,6 +4505,10 @@ module Kubernetes
     @[::JSON::Field(key: "recursiveReadOnly")]
     @[::YAML::Field(key: "recursiveReadOnly")]
     property recursive_read_only : String?
+    # volumeStatus represents volume-type-specific status about the mounted volume.
+    @[::JSON::Field(key: "volumeStatus")]
+    @[::YAML::Field(key: "volumeStatus")]
+    property volume_status : VolumeStatus?
   end
 
   # VolumeNodeAffinity defines constraints that limit what nodes this volume can be accessed from.
@@ -4518,6 +4566,14 @@ module Kubernetes
     property requests : Hash(String, Quantity)?
   end
 
+  # VolumeStatus represents the status of a mounted volume. At most one of its members must be specified.
+  struct VolumeStatus
+    include Kubernetes::Serializable
+
+    # image represents an OCI object (a container image or artifact) pulled and mounted on the kubelet's host machine.
+    property image : ImageVolumeStatus?
+  end
+
   # Represents a vSphere volume resource.
   struct VsphereVirtualDiskVolumeSource
     include Kubernetes::Serializable
@@ -4572,21 +4628,5 @@ module Kubernetes
     @[::JSON::Field(key: "runAsUserName")]
     @[::YAML::Field(key: "runAsUserName")]
     property run_as_user_name : String?
-  end
-
-  # WorkloadReference identifies the Workload object and PodGroup membership that a Pod belongs to. The scheduler uses this information to apply workload-aware scheduling semantics.
-  struct WorkloadReference
-    include Kubernetes::Serializable
-
-    # Name defines the name of the Workload object this Pod belongs to. Workload must be in the same namespace as the Pod. If it doesn't match any existing Workload, the Pod will remain unschedulable until a Workload object is created and observed by the kube-scheduler. It must be a DNS subdomain.
-    property name : String?
-    # PodGroup is the name of the PodGroup within the Workload that this Pod belongs to. If it doesn't match any existing PodGroup within the Workload, the Pod will remain unschedulable until the Workload object is recreated and observed by the kube-scheduler. It must be a DNS label.
-    @[::JSON::Field(key: "podGroup")]
-    @[::YAML::Field(key: "podGroup")]
-    property pod_group : String?
-    # PodGroupReplicaKey specifies the replica key of the PodGroup to which this Pod belongs. It is used to distinguish pods belonging to different replicas of the same pod group. The pod group policy is applied separately to each replica. When set, it must be a DNS label.
-    @[::JSON::Field(key: "podGroupReplicaKey")]
-    @[::YAML::Field(key: "podGroupReplicaKey")]
-    property pod_group_replica_key : String?
   end
 end

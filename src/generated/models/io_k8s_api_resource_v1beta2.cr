@@ -51,7 +51,7 @@ module Kubernetes
     include Kubernetes::Serializable
 
     # AllocationTimestamp stores the time when the resources were allocated. This field is not guaranteed to be set, in which case that time is unknown.
-    # This is an alpha field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gate.
+    # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gate.
     @[::JSON::Field(key: "allocationTimestamp")]
     @[::YAML::Field(key: "allocationTimestamp")]
     property allocation_timestamp : Time?
@@ -72,7 +72,7 @@ module Kubernetes
     # - driver (string): the name of the driver which defines this device.
     # - attributes (map[string]object): the device's attributes, grouped by prefix
     # (e.g. device.attributes["dra.example.com"] evaluates to an object with all
-    # of the attributes which were prefixed by "dra.example.com".
+    # of the attributes which were prefixed by "dra.example.com").
     # - capacity (map[string]object): the device's capacities, grouped by prefix.
     # - allowMultipleAllocations (bool): the allowMultipleAllocations property of the device
     # (v1.34+ with the DRAConsumableCapacity feature enabled).
@@ -85,8 +85,15 @@ module Kubernetes
     # The value type of each attribute is defined by the device definition, and users who write these expressions must consult the documentation for their specific drivers. The value type of each capacity is Quantity.
     # If an unknown prefix is used as a lookup in either device.attributes or device.capacity, an empty map will be returned. Any reference to an unknown field will cause an evaluation error and allocation to abort.
     # A robust expression should check for the existence of attributes before referencing them.
+    # Common errors: - "no such key": Use optional chaining (.? followed by orValue())
+    # or guarding the check with has() for optional fields.
+    # See CEL Optional Types for details:
+    # https://pkg.go.dev/github.com/google/cel-go@v0.17.4/cel#OptionalTypes
+    # For more CEL expression syntax and examples, see: https://kubernetes.io/docs/reference/using-api/cel/
     # For ease of use, the cel.bind() function is enabled, and can be used to simplify expressions that access multiple attributes with the same domain. For example:
     # cel.bind(dra, device.attributes["dra.example.com"], dra.someBool && dra.anotherBool)
+    # When the DRAListTypeAttributes feature gate is enabled, the includes() helper is available and it can work for both scalar and list-type attributes. It was introduced to support smooth migration from scalar attributes to list-type attributes while keeping CEL expressions simple. For example:
+    # device.attributes["dra.example.com"].models.includes("some-model")
     # The length of the expression must be smaller or equal to 10 Ki. The cost of evaluating it is also limited based on the estimated number of logical steps.
     property expression : String?
   end
@@ -190,19 +197,19 @@ module Kubernetes
     # BindingConditions defines the conditions for proceeding with binding. All of these conditions must be set in the per-device status conditions with a value of True to proceed with binding the pod to the node while scheduling the pod.
     # The maximum number of binding conditions is 4.
     # The conditions must be a valid condition type string.
-    # This is an alpha field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
+    # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindingConditions")]
     @[::YAML::Field(key: "bindingConditions")]
     property binding_conditions : Array(String)?
     # BindingFailureConditions defines the conditions for binding failure. They may be set in the per-device status conditions. If any is set to "True", a binding failure occurred.
     # The maximum number of binding failure conditions is 4.
     # The conditions must be a valid condition type string.
-    # This is an alpha field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
+    # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindingFailureConditions")]
     @[::YAML::Field(key: "bindingFailureConditions")]
     property binding_failure_conditions : Array(String)?
     # BindsToNode indicates if the usage of an allocation involving this device has to be limited to exactly the node that was chosen when allocating the claim. If set to true, the scheduler will set the ResourceClaim.Status.Allocation.NodeSelector to match the node where the allocation was made.
-    # This is an alpha field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
+    # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindsToNode")]
     @[::YAML::Field(key: "bindsToNode")]
     property binds_to_node : Bool?
@@ -217,6 +224,10 @@ module Kubernetes
     property consumes_counters : Array(DeviceCounterConsumption)?
     # Name is unique identifier among all devices managed by the driver in the pool. It must be a DNS label.
     property name : String?
+    # NodeAllocatableResourceMappings defines the mapping of node resources that are managed by the DRA driver exposing this device. This includes resources currently reported in v1.Node `status.allocatable` that are not extended resources (see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#extended-resources). Examples include "cpu", "memory", "ephemeral-storage", and hugepages. In addition to standard requests made through the Pod `spec`, these resources can also be requested through claims and allocated by the DRA driver. For example, a CPU DRA driver might allocate exclusive CPUs or auxiliary node memory dependencies of an accelerator device. The keys of this map are the node-allocatable resource names (e.g., "cpu", "memory"). Extended resource names are not permitted as keys.
+    @[::JSON::Field(key: "nodeAllocatableResourceMappings")]
+    @[::YAML::Field(key: "nodeAllocatableResourceMappings")]
+    property node_allocatable_resource_mappings : Hash(String, NodeAllocatableResourceMapping)?
     # NodeName identifies the node where the device is available.
     # Must only be set if Spec.PerDeviceNodeSelection is set to true. At most one of NodeName, NodeSelector and AllNodes can be set.
     @[::JSON::Field(key: "nodeName")]
@@ -230,7 +241,7 @@ module Kubernetes
     property node_selector : NodeSelector?
     # If specified, these are the driver-defined taints.
     # The maximum number of taints is 16. If taints are set for any device in a ResourceSlice, then the maximum number of allowed devices per ResourceSlice is 64 instead of 128.
-    # This is an alpha field and requires enabling the DRADeviceTaints feature gate.
+    # This is a beta field and requires enabling the DRADeviceTaints feature gate.
     property taints : Array(DeviceTaint)?
   end
 
@@ -264,12 +275,23 @@ module Kubernetes
 
     # BoolValue is a true/false value.
     property bool : Bool?
+    # BoolValues is a non-empty list of true/false values.
+    property bools : Array(Bool)?
     # IntValue is a number.
     property int : Int64?
+    # IntValues is a non-empty list of numbers.
+    # This is an alpha field and requires enabling the DRAListTypeAttributes feature gate.
+    property ints : Array(Int64)?
     # StringValue is a string. Must not be longer than 64 characters.
     property string : String?
+    # StringValues is a non-empty list of strings. Each string must not be longer than 64 characters.
+    # This is an alpha field and requires enabling the DRAListTypeAttributes feature gate.
+    property strings : Array(String)?
     # VersionValue is a semantic version according to semver.org spec 2.0.0. Must not be longer than 64 characters.
     property version : String?
+    # VersionValues is a non-empty list of semantic versions according to semver.org spec 2.0.0. Each version string must not be longer than 64 characters.
+    # This is an alpha field and requires enabling the DRAListTypeAttributes feature gate.
+    property versions : Array(String)?
   end
 
   # DeviceCapacity describes a quantity associated with a device.
@@ -361,7 +383,6 @@ module Kubernetes
     # They are passed to the driver, but are not considered while allocating the claim.
     property config : Array(DeviceClassConfiguration)?
     # ExtendedResourceName is the extended resource name for the devices of this class. The devices of this class can be used to satisfy a pod's extended resource requests. It has the same format as the name of a pod's extended resource. It should be unique among all the device classes in a cluster. If two device classes have the same name, then the class created later is picked to satisfy a pod's extended resource requests. If two classes are created at the same time, then the name of the class lexicographically sorted first is picked.
-    # This is an alpha field.
     @[::JSON::Field(key: "extendedResourceName")]
     @[::YAML::Field(key: "extendedResourceName")]
     property extended_resource_name : String?
@@ -374,6 +395,7 @@ module Kubernetes
     include Kubernetes::Serializable
 
     # DistinctAttribute requires that all devices in question have this attribute and that its type and value are unique across those devices.
+    # When the DRAListTypeAttributes feature gate is enabled, comparison uses set semantics (i.e., element order and duplicates are ignored): list-valued attributes must be pairwise disjoint across devices. Scalar values are treated as singleton sets for backward compatibility.
     # This acts as the inverse of MatchAttribute.
     # This constraint is used to avoid allocating multiple requests to the same device by ensuring attribute-level differentiation.
     # This is useful for scenarios where resource requests must be fulfilled by separate physical devices. For example, a container requests two network interfaces that must be allocated from two different physical NICs.
@@ -382,6 +404,7 @@ module Kubernetes
     property distinct_attribute : String?
     # MatchAttribute requires that all devices in question have this attribute and that its type and value are the same across those devices.
     # For example, if you specified "dra.example.com/numa" (a hypothetical example!), then only devices in the same NUMA node will be chosen. A device which does not have that attribute will not be chosen. All devices should use a value of the same type for this attribute because that is part of its specification, but if one device doesn't, then it also will not be chosen.
+    # When the DRAListTypeAttributes feature gate is enabled, comparison uses set semantics(i.e., element order and duplicates are ignored): list-valued attributes match when the intersection across all devices is non-empty. Scalar values are treated as singleton sets for backward compatibility.
     # Must include the domain qualifier.
     @[::JSON::Field(key: "matchAttribute")]
     @[::YAML::Field(key: "matchAttribute")]
@@ -432,12 +455,12 @@ module Kubernetes
     @[::YAML::Field(key: "adminAccess")]
     property admin_access : Bool?
     # BindingConditions contains a copy of the BindingConditions from the corresponding ResourceSlice at the time of allocation.
-    # This is an alpha field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
+    # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindingConditions")]
     @[::YAML::Field(key: "bindingConditions")]
     property binding_conditions : Array(String)?
     # BindingFailureConditions contains a copy of the BindingFailureConditions from the corresponding ResourceSlice at the time of allocation.
-    # This is an alpha field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
+    # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindingFailureConditions")]
     @[::YAML::Field(key: "bindingFailureConditions")]
     property binding_failure_conditions : Array(String)?
@@ -464,7 +487,7 @@ module Kubernetes
     property share_id : String?
     # A copy of all tolerations specified in the request at the time when the device got allocated.
     # The maximum number of tolerations is 16.
-    # This is an alpha field and requires enabling the DRADeviceTaints feature gate.
+    # This is a beta field and requires enabling the DRADeviceTaints feature gate.
     property tolerations : Array(DeviceToleration)?
   end
 
@@ -514,7 +537,7 @@ module Kubernetes
     # Tolerations for NoSchedule are required to allocate a device which has a taint with that effect. The same applies to NoExecute.
     # In addition, should any of the allocated devices get tainted with NoExecute after allocation and that effect is not tolerated, then all pods consuming the ResourceClaim get deleted to evict them. The scheduler will not let new pods reserve the claim while it has these tainted devices. Once all pods are evicted, the claim will get deallocated.
     # The maximum number of tolerations is 16.
-    # This is an alpha field and requires enabling the DRADeviceTaints feature gate.
+    # This is a beta field and requires enabling the DRADeviceTaints feature gate.
     property tolerations : Array(DeviceToleration)?
   end
 
@@ -527,12 +550,88 @@ module Kubernetes
     property effect : String?
     # The taint key to be applied to a device. Must be a label name.
     property key : String?
-    # TimeAdded represents the time at which the taint was added. Added automatically during create or update if not set.
+    # TimeAdded represents the time at which the taint was added or (only in a DeviceTaintRule) the effect was modified. Added automatically during create or update if not set.
+    # In addition, in a DeviceTaintRule a value provided during an update gets replaced with the current time if the provided value is the same as the old one and the new effect is different. Changing the key and/or value while keeping the effect unchanged is possible and does not update the time stamp because the eviction which uses it is either already started (NoExecute) or not started yet (NoEffect, NoSchedule).
     @[::JSON::Field(key: "timeAdded")]
     @[::YAML::Field(key: "timeAdded")]
     property time_added : Time?
     # The taint value corresponding to the taint key. Must be a label value.
     property value : String?
+  end
+
+  # DeviceTaintRule adds one taint to all devices which match the selector. This has the same effect as if the taint was specified directly in the ResourceSlice by the DRA driver.
+  struct DeviceTaintRule
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # Standard object metadata
+    property metadata : ObjectMeta?
+    # Spec specifies the selector and one taint.
+    # Changing the spec automatically increments the metadata.generation number.
+    property spec : DeviceTaintRuleSpec?
+    # Status provides information about what was requested in the spec.
+    property status : DeviceTaintRuleStatus?
+  end
+
+  # DeviceTaintRuleList is a collection of DeviceTaintRules.
+  struct DeviceTaintRuleList
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # Items is the list of DeviceTaintRules.
+    property items : Array(DeviceTaintRule)?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # Standard list metadata
+    property metadata : ListMeta?
+  end
+
+  # DeviceTaintRuleSpec specifies the selector and one taint.
+  struct DeviceTaintRuleSpec
+    include Kubernetes::Serializable
+
+    # DeviceSelector defines which device(s) the taint is applied to. All selector criteria must be satisfied for a device to match. The empty selector matches all devices. Without a selector, no devices are matches.
+    @[::JSON::Field(key: "deviceSelector")]
+    @[::YAML::Field(key: "deviceSelector")]
+    property device_selector : DeviceTaintSelector?
+    # The taint that gets applied to matching devices.
+    property taint : DeviceTaint?
+  end
+
+  # DeviceTaintRuleStatus provides information about an on-going pod eviction.
+  struct DeviceTaintRuleStatus
+    include Kubernetes::Serializable
+
+    # Conditions provide information about the state of the DeviceTaintRule and the cluster at some point in time, in a machine-readable and human-readable format.
+    # The following condition is currently defined as part of this API, more may get added: - Type: EvictionInProgress - Status: True if there are currently pods which need to be evicted, False otherwise
+    # (includes the effects which don't cause eviction).
+    # - Reason: not specified, may change - Message: includes information about number of pending pods and already evicted pods
+    # in a human-readable format, updated periodically, may change
+    # For `effect: None`, the condition above gets set once for each change to the spec, with the message containing information about what would happen if the effect was `NoExecute`. This feedback can be used to decide whether changing the effect to `NoExecute` will work as intended. It only gets set once to avoid having to constantly update the status.
+    # Must have 8 or fewer entries.
+    property conditions : Array(Condition)?
+  end
+
+  # DeviceTaintSelector defines which device(s) a DeviceTaintRule applies to. The empty selector matches all devices. Without a selector, no devices are matched.
+  struct DeviceTaintSelector
+    include Kubernetes::Serializable
+
+    # If device is set, only devices with that name are selected. This field corresponds to slice.spec.devices[].name.
+    # Setting also driver and pool may be required to avoid ambiguity, but is not required.
+    property device : String?
+    # If driver is set, only devices from that driver are selected. This fields corresponds to slice.spec.driver.
+    property driver : String?
+    # If pool is set, only devices in that pool are selected.
+    # Also setting the driver name may be useful to avoid ambiguity when different drivers use the same pool name, but this is not required because selecting pools from different drivers may also be useful, for example when drivers with node-local devices use the node name as their pool name.
+    property pool : String?
   end
 
   # The ResourceClaim this DeviceToleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
@@ -593,7 +692,7 @@ module Kubernetes
     # Tolerations for NoSchedule are required to allocate a device which has a taint with that effect. The same applies to NoExecute.
     # In addition, should any of the allocated devices get tainted with NoExecute after allocation and that effect is not tolerated, then all pods consuming the ResourceClaim get deleted to evict them. The scheduler will not let new pods reserve the claim while it has these tainted devices. Once all pods are evicted, the claim will get deallocated.
     # The maximum number of tolerations is 16.
-    # This is an alpha field and requires enabling the DRADeviceTaints feature gate.
+    # This is a beta field and requires enabling the DRADeviceTaints feature gate.
     property tolerations : Array(DeviceToleration)?
   end
 
@@ -602,17 +701,44 @@ module Kubernetes
     include Kubernetes::Serializable
 
     # HardwareAddress represents the hardware address (e.g. MAC Address) of the device's network interface.
-    # Must not be longer than 128 characters.
+    # Must not be longer than 128 bytes.
     @[::JSON::Field(key: "hardwareAddress")]
     @[::YAML::Field(key: "hardwareAddress")]
     property hardware_address : String?
     # InterfaceName specifies the name of the network interface associated with the allocated device. This might be the name of a physical or virtual network interface being configured in the pod.
-    # Must not be longer than 256 characters.
+    # Must not be longer than 256 bytes.
     @[::JSON::Field(key: "interfaceName")]
     @[::YAML::Field(key: "interfaceName")]
     property interface_name : String?
     # IPs lists the network addresses assigned to the device's network interface. This can include both IPv4 and IPv6 addresses. The IPs are in the CIDR notation, which includes both the address and the associated subnet mask. e.g.: "192.0.2.5/24" for IPv4 and "2001:db8::5/64" for IPv6.
     property ips : Array(String)?
+  end
+
+  # NodeAllocatableResourceMapping defines the translation between the DRA device/capacity units requested to the corresponding quantity of the node allocatable resource.
+  struct NodeAllocatableResourceMapping
+    include Kubernetes::Serializable
+
+    # AllocationMultiplier is used as a multiplier for the allocated device count or the allocated capacity in the claim. It defaults to 1 if not specified. How the field is used also depends on whether `capacityKey` is set. 1.  If `capacityKey` is NOT set: `allocationMultiplier` multiplies the device count allocated to the claim.
+    # a. A DRA driver representing each CPU core as a device would have
+    # {ResourceName: "cpu", allocationMultiplier: "2"} in its
+    # `nodeAllocatableResourceMappings`. If 4 devices are allocated to the claim,
+    # 4 * 2 CPUs would be considered as allocated and subtracted from the node's capacity.
+    # b. A GPU device that needs additional node memory per GPU allocation would
+    # have {ResourceName: "memory", allocationMultiplier: "2Gi"}.  Each allocated
+    # GPU device instance of this type will account for 2Gi of memory.
+    # 2.  If `capacityKey` IS set: `allocationMultiplier` is multiplied by the amount of that capacity consumed.
+    # The final node allocatable resource amount is `consumedCapacity[capacityKey]` * `allocationMultiplier`.
+    # For example, if a Device's capacity "dra.example.com/cores" is consumed,
+    # and each "core" provides 2 "cpu"s, the mapping would be:
+    # {ResourceName: "cpu", capacityKey: "dra.example.com/cores", allocationMultiplier: "2"}.
+    # If a claim consumes 8 "dra.example.com/cores", the CPU footprint is 8 * 2 = 16.
+    @[::JSON::Field(key: "allocationMultiplier")]
+    @[::YAML::Field(key: "allocationMultiplier")]
+    property allocation_multiplier : Quantity?
+    # CapacityKey references a capacity name defined as a key in the `spec.devices[*].capacity` map. When this field is set, the value associated with this key in the `status.allocation.devices.results[*].consumedCapacity` map (for a specific claim allocation) determines the base quantity for the node allocatable resource. If `allocationMultiplier` is also set, it is multiplied with the base quantity. For example, if `spec.devices[*].capacity` has an entry "dra.example.com/memory": "128Gi", and this field is set to "dra.example.com/memory", then for a claim allocation that consumes { "dra.example.com/memory": "4Gi" } the base quantity for the node allocatable resource mapping will be "4Gi", and `allocationMultiplier` should be omitted or set to "1".
+    @[::JSON::Field(key: "capacityKey")]
+    @[::YAML::Field(key: "capacityKey")]
+    property capacity_key : String?
   end
 
   # OpaqueDeviceConfiguration contains configuration parameters for a driver in a format defined by the driver vendor.

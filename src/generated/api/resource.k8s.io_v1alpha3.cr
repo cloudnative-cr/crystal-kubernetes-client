@@ -98,6 +98,83 @@ module Kubernetes
       put(path, params) { |res| yield res }
     end
 
+    # delete collection of ResourcePoolStatusRequest
+    # DELETE /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests
+    def delete_resource_v1alpha3_collection_resource_pool_status_request(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests"
+      delete(path) { |res| yield res }
+    end
+
+    # list or watch objects of kind ResourcePoolStatusRequest
+    # GET /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests
+    def list_resource_v1alpha3_resource_pool_status_request(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests"
+      get(path) { |res| yield res }
+    end
+
+    # create a ResourcePoolStatusRequest
+    # POST /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests
+    def create_resource_v1alpha3_resource_pool_status_request(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests"
+      post(path, params) { |res| yield res }
+    end
+
+    # delete a ResourcePoolStatusRequest
+    # DELETE /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}
+    def delete_resource_v1alpha3_resource_pool_status_request(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      delete(path) { |res| yield res }
+    end
+
+    # read the specified ResourcePoolStatusRequest
+    # GET /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}
+    def read_resource_v1alpha3_resource_pool_status_request(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # partially update the specified ResourcePoolStatusRequest
+    # PATCH /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}
+    def patch_resource_v1alpha3_resource_pool_status_request(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      patch(path, params) { |res| yield res }
+    end
+
+    # replace the specified ResourcePoolStatusRequest
+    # PUT /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}
+    def replace_resource_v1alpha3_resource_pool_status_request(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      put(path, params) { |res| yield res }
+    end
+
+    # read status of the specified ResourcePoolStatusRequest
+    # GET /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}/status
+    def read_resource_v1alpha3_resource_pool_status_request_status(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # partially update status of the specified ResourcePoolStatusRequest
+    # PATCH /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}/status
+    def patch_resource_v1alpha3_resource_pool_status_request_status(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      patch(path, params) { |res| yield res }
+    end
+
+    # replace status of the specified ResourcePoolStatusRequest
+    # PUT /apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}/status
+    def replace_resource_v1alpha3_resource_pool_status_request_status(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/resourcepoolstatusrequests/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      put(path, params) { |res| yield res }
+    end
+
     # watch individual changes to a list of DeviceTaintRule. deprecated: use the 'watch' parameter with a list operation instead.
     # GET /apis/resource.k8s.io/v1alpha3/watch/devicetaintrules
     def watch_resource_v1alpha3_device_taint_rule_list(**params, &)
@@ -109,6 +186,21 @@ module Kubernetes
     # GET /apis/resource.k8s.io/v1alpha3/watch/devicetaintrules/{name}
     def watch_resource_v1alpha3_device_taint_rule(**params, &)
       path = "/apis/resource.k8s.io/v1alpha3/watch/devicetaintrules/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of ResourcePoolStatusRequest. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/resource.k8s.io/v1alpha3/watch/resourcepoolstatusrequests
+    def watch_resource_v1alpha3_resource_pool_status_request_list(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/watch/resourcepoolstatusrequests"
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind ResourcePoolStatusRequest. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/resource.k8s.io/v1alpha3/watch/resourcepoolstatusrequests/{name}
+    def watch_resource_v1alpha3_resource_pool_status_request(**params, &)
+      path = "/apis/resource.k8s.io/v1alpha3/watch/resourcepoolstatusrequests/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
     end

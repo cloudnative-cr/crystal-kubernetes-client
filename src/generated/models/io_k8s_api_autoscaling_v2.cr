@@ -156,6 +156,10 @@ module Kubernetes
     property last_transition_time : Time?
     # message is a human-readable explanation containing details about the transition
     property message : String?
+    # observedGeneration represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date with respect to the current state of the instance.
+    @[::JSON::Field(key: "observedGeneration")]
+    @[::YAML::Field(key: "observedGeneration")]
+    property observed_generation : Int64?
     # reason is the reason for the condition's last transition.
     property reason : String?
     # status is the status of the condition (True, False, Unknown)
@@ -264,7 +268,7 @@ module Kubernetes
   struct MetricStatus
     include Kubernetes::Serializable
 
-    # container resource refers to a resource metric (such as those specified in requests and limits) known to Kubernetes describing a single container in each pod in the current scale target (e.g. CPU or memory). Such metrics are built in to Kubernetes, and have special scaling options on top of those available to normal per-pod metrics using the "pods" source.
+    # containerResource refers to a resource metric (such as those specified in requests and limits) known to Kubernetes describing a single container in each pod in the current scale target (e.g. CPU or memory). Such metrics are built in to Kubernetes, and have special scaling options on top of those available to normal per-pod metrics using the "pods" source.
     @[::JSON::Field(key: "containerResource")]
     @[::YAML::Field(key: "containerResource")]
     property container_resource : ContainerResourceMetricStatus?
@@ -302,7 +306,7 @@ module Kubernetes
   struct MetricValueStatus
     include Kubernetes::Serializable
 
-    # currentAverageUtilization is the current value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods.
+    # averageUtilization is the current value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods.
     @[::JSON::Field(key: "averageUtilization")]
     @[::YAML::Field(key: "averageUtilization")]
     property average_utilization : Int32?
@@ -334,7 +338,7 @@ module Kubernetes
 
     # current contains the current value for the given metric
     property current : MetricValueStatus?
-    # DescribedObject specifies the descriptions of a object,such as kind,name apiVersion
+    # describedObject specifies the descriptions of a object,such as kind,name apiVersion
     @[::JSON::Field(key: "describedObject")]
     @[::YAML::Field(key: "describedObject")]
     property described_object : CrossVersionObjectReference?
