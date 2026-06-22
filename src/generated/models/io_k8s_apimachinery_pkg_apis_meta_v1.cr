@@ -262,6 +262,11 @@ module Kubernetes
     @[::JSON::Field(key: "selfLink")]
     @[::YAML::Field(key: "selfLink")]
     property self_link : String?
+    # shardInfo is set when the list is a filtered subset of the full collection, as selected by a shard selector on the request. It echoes back the selector so clients can verify which shard they received and merge sharded responses. Clients should not cache sharded list responses as a full representation of the collection.
+    # This is an alpha field and requires enabling the ShardedListAndWatch feature gate.
+    @[::JSON::Field(key: "shardInfo")]
+    @[::YAML::Field(key: "shardInfo")]
+    property shard_info : ShardInfo?
   end
 
   # ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource that the fieldset applies to.
@@ -405,6 +410,14 @@ module Kubernetes
     @[::JSON::Field(key: "serverAddress")]
     @[::YAML::Field(key: "serverAddress")]
     property server_address : String?
+  end
+
+  # ShardInfo describes the shard selector that was applied to produce a list response. Its presence on a list response indicates the list is a filtered subset.
+  struct ShardInfo
+    include Kubernetes::Serializable
+
+    # selector is the shard selector string from the request, echoed back so clients can verify which shard they received and merge responses from multiple shards.
+    property selector : String?
   end
 
   # Status is a return value for calls that don't return other objects.

@@ -21,7 +21,7 @@ module Kubernetes
   # To use this, make a field which has RawExtension as its type in your external, versioned struct, and Object in your internal struct. You also need to register your various plugin types.
   # // Internal package:
   # type MyAPIObject struct {
-  # runtime.TypeMeta `json:",inline"`
+  # runtime.TypeMeta `json:""`
   # MyPlugin runtime.Object `json:"myPlugin"`
   # }
   # type PluginA struct {
@@ -29,7 +29,7 @@ module Kubernetes
   # }
   # // External package:
   # type MyAPIObject struct {
-  # runtime.TypeMeta `json:",inline"`
+  # runtime.TypeMeta `json:""`
   # MyPlugin runtime.RawExtension `json:"myPlugin"`
   # }
   # type PluginA struct {

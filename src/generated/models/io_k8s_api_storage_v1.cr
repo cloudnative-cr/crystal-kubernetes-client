@@ -65,7 +65,7 @@ module Kubernetes
     @[::YAML::Field(key: "fsGroupPolicy")]
     property fs_group_policy : String?
     # nodeAllocatableUpdatePeriodSeconds specifies the interval between periodic updates of the CSINode allocatable capacity for this driver. When set, both periodic updates and updates triggered by capacity-related failures are enabled. If not set, no updates occur (neither periodic nor upon detecting capacity-related failures), and the allocatable.count remains static. The minimum allowed value for this field is 10 seconds.
-    # This is a beta feature and requires the MutableCSINodeAllocatableCount feature gate to be enabled.
+    # This feature requires the MutableCSINodeAllocatableCount feature gate to be enabled.
     # This field is mutable.
     @[::JSON::Field(key: "nodeAllocatableUpdatePeriodSeconds")]
     @[::YAML::Field(key: "nodeAllocatableUpdatePeriodSeconds")]
@@ -79,6 +79,13 @@ module Kubernetes
     @[::JSON::Field(key: "podInfoOnMount")]
     @[::YAML::Field(key: "podInfoOnMount")]
     property pod_info_on_mount : Bool?
+    # PreventPodSchedulingIfMissing indicates that the CSI driver wants to prevent pod scheduling if the CSI driver on the node is missing.
+    # Enabling this option will prevent the scheduler (or any other component which embeds default scheduler such as cluster-autoscaler) from scheduling pods to nodes where CSI driver is not installed.
+    # For components(such as cluster-autoscaler) that embed the scheduler and run pod placement simulations using scheduler plugins, they MUST be aware of CSI driver registration information via CSINode object. They must create simulated CSINode objects in addition to Node objects during scheduling simulation, otherwise if PreventPodSchedulingIfMissing is enabled globally for CSIDriver object, any newly created node may be rejected by the scheduler because of missing CSI driver information from the node.
+    # This is an alpha feature and requires the VolumeLimitScaling feature gate to be enabled. Default is "false".
+    @[::JSON::Field(key: "preventPodSchedulingIfMissing")]
+    @[::YAML::Field(key: "preventPodSchedulingIfMissing")]
+    property prevent_pod_scheduling_if_missing : Bool?
     # requiresRepublish indicates the CSI driver wants `NodePublishVolume` being periodically called to reflect any possible change in the mounted volume. This field defaults to false.
     # Note: After a successful initial NodePublishVolume call, subsequent calls to NodePublishVolume should only update the contents of the volume. New mount points will not be seen by a running container.
     @[::JSON::Field(key: "requiresRepublish")]
@@ -428,7 +435,7 @@ module Kubernetes
     include Kubernetes::Serializable
 
     # errorCode is a numeric gRPC code representing the error encountered during Attach or Detach operations.
-    # This is an optional, beta field that requires the MutableCSINodeAllocatableCount feature gate being enabled to be set.
+    # This field requires the MutableCSINodeAllocatableCount feature gate being enabled to be set.
     @[::JSON::Field(key: "errorCode")]
     @[::YAML::Field(key: "errorCode")]
     property error_code : Int32?

@@ -74,6 +74,83 @@ module Kubernetes
       put(path, params) { |res| yield res }
     end
 
+    # delete collection of DeviceTaintRule
+    # DELETE /apis/resource.k8s.io/v1beta2/devicetaintrules
+    def delete_resource_v1beta2_collection_device_taint_rule(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules"
+      delete(path) { |res| yield res }
+    end
+
+    # list or watch objects of kind DeviceTaintRule
+    # GET /apis/resource.k8s.io/v1beta2/devicetaintrules
+    def list_resource_v1beta2_device_taint_rule(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules"
+      get(path) { |res| yield res }
+    end
+
+    # create a DeviceTaintRule
+    # POST /apis/resource.k8s.io/v1beta2/devicetaintrules
+    def create_resource_v1beta2_device_taint_rule(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules"
+      post(path, params) { |res| yield res }
+    end
+
+    # delete a DeviceTaintRule
+    # DELETE /apis/resource.k8s.io/v1beta2/devicetaintrules/{name}
+    def delete_resource_v1beta2_device_taint_rule(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      delete(path) { |res| yield res }
+    end
+
+    # read the specified DeviceTaintRule
+    # GET /apis/resource.k8s.io/v1beta2/devicetaintrules/{name}
+    def read_resource_v1beta2_device_taint_rule(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # partially update the specified DeviceTaintRule
+    # PATCH /apis/resource.k8s.io/v1beta2/devicetaintrules/{name}
+    def patch_resource_v1beta2_device_taint_rule(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      patch(path, params) { |res| yield res }
+    end
+
+    # replace the specified DeviceTaintRule
+    # PUT /apis/resource.k8s.io/v1beta2/devicetaintrules/{name}
+    def replace_resource_v1beta2_device_taint_rule(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      put(path, params) { |res| yield res }
+    end
+
+    # read status of the specified DeviceTaintRule
+    # GET /apis/resource.k8s.io/v1beta2/devicetaintrules/{name}/status
+    def read_resource_v1beta2_device_taint_rule_status(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # partially update status of the specified DeviceTaintRule
+    # PATCH /apis/resource.k8s.io/v1beta2/devicetaintrules/{name}/status
+    def patch_resource_v1beta2_device_taint_rule_status(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      patch(path, params) { |res| yield res }
+    end
+
+    # replace status of the specified DeviceTaintRule
+    # PUT /apis/resource.k8s.io/v1beta2/devicetaintrules/{name}/status
+    def replace_resource_v1beta2_device_taint_rule_status(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/devicetaintrules/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      put(path, params) { |res| yield res }
+    end
+
     # delete collection of ResourceClaim
     # DELETE /apis/resource.k8s.io/v1beta2/namespaces/{namespace}/resourceclaims
     def delete_resource_v1beta2_collection_namespaced_resource_claim(**params, &)
@@ -288,6 +365,21 @@ module Kubernetes
     # GET /apis/resource.k8s.io/v1beta2/watch/deviceclasses/{name}
     def watch_resource_v1beta2_device_class(**params, &)
       path = "/apis/resource.k8s.io/v1beta2/watch/deviceclasses/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of DeviceTaintRule. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/resource.k8s.io/v1beta2/watch/devicetaintrules
+    def watch_resource_v1beta2_device_taint_rule_list(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/watch/devicetaintrules"
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind DeviceTaintRule. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/resource.k8s.io/v1beta2/watch/devicetaintrules/{name}
+    def watch_resource_v1beta2_device_taint_rule(**params, &)
+      path = "/apis/resource.k8s.io/v1beta2/watch/devicetaintrules/{name}"
       params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
     end

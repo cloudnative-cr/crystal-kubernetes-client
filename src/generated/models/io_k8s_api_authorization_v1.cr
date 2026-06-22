@@ -51,11 +51,11 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
-    # Spec holds information about the request being evaluated.  spec.namespace must be equal to the namespace you made the request against.  If empty, it is defaulted.
+    # spec holds information about the request being evaluated.  spec.namespace must be equal to the namespace you made the request against.  If empty, it is defaulted.
     property spec : SubjectAccessReviewSpec?
-    # Status is filled in by the server and indicates whether the request is allowed or not
+    # status is filled in by the server and indicates whether the request is allowed or not
     property status : SubjectAccessReviewStatus?
   end
 
@@ -63,9 +63,9 @@ module Kubernetes
   struct NonResourceAttributes
     include Kubernetes::Serializable
 
-    # Path is the URL path of the request
+    # path is the URL path of the request
     property path : String?
-    # Verb is the standard HTTP verb
+    # verb is the standard HTTP verb
     property verb : String?
   end
 
@@ -73,11 +73,11 @@ module Kubernetes
   struct NonResourceRule
     include Kubernetes::Serializable
 
-    # NonResourceURLs is a set of partial urls that a user should have access to.  *s are allowed, but only as the full, final step in the path.  "*" means all.
+    # nonResourceURLs is a set of partial urls that a user should have access to.  *s are allowed, but only as the full, final step in the path.  "*" means all.
     @[::JSON::Field(key: "nonResourceURLs")]
     @[::YAML::Field(key: "nonResourceURLs")]
     property non_resource_ur_ls : Array(String)?
-    # Verb is a list of kubernetes non-resource API verbs, like: get, post, put, delete, patch, head, options.  "*" means all.
+    # verbs is a list of kubernetes non-resource API verbs, like: get, post, put, delete, patch, head, options.  "*" means all.
     property verbs : Array(String)?
   end
 
@@ -89,23 +89,23 @@ module Kubernetes
     @[::JSON::Field(key: "fieldSelector")]
     @[::YAML::Field(key: "fieldSelector")]
     property field_selector : FieldSelectorAttributes?
-    # Group is the API Group of the Resource.  "*" means all.
+    # group is the API Group of the Resource.  "*" means all.
     property group : String?
     # labelSelector describes the limitation on access based on labels.  It can only limit access, not broaden it.
     @[::JSON::Field(key: "labelSelector")]
     @[::YAML::Field(key: "labelSelector")]
     property label_selector : LabelSelectorAttributes?
-    # Name is the name of the resource being requested for a "get" or deleted for a "delete". "" (empty) means all.
+    # name is the name of the resource being requested for a "get" or deleted for a "delete". "" (empty) means all.
     property name : String?
-    # Namespace is the namespace of the action being requested.  Currently, there is no distinction between no namespace and all namespaces "" (empty) is defaulted for LocalSubjectAccessReviews "" (empty) is empty for cluster-scoped resources "" (empty) means "all" for namespace scoped resources from a SubjectAccessReview or SelfSubjectAccessReview
+    # namespace is the namespace of the action being requested.  Currently, there is no distinction between no namespace and all namespaces "" (empty) is defaulted for LocalSubjectAccessReviews "" (empty) is empty for cluster-scoped resources "" (empty) means "all" for namespace scoped resources from a SubjectAccessReview or SelfSubjectAccessReview
     property namespace : String?
-    # Resource is one of the existing resource types.  "*" means all.
+    # resource is one of the existing resource types.  "*" means all.
     property resource : String?
-    # Subresource is one of the existing resource types.  "" means none.
+    # subresource is one of the existing resource types.  "" means none.
     property subresource : String?
-    # Verb is a kubernetes resource API verb, like: get, list, watch, create, update, delete, proxy.  "*" means all.
+    # verb is a kubernetes resource API verb, like: get, list, watch, create, update, delete, proxy.  "*" means all.
     property verb : String?
-    # Version is the API Version of the Resource.  "*" means all.
+    # version is the API Version of the Resource.  "*" means all.
     property version : String?
   end
 
@@ -113,18 +113,18 @@ module Kubernetes
   struct ResourceRule
     include Kubernetes::Serializable
 
-    # APIGroups is the name of the APIGroup that contains the resources.  If multiple API groups are specified, any action requested against one of the enumerated resources in any API group will be allowed.  "*" means all.
+    # apiGroups is the name of the APIGroup that contains the resources.  If multiple API groups are specified, any action requested against one of the enumerated resources in any API group will be allowed.  "*" means all.
     @[::JSON::Field(key: "apiGroups")]
     @[::YAML::Field(key: "apiGroups")]
     property api_groups : Array(String)?
-    # ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.  "*" means all.
+    # resourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.  "*" means all.
     @[::JSON::Field(key: "resourceNames")]
     @[::YAML::Field(key: "resourceNames")]
     property resource_names : Array(String)?
-    # Resources is a list of resources this rule applies to.  "*" means all in the specified apiGroups.
+    # resources is a list of resources this rule applies to.  "*" means all in the specified apiGroups.
     # "*/foo" represents the subresource 'foo' for all resources in the specified apiGroups.
     property resources : Array(String)?
-    # Verb is a list of kubernetes resource API verbs, like: get, list, watch, create, update, delete, proxy.  "*" means all.
+    # verbs is a list of kubernetes resource API verbs, like: get, list, watch, create, update, delete, proxy.  "*" means all.
     property verbs : Array(String)?
   end
 
@@ -138,23 +138,23 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
-    # Spec holds information about the request being evaluated.  user and groups must be empty
+    # spec holds information about the request being evaluated.  user and groups must be empty
     property spec : SelfSubjectAccessReviewSpec?
-    # Status is filled in by the server and indicates whether the request is allowed or not
+    # status is filled in by the server and indicates whether the request is allowed or not
     property status : SubjectAccessReviewStatus?
   end
 
-  # SelfSubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set
+  # SelfSubjectAccessReviewSpec is a description of the access request.  Exactly one of resourceAttributes and nonResourceAttributes must be set
   struct SelfSubjectAccessReviewSpec
     include Kubernetes::Serializable
 
-    # NonResourceAttributes describes information for a non-resource access request
+    # nonResourceAttributes describes information for a non-resource access request
     @[::JSON::Field(key: "nonResourceAttributes")]
     @[::YAML::Field(key: "nonResourceAttributes")]
     property non_resource_attributes : NonResourceAttributes?
-    # ResourceAuthorizationAttributes describes information for a resource access request
+    # resourceAttributes describes information for a resource access request
     @[::JSON::Field(key: "resourceAttributes")]
     @[::YAML::Field(key: "resourceAttributes")]
     property resource_attributes : ResourceAttributes?
@@ -170,11 +170,11 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
-    # Spec holds information about the request being evaluated.
+    # spec holds information about the request being evaluated.
     property spec : SelfSubjectRulesReviewSpec?
-    # Status is filled in by the server and indicates the set of actions a user can perform.
+    # status is filled in by the server and indicates the set of actions a user can perform.
     property status : SubjectRulesReviewStatus?
   end
 
@@ -182,7 +182,7 @@ module Kubernetes
   struct SelfSubjectRulesReviewSpec
     include Kubernetes::Serializable
 
-    # Namespace to evaluate rules for. Required.
+    # namespace to evaluate rules for. Required.
     property namespace : String?
   end
 
@@ -196,33 +196,33 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
-    # Spec holds information about the request being evaluated
+    # spec holds information about the request being evaluated
     property spec : SubjectAccessReviewSpec?
-    # Status is filled in by the server and indicates whether the request is allowed or not
+    # status is filled in by the server and indicates whether the request is allowed or not
     property status : SubjectAccessReviewStatus?
   end
 
-  # SubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set
+  # SubjectAccessReviewSpec is a description of the access request.  Exactly one of resourceAttributes and nonResourceAttributes must be set
   struct SubjectAccessReviewSpec
     include Kubernetes::Serializable
 
-    # Extra corresponds to the user.Info.GetExtra() method from the authenticator.  Since that is input to the authorizer it needs a reflection here.
+    # extra corresponds to the user.Info.GetExtra() method from the authenticator.  Since that is input to the authorizer it needs a reflection here.
     property extra : Hash(String, Array(String))?
-    # Groups is the groups you're testing for.
+    # groups is the groups you're testing for.
     property groups : Array(String)?
-    # NonResourceAttributes describes information for a non-resource access request
+    # nonResourceAttributes describes information for a non-resource access request
     @[::JSON::Field(key: "nonResourceAttributes")]
     @[::YAML::Field(key: "nonResourceAttributes")]
     property non_resource_attributes : NonResourceAttributes?
-    # ResourceAuthorizationAttributes describes information for a resource access request
+    # resourceAttributes describes information for a resource access request
     @[::JSON::Field(key: "resourceAttributes")]
     @[::YAML::Field(key: "resourceAttributes")]
     property resource_attributes : ResourceAttributes?
-    # UID information about the requesting user.
+    # uid information about the requesting user.
     property uid : String?
-    # User is the user you're testing for. If you specify "User" but not "Groups", then is it interpreted as "What if User were not a member of any groups
+    # user is the user you're testing for. If you specify "User" but not "Groups", then is it interpreted as "What if User were not a member of any groups
     property user : String?
   end
 
@@ -230,15 +230,15 @@ module Kubernetes
   struct SubjectAccessReviewStatus
     include Kubernetes::Serializable
 
-    # Allowed is required. True if the action would be allowed, false otherwise.
+    # allowed is required. True if the action would be allowed, false otherwise.
     property allowed : Bool?
-    # Denied is optional. True if the action would be denied, otherwise false. If both allowed is false and denied is false, then the authorizer has no opinion on whether to authorize the action. Denied may not be true if Allowed is true.
+    # denied is optional. True if the action would be denied, otherwise false. If both allowed is false and denied is false, then the authorizer has no opinion on whether to authorize the action. Denied may not be true if Allowed is true.
     property denied : Bool?
-    # EvaluationError is an indication that some error occurred during the authorization check. It is entirely possible to get an error and be able to continue determine authorization status in spite of it. For instance, RBAC can be missing a role, but enough roles are still present and bound to reason about the request.
+    # evaluationError is an indication that some error occurred during the authorization check. It is entirely possible to get an error and be able to continue determine authorization status in spite of it. For instance, RBAC can be missing a role, but enough roles are still present and bound to reason about the request.
     @[::JSON::Field(key: "evaluationError")]
     @[::YAML::Field(key: "evaluationError")]
     property evaluation_error : String?
-    # Reason is optional.  It indicates why a request was allowed or denied.
+    # reason is optional.  It indicates why a request was allowed or denied.
     property reason : String?
   end
 
@@ -246,17 +246,17 @@ module Kubernetes
   struct SubjectRulesReviewStatus
     include Kubernetes::Serializable
 
-    # EvaluationError can appear in combination with Rules. It indicates an error occurred during rule evaluation, such as an authorizer that doesn't support rule evaluation, and that ResourceRules and/or NonResourceRules may be incomplete.
+    # evaluationError can appear in combination with Rules. It indicates an error occurred during rule evaluation, such as an authorizer that doesn't support rule evaluation, and that ResourceRules and/or NonResourceRules may be incomplete.
     @[::JSON::Field(key: "evaluationError")]
     @[::YAML::Field(key: "evaluationError")]
     property evaluation_error : String?
-    # Incomplete is true when the rules returned by this call are incomplete. This is most commonly encountered when an authorizer, such as an external authorizer, doesn't support rules evaluation.
+    # incomplete is true when the rules returned by this call are incomplete. This is most commonly encountered when an authorizer, such as an external authorizer, doesn't support rules evaluation.
     property incomplete : Bool?
-    # NonResourceRules is the list of actions the subject is allowed to perform on non-resources. The list ordering isn't significant, may contain duplicates, and possibly be incomplete.
+    # nonResourceRules is the list of actions the subject is allowed to perform on non-resources. The list ordering isn't significant, may contain duplicates, and possibly be incomplete.
     @[::JSON::Field(key: "nonResourceRules")]
     @[::YAML::Field(key: "nonResourceRules")]
     property non_resource_rules : Array(NonResourceRule)?
-    # ResourceRules is the list of actions the subject is allowed to perform on resources. The list ordering isn't significant, may contain duplicates, and possibly be incomplete.
+    # resourceRules is the list of actions the subject is allowed to perform on resources. The list ordering isn't significant, may contain duplicates, and possibly be incomplete.
     @[::JSON::Field(key: "resourceRules")]
     @[::YAML::Field(key: "resourceRules")]
     property resource_rules : Array(ResourceRule)?

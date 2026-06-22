@@ -17,6 +17,32 @@ require "yaml"
 require "../../serialization"
 
 module Kubernetes
+  # ApplyConfiguration defines the desired configuration values of an object.
+  struct ApplyConfiguration
+    include Kubernetes::Serializable
+
+    # expression will be evaluated by CEL to create an apply configuration. ref: https://github.com/google/cel-spec
+    # Apply configurations are declared in CEL using object initialization. For example, this CEL expression returns an apply configuration to set a single field:
+    # Object{
+    # spec: Object.spec{
+    # serviceAccountName: "example"
+    # }
+    # }
+    # Apply configurations may not modify atomic structs, maps or arrays due to the risk of accidental deletion of values not included in the apply configuration.
+    # CEL expressions have access to the object types needed to create apply configurations:
+    # - 'Object' - CEL type of the resource object. - 'Object.<fieldName>' - CEL type of object field (such as 'Object.spec') - 'Object.<fieldName1>.<fieldName2>...<fieldNameN>` - CEL type of nested field (such as 'Object.spec.containers')
+    # CEL expressions have access to the contents of the API request, organized into CEL variables as well as some other useful variables:
+    # - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
+    # For example, a variable named 'foo' can be accessed as 'variables.foo'.
+    # - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
+    # See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
+    # - 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
+    # request resource.
+    # The `apiVersion`, `kind`, `metadata.name` and `metadata.generateName` are always accessible from the root of the object. No other metadata properties are accessible.
+    # Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible. Required.
+    property expression : String?
+  end
+
   # AuditAnnotation describes how to produce an audit annotation for an API request.
   struct AuditAnnotation
     include Kubernetes::Serializable
@@ -38,19 +64,66 @@ module Kubernetes
   struct ExpressionWarning
     include Kubernetes::Serializable
 
-    # The path to the field that refers the expression. For example, the reference to the expression of the first item of validations is "spec.validations[0].expression"
+    # fieldRef is the path to the field that refers to the expression. For example, the reference to the expression of the first item of validations is "spec.validations[0].expression"
     @[::JSON::Field(key: "fieldRef")]
     @[::YAML::Field(key: "fieldRef")]
     property field_ref : String?
-    # The content of type checking information in a human-readable form. Each line of the warning contains the type that the expression is checked against, followed by the type check error from the compiler.
+    # warning contains the content of type checking information in a human-readable form. Each line of the warning contains the type that the expression is checked against, followed by the type check error from the compiler.
     property warning : String?
+  end
+
+  # JSONPatch defines a JSON Patch.
+  struct JSONPatch
+    include Kubernetes::Serializable
+
+    # expression will be evaluated by CEL to create a [JSON patch](https://jsonpatch.com/). ref: https://github.com/google/cel-spec
+    # expression must return an array of JSONPatch values.
+    # For example, this CEL expression returns a JSON patch to conditionally modify a value:
+    # [
+    # JSONPatch{op: "test", path: "/spec/example", value: "Red"},
+    # JSONPatch{op: "replace", path: "/spec/example", value: "Green"}
+    # ]
+    # To define an object for the patch value, use Object types. For example:
+    # [
+    # JSONPatch{
+    # op: "add",
+    # path: "/spec/selector",
+    # value: Object.spec.selector{matchLabels: {"environment": "test"}}
+    # }
+    # ]
+    # To use strings containing '/' and '~' as JSONPatch path keys, use "jsonpatch.escapeKey". For example:
+    # [
+    # JSONPatch{
+    # op: "add",
+    # path: "/metadata/labels/" + jsonpatch.escapeKey("example.com/environment"),
+    # value: "test"
+    # },
+    # ]
+    # CEL expressions have access to the types needed to create JSON patches and objects:
+    # - 'JSONPatch' - CEL type of JSON Patch operations. JSONPatch has the fields 'op', 'from', 'path' and 'value'.
+    # See [JSON patch](https://jsonpatch.com/) for more details. The 'value' field may be set to any of: string,
+    # integer, array, map or object.  If set, the 'path' and 'from' fields must be set to a
+    # [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901/) string, where the 'jsonpatch.escapeKey()' CEL
+    # function may be used to escape path keys containing '/' and '~'.
+    # - 'Object' - CEL type of the resource object. - 'Object.<fieldName>' - CEL type of object field (such as 'Object.spec') - 'Object.<fieldName1>.<fieldName2>...<fieldNameN>` - CEL type of nested field (such as 'Object.spec.containers')
+    # CEL expressions have access to the contents of the API request, organized into CEL variables as well as some other useful variables:
+    # - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
+    # For example, a variable named 'foo' can be accessed as 'variables.foo'.
+    # - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
+    # See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
+    # - 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
+    # request resource.
+    # CEL expressions have access to [Kubernetes CEL function libraries](https://kubernetes.io/docs/reference/using-api/cel/#cel-options-language-features-and-libraries) as well as:
+    # - 'jsonpatch.escapeKey' - Performs JSONPatch key escaping. '~' and  '/' are escaped as '~0' and `~1' respectively).
+    # Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible. Required.
+    property expression : String?
   end
 
   # MatchCondition represents a condition which must by fulfilled for a request to be sent to a webhook.
   struct MatchCondition
     include Kubernetes::Serializable
 
-    # Expression represents the expression which will be evaluated by CEL. Must evaluate to bool. CEL expressions have access to the contents of the AdmissionRequest and Authorizer, organized into CEL variables:
+    # expression represents the expression which will be evaluated by CEL. Must evaluate to bool. CEL expressions have access to the contents of the AdmissionRequest and Authorizer, organized into CEL variables:
     # 'object' - The object from the incoming request. The value is null for DELETE requests. 'oldObject' - The existing object. The value is null for CREATE requests. 'request' - Attributes of the admission request(/pkg/apis/admission/types.go#AdmissionRequest). 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
     # See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
     # 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
@@ -58,7 +131,7 @@ module Kubernetes
     # Documentation on CEL: https://kubernetes.io/docs/reference/using-api/cel/
     # Required.
     property expression : String?
-    # Name is an identifier for this match condition, used for strategic merging of MatchConditions, as well as providing an identifier for logging purposes. A good name should be descriptive of the associated expression. Name must be a qualified name consisting of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]') with an optional DNS subdomain prefix and '/' (e.g. 'example.com/MyName')
+    # name is an identifier for this match condition, used for strategic merging of MatchConditions, as well as providing an identifier for logging purposes. A good name should be descriptive of the associated expression. Name must be a qualified name consisting of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]') with an optional DNS subdomain prefix and '/' (e.g. 'example.com/MyName')
     # Required.
     property name : String?
   end
@@ -67,7 +140,7 @@ module Kubernetes
   struct MatchResources
     include Kubernetes::Serializable
 
-    # ExcludeResourceRules describes what operations on what resources/subresources the ValidatingAdmissionPolicy should not care about. The exclude rules take precedence over include rules (if a resource matches both, it is excluded)
+    # excludeResourceRules describes what operations on what resources/subresources the ValidatingAdmissionPolicy should not care about. The exclude rules take precedence over include rules (if a resource matches both, it is excluded)
     @[::JSON::Field(key: "excludeResourceRules")]
     @[::YAML::Field(key: "excludeResourceRules")]
     property exclude_resource_rules : Array(NamedRuleWithOperations)?
@@ -78,7 +151,7 @@ module Kubernetes
     @[::JSON::Field(key: "matchPolicy")]
     @[::YAML::Field(key: "matchPolicy")]
     property match_policy : String?
-    # NamespaceSelector decides whether to run the admission control policy on an object based on whether the namespace for that object matches the selector. If the object itself is a namespace, the matching is performed on object.metadata.labels. If the object is another cluster scoped resource, it never skips the policy.
+    # namespaceSelector decides whether to run the admission control policy on an object based on whether the namespace for that object matches the selector. If the object itself is a namespace, the matching is performed on object.metadata.labels. If the object is another cluster scoped resource, it never skips the policy.
     # For example, to run the webhook on any objects whose namespace is not associated with "runlevel" of "0" or "1";  you will set the selector as follows: "namespaceSelector": {
     # "matchExpressions": [
     # {
@@ -108,33 +181,160 @@ module Kubernetes
     @[::JSON::Field(key: "namespaceSelector")]
     @[::YAML::Field(key: "namespaceSelector")]
     property namespace_selector : LabelSelector?
-    # ObjectSelector decides whether to run the validation based on if the object has matching labels. objectSelector is evaluated against both the oldObject and newObject that would be sent to the cel validation, and is considered to match if either object matches the selector. A null object (oldObject in the case of create, or newObject in the case of delete) or an object that cannot have labels (like a DeploymentRollback or a PodProxyOptions object) is not considered to match. Use the object selector only if the webhook is opt-in, because end users may skip the admission webhook by setting the labels. Default to the empty LabelSelector, which matches everything.
+    # objectSelector decides whether to run the validation based on if the object has matching labels. objectSelector is evaluated against both the oldObject and newObject that would be sent to the cel validation, and is considered to match if either object matches the selector. A null object (oldObject in the case of create, or newObject in the case of delete) or an object that cannot have labels (like a DeploymentRollback or a PodProxyOptions object) is not considered to match. Use the object selector only if the webhook is opt-in, because end users may skip the admission webhook by setting the labels. Default to the empty LabelSelector, which matches everything.
     @[::JSON::Field(key: "objectSelector")]
     @[::YAML::Field(key: "objectSelector")]
     property object_selector : LabelSelector?
-    # ResourceRules describes what operations on what resources/subresources the ValidatingAdmissionPolicy matches. The policy cares about an operation if it matches _any_ Rule.
+    # resourceRules describes what operations on what resources/subresources the ValidatingAdmissionPolicy matches. The policy cares about an operation if it matches _any_ Rule.
     @[::JSON::Field(key: "resourceRules")]
     @[::YAML::Field(key: "resourceRules")]
     property resource_rules : Array(NamedRuleWithOperations)?
+  end
+
+  # MutatingAdmissionPolicy describes the definition of an admission mutation policy that mutates the object coming into admission chain.
+  struct MutatingAdmissionPolicy
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # metadata is the standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+    property metadata : ObjectMeta?
+    # spec defines the desired behavior of the MutatingAdmissionPolicy.
+    property spec : MutatingAdmissionPolicySpec?
+  end
+
+  # MutatingAdmissionPolicyBinding binds the MutatingAdmissionPolicy with parametrized resources. MutatingAdmissionPolicyBinding and the optional parameter resource together define how cluster administrators configure policies for clusters.
+  # For a given admission request, each binding will cause its policy to be evaluated N times, where N is 1 for policies/bindings that don't use params, otherwise N is the number of parameters selected by the binding. Each evaluation is constrained by a [runtime cost budget](https://kubernetes.io/docs/reference/using-api/cel/#runtime-cost-budget).
+  # Adding/removing policies, bindings, or params can not affect whether a given (policy, binding, param) combination is within its own CEL budget.
+  struct MutatingAdmissionPolicyBinding
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # metadata is the standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+    property metadata : ObjectMeta?
+    # spec defines the desired behavior of the MutatingAdmissionPolicyBinding.
+    property spec : MutatingAdmissionPolicyBindingSpec?
+  end
+
+  # MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
+  struct MutatingAdmissionPolicyBindingList
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # List of PolicyBinding.
+    property items : Array(MutatingAdmissionPolicyBinding)?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property metadata : ListMeta?
+  end
+
+  # MutatingAdmissionPolicyBindingSpec defines the specification of the MutatingAdmissionPolicyBinding.
+  struct MutatingAdmissionPolicyBindingSpec
+    include Kubernetes::Serializable
+
+    # matchResources limits what resources match this binding and may be mutated by it. Note that if matchResources matches a resource, the resource must also match a policy's matchConstraints and matchConditions before the resource may be mutated. When matchResources is unset, it does not constrain resource matching, and only the policy's matchConstraints and matchConditions must match for the resource to be mutated. Additionally, matchResources.resourceRules are optional and do not constraint matching when unset. Note that this is differs from MutatingAdmissionPolicy matchConstraints, where resourceRules are required. The CREATE, UPDATE and CONNECT operations are allowed.  The DELETE operation may not be matched. '*' matches CREATE, UPDATE and CONNECT.
+    @[::JSON::Field(key: "matchResources")]
+    @[::YAML::Field(key: "matchResources")]
+    property match_resources : MatchResources?
+    # paramRef specifies the parameter resource used to configure the admission control policy. It should point to a resource of the type specified in spec.ParamKind of the bound MutatingAdmissionPolicy. If the policy specifies a ParamKind and the resource referred to by ParamRef does not exist, this binding is considered mis-configured and the FailurePolicy of the MutatingAdmissionPolicy applied. If the policy does not specify a ParamKind then this field is ignored, and the rules are evaluated without a param.
+    @[::JSON::Field(key: "paramRef")]
+    @[::YAML::Field(key: "paramRef")]
+    property param_ref : ParamRef?
+    # policyName references a MutatingAdmissionPolicy name which the MutatingAdmissionPolicyBinding binds to. If the referenced resource does not exist, this binding is considered invalid and will be ignored Required.
+    @[::JSON::Field(key: "policyName")]
+    @[::YAML::Field(key: "policyName")]
+    property policy_name : String?
+  end
+
+  # MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
+  struct MutatingAdmissionPolicyList
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # List of ValidatingAdmissionPolicy.
+    property items : Array(MutatingAdmissionPolicy)?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property metadata : ListMeta?
+  end
+
+  # MutatingAdmissionPolicySpec defines the desired behavior of the admission policy.
+  struct MutatingAdmissionPolicySpec
+    include Kubernetes::Serializable
+
+    # failurePolicy defines how to handle failures for the admission policy. Failures can occur from CEL expression parse errors, type check errors, runtime errors and invalid or mis-configured policy definitions or bindings.
+    # A policy is invalid if paramKind refers to a non-existent Kind. A binding is invalid if paramRef.name refers to a non-existent resource.
+    # failurePolicy does not define how validations that evaluate to false are handled.
+    # Allowed values are Ignore or Fail. Defaults to Fail.
+    @[::JSON::Field(key: "failurePolicy")]
+    @[::YAML::Field(key: "failurePolicy")]
+    property failure_policy : String?
+    # matchConditions is a list of conditions that must be met for a request to be validated. Match conditions filter requests that have already been matched by the matchConstraints. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
+    # If a parameter object is provided, it can be accessed via the `params` handle in the same manner as validation expressions.
+    # The exact matching logic is (in order):
+    # 1. If ANY matchCondition evaluates to FALSE, the policy is skipped.
+    # 2. If ALL matchConditions evaluate to TRUE, the policy is evaluated.
+    # 3. If any matchCondition evaluates to an error (but none are FALSE):
+    # - If failurePolicy=Fail, reject the request
+    # - If failurePolicy=Ignore, the policy is skipped
+    @[::JSON::Field(key: "matchConditions")]
+    @[::YAML::Field(key: "matchConditions")]
+    property match_conditions : Array(MatchCondition)?
+    # matchConstraints specifies what resources this policy is designed to validate. The MutatingAdmissionPolicy cares about a request if it matches _all_ Constraints. However, in order to prevent clusters from being put into an unstable state that cannot be recovered from via the API MutatingAdmissionPolicy cannot match MutatingAdmissionPolicy and MutatingAdmissionPolicyBinding. The CREATE, UPDATE and CONNECT operations are allowed.  The DELETE operation may not be matched. '*' matches CREATE, UPDATE and CONNECT. Required.
+    @[::JSON::Field(key: "matchConstraints")]
+    @[::YAML::Field(key: "matchConstraints")]
+    property match_constraints : MatchResources?
+    # mutations contain operations to perform on matching objects. mutations may not be empty; a minimum of one mutation is required. mutations are evaluated in order, and are reinvoked according to the reinvocationPolicy. The mutations of a policy are invoked for each binding of this policy and reinvocation of mutations occurs on a per binding basis.
+    property mutations : Array(Mutation)?
+    # paramKind specifies the kind of resources used to parameterize this policy. If absent, there are no parameters for this policy and the param CEL variable will not be provided to validation expressions. If paramKind refers to a non-existent kind, this policy definition is mis-configured and the FailurePolicy is applied. If paramKind is specified but paramRef is unset in MutatingAdmissionPolicyBinding, the params variable will be null.
+    @[::JSON::Field(key: "paramKind")]
+    @[::YAML::Field(key: "paramKind")]
+    property param_kind : ParamKind?
+    # reinvocationPolicy indicates whether mutations may be called multiple times per MutatingAdmissionPolicyBinding as part of a single admission evaluation. Allowed values are "Never" and "IfNeeded".
+    # Never: These mutations will not be called more than once per binding in a single admission evaluation.
+    # IfNeeded: These mutations may be invoked more than once per binding for a single admission request and there is no guarantee of order with respect to other admission plugins, admission webhooks, bindings of this policy and admission policies.  Mutations are only reinvoked when mutations change the object after this mutation is invoked. Required.
+    @[::JSON::Field(key: "reinvocationPolicy")]
+    @[::YAML::Field(key: "reinvocationPolicy")]
+    property reinvocation_policy : String?
+    # variables contain definitions of variables that can be used in composition of other expressions. Each variable is defined as a named CEL expression. The variables defined here will be available under `variables` in other expressions of the policy except matchConditions because matchConditions are evaluated before the rest of the policy.
+    # The expression of a variable can refer to other variables defined earlier in the list but not those after. Thus, variables must be sorted by the order of first appearance and acyclic.
+    property variables : Array(Variable)?
   end
 
   # MutatingWebhook describes an admission webhook and the resources and operations it applies to.
   struct MutatingWebhook
     include Kubernetes::Serializable
 
-    # AdmissionReviewVersions is an ordered list of preferred `AdmissionReview` versions the Webhook expects. API server will try to use first version in the list which it supports. If none of the versions specified in this list supported by API server, validation will fail for this object. If a persisted webhook configuration specifies allowed versions and does not include any versions known to the API Server, calls to the webhook will fail and be subject to the failure policy.
+    # admissionReviewVersions is an ordered list of preferred `AdmissionReview` versions the Webhook expects. API server will try to use first version in the list which it supports. If none of the versions specified in this list supported by API server, validation will fail for this object. If a persisted webhook configuration specifies allowed versions and does not include any versions known to the API Server, calls to the webhook will fail and be subject to the failure policy.
     @[::JSON::Field(key: "admissionReviewVersions")]
     @[::YAML::Field(key: "admissionReviewVersions")]
     property admission_review_versions : Array(String)?
-    # ClientConfig defines how to communicate with the hook. Required
+    # clientConfig defines how to communicate with the hook. Required
     @[::JSON::Field(key: "clientConfig")]
     @[::YAML::Field(key: "clientConfig")]
     property client_config : WebhookClientConfig?
-    # FailurePolicy defines how unrecognized errors from the admission endpoint are handled - allowed values are Ignore or Fail. Defaults to Fail.
+    # failurePolicy defines how unrecognized errors from the admission endpoint are handled - allowed values are Ignore or Fail. Defaults to Fail.
     @[::JSON::Field(key: "failurePolicy")]
     @[::YAML::Field(key: "failurePolicy")]
     property failure_policy : String?
-    # MatchConditions is a list of conditions that must be met for a request to be sent to this webhook. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
+    # matchConditions is a list of conditions that must be met for a request to be sent to this webhook. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
     # The exact matching logic is (in order):
     # 1. If ANY matchCondition evaluates to FALSE, the webhook is skipped.
     # 2. If ALL matchConditions evaluate to TRUE, the webhook is called.
@@ -151,9 +351,9 @@ module Kubernetes
     @[::JSON::Field(key: "matchPolicy")]
     @[::YAML::Field(key: "matchPolicy")]
     property match_policy : String?
-    # The name of the admission webhook. Name should be fully qualified, e.g., imagepolicy.kubernetes.io, where "imagepolicy" is the name of the webhook, and kubernetes.io is the name of the organization. Required.
+    # name is the name of the admission webhook. Name should be fully qualified, e.g., imagepolicy.kubernetes.io, where "imagepolicy" is the name of the webhook, and kubernetes.io is the name of the organization. Required.
     property name : String?
-    # NamespaceSelector decides whether to run the webhook on an object based on whether the namespace for that object matches the selector. If the object itself is a namespace, the matching is performed on object.metadata.labels. If the object is another cluster scoped resource, it never skips the webhook.
+    # namespaceSelector decides whether to run the webhook on an object based on whether the namespace for that object matches the selector. If the object itself is a namespace, the matching is performed on object.metadata.labels. If the object is another cluster scoped resource, it never skips the webhook.
     # For example, to run the webhook on any objects whose namespace is not associated with "runlevel" of "0" or "1";  you will set the selector as follows: "namespaceSelector": {
     # "matchExpressions": [
     # {
@@ -183,7 +383,7 @@ module Kubernetes
     @[::JSON::Field(key: "namespaceSelector")]
     @[::YAML::Field(key: "namespaceSelector")]
     property namespace_selector : LabelSelector?
-    # ObjectSelector decides whether to run the webhook based on if the object has matching labels. objectSelector is evaluated against both the oldObject and newObject that would be sent to the webhook, and is considered to match if either object matches the selector. A null object (oldObject in the case of create, or newObject in the case of delete) or an object that cannot have labels (like a DeploymentRollback or a PodProxyOptions object) is not considered to match. Use the object selector only if the webhook is opt-in, because end users may skip the admission webhook by setting the labels. Default to the empty LabelSelector, which matches everything.
+    # objectSelector decides whether to run the webhook based on if the object has matching labels. objectSelector is evaluated against both the oldObject and newObject that would be sent to the webhook, and is considered to match if either object matches the selector. A null object (oldObject in the case of create, or newObject in the case of delete) or an object that cannot have labels (like a DeploymentRollback or a PodProxyOptions object) is not considered to match. Use the object selector only if the webhook is opt-in, because end users may skip the admission webhook by setting the labels. Default to the empty LabelSelector, which matches everything.
     @[::JSON::Field(key: "objectSelector")]
     @[::YAML::Field(key: "objectSelector")]
     property object_selector : LabelSelector?
@@ -194,13 +394,13 @@ module Kubernetes
     @[::JSON::Field(key: "reinvocationPolicy")]
     @[::YAML::Field(key: "reinvocationPolicy")]
     property reinvocation_policy : String?
-    # Rules describes what operations on what resources/subresources the webhook cares about. The webhook cares about an operation if it matches _any_ Rule. However, in order to prevent ValidatingAdmissionWebhooks and MutatingAdmissionWebhooks from putting the cluster in a state which cannot be recovered from without completely disabling the plugin, ValidatingAdmissionWebhooks and MutatingAdmissionWebhooks are never called on admission requests for ValidatingWebhookConfiguration and MutatingWebhookConfiguration objects.
+    # rules describes what operations on what resources/subresources the webhook cares about. The webhook cares about an operation if it matches _any_ Rule. However, in order to prevent ValidatingAdmissionWebhooks and MutatingAdmissionWebhooks from putting the cluster in a state which cannot be recovered from without completely disabling the plugin, ValidatingAdmissionWebhooks and MutatingAdmissionWebhooks are never called on admission requests for ValidatingWebhookConfiguration and MutatingWebhookConfiguration objects.
     property rules : Array(RuleWithOperations)?
-    # SideEffects states whether this webhook has side effects. Acceptable values are: None, NoneOnDryRun (webhooks created via v1beta1 may also specify Some or Unknown). Webhooks with side effects MUST implement a reconciliation system, since a request may be rejected by a future step in the admission chain and the side effects therefore need to be undone. Requests with the dryRun attribute will be auto-rejected if they match a webhook with sideEffects == Unknown or Some.
+    # sideEffects states whether this webhook has side effects. Acceptable values are: None, NoneOnDryRun (webhooks created via v1beta1 may also specify Some or Unknown). Webhooks with side effects MUST implement a reconciliation system, since a request may be rejected by a future step in the admission chain and the side effects therefore need to be undone. Requests with the dryRun attribute will be auto-rejected if they match a webhook with sideEffects == Unknown or Some.
     @[::JSON::Field(key: "sideEffects")]
     @[::YAML::Field(key: "sideEffects")]
     property side_effects : String?
-    # TimeoutSeconds specifies the timeout for this webhook. After the timeout passes, the webhook call will be ignored or the API call will fail based on the failure policy. The timeout value must be between 1 and 30 seconds. Default to 10 seconds.
+    # timeoutSeconds specifies the timeout for this webhook. After the timeout passes, the webhook call will be ignored or the API call will fail based on the failure policy. The timeout value must be between 1 and 30 seconds. Default to 10 seconds.
     @[::JSON::Field(key: "timeoutSeconds")]
     @[::YAML::Field(key: "timeoutSeconds")]
     property timeout_seconds : Int32?
@@ -216,9 +416,9 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+    # metadata is the standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
     property metadata : ObjectMeta?
-    # Webhooks is a list of webhooks and the affected resources and operations.
+    # webhooks is a list of webhooks and the affected resources and operations.
     property webhooks : Array(MutatingWebhook)?
   end
 
@@ -234,29 +434,47 @@ module Kubernetes
     property items : Array(MutatingWebhookConfiguration)?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property metadata : ListMeta?
+  end
+
+  # Mutation specifies the CEL expression which is used to apply the Mutation.
+  struct Mutation
+    include Kubernetes::Serializable
+
+    # applyConfiguration defines the desired configuration values of an object. The configuration is applied to the admission object using [structured merge diff](https://github.com/kubernetes-sigs/structured-merge-diff). A CEL expression is used to create apply configuration.
+    @[::JSON::Field(key: "applyConfiguration")]
+    @[::YAML::Field(key: "applyConfiguration")]
+    property apply_configuration : ApplyConfiguration?
+    # jsonPatch defines a [JSON patch](https://jsonpatch.com/) operation to perform a mutation to the object. A CEL expression is used to create the JSON patch.
+    @[::JSON::Field(key: "jsonPatch")]
+    @[::YAML::Field(key: "jsonPatch")]
+    property json_patch : JSONPatch?
+    # patchType indicates the patch strategy used. Allowed values are "ApplyConfiguration" and "JSONPatch". Required.
+    @[::JSON::Field(key: "patchType")]
+    @[::YAML::Field(key: "patchType")]
+    property patch_type : String?
   end
 
   # NamedRuleWithOperations is a tuple of Operations and Resources with ResourceNames.
   struct NamedRuleWithOperations
     include Kubernetes::Serializable
 
-    # APIGroups is the API groups the resources belong to. '*' is all groups. If '*' is present, the length of the slice must be one. Required.
+    # apiGroups is the API groups the resources belong to. '*' is all groups. If '*' is present, the length of the slice must be one. Required.
     @[::JSON::Field(key: "apiGroups")]
     @[::YAML::Field(key: "apiGroups")]
     property api_groups : Array(String)?
-    # APIVersions is the API versions the resources belong to. '*' is all versions. If '*' is present, the length of the slice must be one. Required.
+    # apiVersions is the API versions the resources belong to. '*' is all versions. If '*' is present, the length of the slice must be one. Required.
     @[::JSON::Field(key: "apiVersions")]
     @[::YAML::Field(key: "apiVersions")]
     property api_versions : Array(String)?
-    # Operations is the operations the admission hook cares about - CREATE, UPDATE, DELETE, CONNECT or * for all of those operations and any future admission operations that are added. If '*' is present, the length of the slice must be one. Required.
+    # operations is the operations the admission hook cares about - CREATE, UPDATE, DELETE, CONNECT or * for all of those operations and any future admission operations that are added. If '*' is present, the length of the slice must be one. Required.
     property operations : Array(String)?
-    # ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
+    # resourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
     @[::JSON::Field(key: "resourceNames")]
     @[::YAML::Field(key: "resourceNames")]
     property resource_names : Array(String)?
-    # Resources is a list of resources this rule applies to.
+    # resources is a list of resources this rule applies to.
     # For example: 'pods' means pods. 'pods/log' means the log subresource of pods. '*' means all resources, but not subresources. 'pods/*' means all subresources of pods. '*/scale' means all scale subresources. '*/*' means all resources and their subresources.
     # If wildcard is present, the validation rule will ensure resources do not overlap with each other.
     # Depending on the enclosing object, subresources might not be allowed. Required.
@@ -269,11 +487,11 @@ module Kubernetes
   struct ParamKind
     include Kubernetes::Serializable
 
-    # APIVersion is the API group version the resources belong to. In format of "group/version". Required.
+    # apiVersion is the API group version the resources belong to. In format of "group/version". Required.
     @[::JSON::Field(key: "apiVersion")]
     @[::YAML::Field(key: "apiVersion")]
     property api_version : String?
-    # Kind is the API kind the resources belong to. Required.
+    # kind is the API kind the resources belong to. Required.
     property kind : String?
   end
 
@@ -290,7 +508,7 @@ module Kubernetes
     # - If `paramKind` is cluster-scoped, this field MUST be unset. Setting this field results in a configuration error.
     # - If `paramKind` is namespace-scoped, the namespace of the object being evaluated for admission will be used when this field is left unset. Take care that if this is left empty the binding must not match any cluster-scoped resources, which will result in an error.
     property namespace : String?
-    # `parameterNotFoundAction` controls the behavior of the binding when the resource exists, and name or selector is valid, but there are no parameters matched by the binding. If the value is set to `Allow`, then no matched parameters will be treated as successful validation by the binding. If set to `Deny`, then no matched parameters will be subject to the `failurePolicy` of the policy.
+    # parameterNotFoundAction controls the behavior of the binding when the resource exists, and name or selector is valid, but there are no parameters matched by the binding. If the value is set to `Allow`, then no matched parameters will be treated as successful validation by the binding. If set to `Deny`, then no matched parameters will be subject to the `failurePolicy` of the policy.
     # Allowed values are `Allow` or `Deny`
     # Required
     @[::JSON::Field(key: "parameterNotFoundAction")]
@@ -306,17 +524,17 @@ module Kubernetes
   struct RuleWithOperations
     include Kubernetes::Serializable
 
-    # APIGroups is the API groups the resources belong to. '*' is all groups. If '*' is present, the length of the slice must be one. Required.
+    # apiGroups is the API groups the resources belong to. '*' is all groups. If '*' is present, the length of the slice must be one. Required.
     @[::JSON::Field(key: "apiGroups")]
     @[::YAML::Field(key: "apiGroups")]
     property api_groups : Array(String)?
-    # APIVersions is the API versions the resources belong to. '*' is all versions. If '*' is present, the length of the slice must be one. Required.
+    # apiVersions is the API versions the resources belong to. '*' is all versions. If '*' is present, the length of the slice must be one. Required.
     @[::JSON::Field(key: "apiVersions")]
     @[::YAML::Field(key: "apiVersions")]
     property api_versions : Array(String)?
-    # Operations is the operations the admission hook cares about - CREATE, UPDATE, DELETE, CONNECT or * for all of those operations and any future admission operations that are added. If '*' is present, the length of the slice must be one. Required.
+    # operations is the operations the admission hook cares about - CREATE, UPDATE, DELETE, CONNECT or * for all of those operations and any future admission operations that are added. If '*' is present, the length of the slice must be one. Required.
     property operations : Array(String)?
-    # Resources is a list of resources this rule applies to.
+    # resources is a list of resources this rule applies to.
     # For example: 'pods' means pods. 'pods/log' means the log subresource of pods. '*' means all resources, but not subresources. 'pods/*' means all subresources of pods. '*/scale' means all scale subresources. '*/*' means all resources and their subresources.
     # If wildcard is present, the validation rule will ensure resources do not overlap with each other.
     # Depending on the enclosing object, subresources might not be allowed. Required.
@@ -329,13 +547,13 @@ module Kubernetes
   struct ServiceReference
     include Kubernetes::Serializable
 
-    # `name` is the name of the service. Required
+    # name is the name of the service. Required
     property name : String?
-    # `namespace` is the namespace of the service. Required
+    # namespace is the namespace of the service. Required
     property namespace : String?
-    # `path` is an optional URL path which will be sent in any request to this service.
+    # path is an optional URL path which will be sent in any request to this service.
     property path : String?
-    # If specified, the port on the service that hosting webhook. Default to 443 for backward compatibility. `port` should be a valid port number (1-65535, inclusive).
+    # port is the port on the service that hosts the webhook. Default to 443 for backward compatibility. `port` should be a valid port number (1-65535, inclusive).
     property port : Int32?
   end
 
@@ -343,7 +561,7 @@ module Kubernetes
   struct TypeChecking
     include Kubernetes::Serializable
 
-    # The type checking warnings for each expression.
+    # expressionWarnings contains the type checking warnings for each expression.
     @[::JSON::Field(key: "expressionWarnings")]
     @[::YAML::Field(key: "expressionWarnings")]
     property expression_warnings : Array(ExpressionWarning)?
@@ -359,11 +577,11 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+    # metadata is the standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
     property metadata : ObjectMeta?
-    # Specification of the desired behavior of the ValidatingAdmissionPolicy.
+    # spec defines the desired behavior of the ValidatingAdmissionPolicy.
     property spec : ValidatingAdmissionPolicySpec?
-    # The status of the ValidatingAdmissionPolicy, including warnings that are useful to determine if the policy behaves in the expected way. Populated by the system. Read-only.
+    # status represents the current status of the ValidatingAdmissionPolicy, including warnings that are useful to determine if the policy behaves in the expected way. Populated by the system. Read-only.
     property status : ValidatingAdmissionPolicyStatus?
   end
 
@@ -379,9 +597,9 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+    # metadata is the standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
     property metadata : ObjectMeta?
-    # Specification of the desired behavior of the ValidatingAdmissionPolicyBinding.
+    # spec defines the desired behavior of the ValidatingAdmissionPolicyBinding.
     property spec : ValidatingAdmissionPolicyBindingSpec?
   end
 
@@ -397,7 +615,7 @@ module Kubernetes
     property items : Array(ValidatingAdmissionPolicyBinding)?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property metadata : ListMeta?
   end
 
@@ -405,7 +623,7 @@ module Kubernetes
   struct ValidatingAdmissionPolicyBindingSpec
     include Kubernetes::Serializable
 
-    # MatchResources declares what resources match this binding and will be validated by it. Note that this is intersected with the policy's matchConstraints, so only requests that are matched by the policy can be selected by this. If this is unset, all resources matched by the policy are validated by this binding When resourceRules is unset, it does not constrain resource matching. If a resource is matched by the other fields of this object, it will be validated. Note that this is differs from ValidatingAdmissionPolicy matchConstraints, where resourceRules are required.
+    # matchResources declares what resources match this binding and will be validated by it. Note that this is intersected with the policy's matchConstraints, so only requests that are matched by the policy can be selected by this. If this is unset, all resources matched by the policy are validated by this binding When resourceRules is unset, it does not constrain resource matching. If a resource is matched by the other fields of this object, it will be validated. Note that this is differs from ValidatingAdmissionPolicy matchConstraints, where resourceRules are required.
     @[::JSON::Field(key: "matchResources")]
     @[::YAML::Field(key: "matchResources")]
     property match_resources : MatchResources?
@@ -413,7 +631,7 @@ module Kubernetes
     @[::JSON::Field(key: "paramRef")]
     @[::YAML::Field(key: "paramRef")]
     property param_ref : ParamRef?
-    # PolicyName references a ValidatingAdmissionPolicy name which the ValidatingAdmissionPolicyBinding binds to. If the referenced resource does not exist, this binding is considered invalid and will be ignored Required.
+    # policyName references a ValidatingAdmissionPolicy name which the ValidatingAdmissionPolicyBinding binds to. If the referenced resource does not exist, this binding is considered invalid and will be ignored Required.
     @[::JSON::Field(key: "policyName")]
     @[::YAML::Field(key: "policyName")]
     property policy_name : String?
@@ -444,7 +662,7 @@ module Kubernetes
     property items : Array(ValidatingAdmissionPolicy)?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property metadata : ListMeta?
   end
 
@@ -464,7 +682,7 @@ module Kubernetes
     @[::JSON::Field(key: "failurePolicy")]
     @[::YAML::Field(key: "failurePolicy")]
     property failure_policy : String?
-    # MatchConditions is a list of conditions that must be met for a request to be validated. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
+    # matchConditions is a list of conditions that must be met for a request to be validated. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
     # If a parameter object is provided, it can be accessed via the `params` handle in the same manner as validation expressions.
     # The exact matching logic is (in order):
     # 1. If ANY matchCondition evaluates to FALSE, the policy is skipped.
@@ -475,17 +693,17 @@ module Kubernetes
     @[::JSON::Field(key: "matchConditions")]
     @[::YAML::Field(key: "matchConditions")]
     property match_conditions : Array(MatchCondition)?
-    # MatchConstraints specifies what resources this policy is designed to validate. The AdmissionPolicy cares about a request if it matches _all_ Constraints. However, in order to prevent clusters from being put into an unstable state that cannot be recovered from via the API ValidatingAdmissionPolicy cannot match ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding. Required.
+    # matchConstraints specifies what resources this policy is designed to validate. The AdmissionPolicy cares about a request if it matches _all_ Constraints. However, in order to prevent clusters from being put into an unstable state that cannot be recovered from via the API ValidatingAdmissionPolicy cannot match ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding. Required.
     @[::JSON::Field(key: "matchConstraints")]
     @[::YAML::Field(key: "matchConstraints")]
     property match_constraints : MatchResources?
-    # ParamKind specifies the kind of resources used to parameterize this policy. If absent, there are no parameters for this policy and the param CEL variable will not be provided to validation expressions. If ParamKind refers to a non-existent kind, this policy definition is mis-configured and the FailurePolicy is applied. If paramKind is specified but paramRef is unset in ValidatingAdmissionPolicyBinding, the params variable will be null.
+    # paramKind specifies the kind of resources used to parameterize this policy. If absent, there are no parameters for this policy and the param CEL variable will not be provided to validation expressions. If ParamKind refers to a non-existent kind, this policy definition is mis-configured and the FailurePolicy is applied. If paramKind is specified but paramRef is unset in ValidatingAdmissionPolicyBinding, the params variable will be null.
     @[::JSON::Field(key: "paramKind")]
     @[::YAML::Field(key: "paramKind")]
     property param_kind : ParamKind?
-    # Validations contain CEL expressions which is used to apply the validation. Validations and AuditAnnotations may not both be empty; a minimum of one Validations or AuditAnnotations is required.
+    # validations contain CEL expressions which is used to apply the validation. Validations and AuditAnnotations may not both be empty; a minimum of one Validations or AuditAnnotations is required.
     property validations : Array(Validation)?
-    # Variables contain definitions of variables that can be used in composition of other expressions. Each variable is defined as a named CEL expression. The variables defined here will be available under `variables` in other expressions of the policy except MatchConditions because MatchConditions are evaluated before the rest of the policy.
+    # variables contain definitions of variables that can be used in composition of other expressions. Each variable is defined as a named CEL expression. The variables defined here will be available under `variables` in other expressions of the policy except MatchConditions because MatchConditions are evaluated before the rest of the policy.
     # The expression of a variable can refer to other variables defined earlier in the list but not those after. Thus, Variables must be sorted by the order of first appearance and acyclic.
     property variables : Array(Variable)?
   end
@@ -494,13 +712,13 @@ module Kubernetes
   struct ValidatingAdmissionPolicyStatus
     include Kubernetes::Serializable
 
-    # The conditions represent the latest available observations of a policy's current state.
+    # conditions represent the latest available observations of a policy's current state.
     property conditions : Array(Condition)?
-    # The generation observed by the controller.
+    # observedGeneration is the generation observed by the controller.
     @[::JSON::Field(key: "observedGeneration")]
     @[::YAML::Field(key: "observedGeneration")]
     property observed_generation : Int64?
-    # The results of type checking for each expression. Presence of this field indicates the completion of the type checking.
+    # typeChecking contains the results of type checking for each expression. Presence of this field indicates the completion of the type checking.
     @[::JSON::Field(key: "typeChecking")]
     @[::YAML::Field(key: "typeChecking")]
     property type_checking : TypeChecking?
@@ -510,19 +728,19 @@ module Kubernetes
   struct ValidatingWebhook
     include Kubernetes::Serializable
 
-    # AdmissionReviewVersions is an ordered list of preferred `AdmissionReview` versions the Webhook expects. API server will try to use first version in the list which it supports. If none of the versions specified in this list supported by API server, validation will fail for this object. If a persisted webhook configuration specifies allowed versions and does not include any versions known to the API Server, calls to the webhook will fail and be subject to the failure policy.
+    # admissionReviewVersions is an ordered list of preferred `AdmissionReview` versions the Webhook expects. API server will try to use first version in the list which it supports. If none of the versions specified in this list supported by API server, validation will fail for this object. If a persisted webhook configuration specifies allowed versions and does not include any versions known to the API Server, calls to the webhook will fail and be subject to the failure policy.
     @[::JSON::Field(key: "admissionReviewVersions")]
     @[::YAML::Field(key: "admissionReviewVersions")]
     property admission_review_versions : Array(String)?
-    # ClientConfig defines how to communicate with the hook. Required
+    # clientConfig defines how to communicate with the hook. Required
     @[::JSON::Field(key: "clientConfig")]
     @[::YAML::Field(key: "clientConfig")]
     property client_config : WebhookClientConfig?
-    # FailurePolicy defines how unrecognized errors from the admission endpoint are handled - allowed values are Ignore or Fail. Defaults to Fail.
+    # failurePolicy defines how unrecognized errors from the admission endpoint are handled - allowed values are Ignore or Fail. Defaults to Fail.
     @[::JSON::Field(key: "failurePolicy")]
     @[::YAML::Field(key: "failurePolicy")]
     property failure_policy : String?
-    # MatchConditions is a list of conditions that must be met for a request to be sent to this webhook. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
+    # matchConditions is a list of conditions that must be met for a request to be sent to this webhook. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
     # The exact matching logic is (in order):
     # 1. If ANY matchCondition evaluates to FALSE, the webhook is skipped.
     # 2. If ALL matchConditions evaluate to TRUE, the webhook is called.
@@ -539,9 +757,9 @@ module Kubernetes
     @[::JSON::Field(key: "matchPolicy")]
     @[::YAML::Field(key: "matchPolicy")]
     property match_policy : String?
-    # The name of the admission webhook. Name should be fully qualified, e.g., imagepolicy.kubernetes.io, where "imagepolicy" is the name of the webhook, and kubernetes.io is the name of the organization. Required.
+    # name is the name of the admission webhook. Name should be fully qualified, e.g., imagepolicy.kubernetes.io, where "imagepolicy" is the name of the webhook, and kubernetes.io is the name of the organization. Required.
     property name : String?
-    # NamespaceSelector decides whether to run the webhook on an object based on whether the namespace for that object matches the selector. If the object itself is a namespace, the matching is performed on object.metadata.labels. If the object is another cluster scoped resource, it never skips the webhook.
+    # namespaceSelector decides whether to run the webhook on an object based on whether the namespace for that object matches the selector. If the object itself is a namespace, the matching is performed on object.metadata.labels. If the object is another cluster scoped resource, it never skips the webhook.
     # For example, to run the webhook on any objects whose namespace is not associated with "runlevel" of "0" or "1";  you will set the selector as follows: "namespaceSelector": {
     # "matchExpressions": [
     # {
@@ -571,17 +789,17 @@ module Kubernetes
     @[::JSON::Field(key: "namespaceSelector")]
     @[::YAML::Field(key: "namespaceSelector")]
     property namespace_selector : LabelSelector?
-    # ObjectSelector decides whether to run the webhook based on if the object has matching labels. objectSelector is evaluated against both the oldObject and newObject that would be sent to the webhook, and is considered to match if either object matches the selector. A null object (oldObject in the case of create, or newObject in the case of delete) or an object that cannot have labels (like a DeploymentRollback or a PodProxyOptions object) is not considered to match. Use the object selector only if the webhook is opt-in, because end users may skip the admission webhook by setting the labels. Default to the empty LabelSelector, which matches everything.
+    # objectSelector decides whether to run the webhook based on if the object has matching labels. objectSelector is evaluated against both the oldObject and newObject that would be sent to the webhook, and is considered to match if either object matches the selector. A null object (oldObject in the case of create, or newObject in the case of delete) or an object that cannot have labels (like a DeploymentRollback or a PodProxyOptions object) is not considered to match. Use the object selector only if the webhook is opt-in, because end users may skip the admission webhook by setting the labels. Default to the empty LabelSelector, which matches everything.
     @[::JSON::Field(key: "objectSelector")]
     @[::YAML::Field(key: "objectSelector")]
     property object_selector : LabelSelector?
-    # Rules describes what operations on what resources/subresources the webhook cares about. The webhook cares about an operation if it matches _any_ Rule. However, in order to prevent ValidatingAdmissionWebhooks and MutatingAdmissionWebhooks from putting the cluster in a state which cannot be recovered from without completely disabling the plugin, ValidatingAdmissionWebhooks and MutatingAdmissionWebhooks are never called on admission requests for ValidatingWebhookConfiguration and MutatingWebhookConfiguration objects.
+    # rules describes what operations on what resources/subresources the webhook cares about. The webhook cares about an operation if it matches _any_ Rule. However, in order to prevent ValidatingAdmissionWebhooks and MutatingAdmissionWebhooks from putting the cluster in a state which cannot be recovered from without completely disabling the plugin, ValidatingAdmissionWebhooks and MutatingAdmissionWebhooks are never called on admission requests for ValidatingWebhookConfiguration and MutatingWebhookConfiguration objects.
     property rules : Array(RuleWithOperations)?
-    # SideEffects states whether this webhook has side effects. Acceptable values are: None, NoneOnDryRun (webhooks created via v1beta1 may also specify Some or Unknown). Webhooks with side effects MUST implement a reconciliation system, since a request may be rejected by a future step in the admission chain and the side effects therefore need to be undone. Requests with the dryRun attribute will be auto-rejected if they match a webhook with sideEffects == Unknown or Some.
+    # sideEffects states whether this webhook has side effects. Acceptable values are: None, NoneOnDryRun (webhooks created via v1beta1 may also specify Some or Unknown). Webhooks with side effects MUST implement a reconciliation system, since a request may be rejected by a future step in the admission chain and the side effects therefore need to be undone. Requests with the dryRun attribute will be auto-rejected if they match a webhook with sideEffects == Unknown or Some.
     @[::JSON::Field(key: "sideEffects")]
     @[::YAML::Field(key: "sideEffects")]
     property side_effects : String?
-    # TimeoutSeconds specifies the timeout for this webhook. After the timeout passes, the webhook call will be ignored or the API call will fail based on the failure policy. The timeout value must be between 1 and 30 seconds. Default to 10 seconds.
+    # timeoutSeconds specifies the timeout for this webhook. After the timeout passes, the webhook call will be ignored or the API call will fail based on the failure policy. The timeout value must be between 1 and 30 seconds. Default to 10 seconds.
     @[::JSON::Field(key: "timeoutSeconds")]
     @[::YAML::Field(key: "timeoutSeconds")]
     property timeout_seconds : Int32?
@@ -597,9 +815,9 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+    # metadata is the standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
     property metadata : ObjectMeta?
-    # Webhooks is a list of webhooks and the affected resources and operations.
+    # webhooks is a list of webhooks and the affected resources and operations.
     property webhooks : Array(ValidatingWebhook)?
   end
 
@@ -615,7 +833,7 @@ module Kubernetes
     property items : Array(ValidatingWebhookConfiguration)?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    # metadata is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property metadata : ListMeta?
   end
 
@@ -623,7 +841,7 @@ module Kubernetes
   struct Validation
     include Kubernetes::Serializable
 
-    # Expression represents the expression which will be evaluated by CEL. ref: https://github.com/google/cel-spec CEL expressions have access to the contents of the API request/response, organized into CEL variables as well as some other useful variables:
+    # expression represents the expression which will be evaluated by CEL. ref: https://github.com/google/cel-spec CEL expressions have access to the contents of the API request/response, organized into CEL variables as well as some other useful variables:
     # - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
     # For example, a variable named 'foo' can be accessed as 'variables.foo'.
     # - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
@@ -646,13 +864,13 @@ module Kubernetes
     # non-intersecting keys are appended, retaining their partial order.
     # Required.
     property expression : String?
-    # Message represents the message displayed when validation fails. The message is required if the Expression contains line breaks. The message must not contain line breaks. If unset, the message is "failed rule: {Rule}". e.g. "must be a URL with the host matching spec.host" If the Expression contains line breaks. Message is required. The message must not contain line breaks. If unset, the message is "failed Expression: {Expression}".
+    # message represents the message displayed when validation fails. The message is required if the Expression contains line breaks. The message must not contain line breaks. If unset, the message is "failed rule: {Rule}". e.g. "must be a URL with the host matching spec.host" If the Expression contains line breaks. Message is required. The message must not contain line breaks. If unset, the message is "failed Expression: {Expression}".
     property message : String?
     # messageExpression declares a CEL expression that evaluates to the validation failure message that is returned when this rule fails. Since messageExpression is used as a failure message, it must evaluate to a string. If both message and messageExpression are present on a validation, then messageExpression will be used if validation fails. If messageExpression results in a runtime error, the runtime error is logged, and the validation failure message is produced as if the messageExpression field were unset. If messageExpression evaluates to an empty string, a string with only spaces, or a string that contains line breaks, then the validation failure message will also be produced as if the messageExpression field were unset, and the fact that messageExpression produced an empty string/string with only spaces/string with line breaks will be logged. messageExpression has access to all the same variables as the `expression` except for 'authorizer' and 'authorizer.requestResource'. Example: "object.x must be less than max ("+string(params.max)+")"
     @[::JSON::Field(key: "messageExpression")]
     @[::YAML::Field(key: "messageExpression")]
     property message_expression : String?
-    # Reason represents a machine-readable description of why this validation failed. If this is the first validation in the list to fail, this reason, as well as the corresponding HTTP response code, are used in the HTTP response to the client. The currently supported reasons are: "Unauthorized", "Forbidden", "Invalid", "RequestEntityTooLarge". If not set, StatusReasonInvalid is used in the response to the client.
+    # reason represents a machine-readable description of why this validation failed. If this is the first validation in the list to fail, this reason, as well as the corresponding HTTP response code, are used in the HTTP response to the client. The currently supported reasons are: "Unauthorized", "Forbidden", "Invalid", "RequestEntityTooLarge". If not set, StatusReasonInvalid is used in the response to the client.
     property reason : String?
   end
 
@@ -660,9 +878,9 @@ module Kubernetes
   struct Variable
     include Kubernetes::Serializable
 
-    # Expression is the expression that will be evaluated as the value of the variable. The CEL expression has access to the same identifiers as the CEL expressions in Validation.
+    # expression is the expression that will be evaluated as the value of the variable. The CEL expression has access to the same identifiers as the CEL expressions in Validation.
     property expression : String?
-    # Name is the name of the variable. The name must be a valid CEL identifier and unique among all variables. The variable can be accessed in other expressions through `variables` For example, if name is "foo", the variable will be available as `variables.foo`
+    # name is the name of the variable. The name must be a valid CEL identifier and unique among all variables. The variable can be accessed in other expressions through `variables` For example, if name is "foo", the variable will be available as `variables.foo`
     property name : String?
   end
 
@@ -670,14 +888,14 @@ module Kubernetes
   struct WebhookClientConfig
     include Kubernetes::Serializable
 
-    # `caBundle` is a PEM encoded CA bundle which will be used to validate the webhook's server certificate. If unspecified, system trust roots on the apiserver are used.
+    # caBundle is a PEM encoded CA bundle which will be used to validate the webhook's server certificate. If unspecified, system trust roots on the apiserver are used.
     @[::JSON::Field(key: "caBundle")]
     @[::YAML::Field(key: "caBundle")]
     property ca_bundle : String?
-    # `service` is a reference to the service for this webhook. Either `service` or `url` must be specified.
+    # service is a reference to the service for this webhook. Either `service` or `url` must be specified.
     # If the webhook is running within the cluster, then you should use `service`.
     property service : ServiceReference?
-    # `url` gives the location of the webhook, in standard URL form (`scheme://host:port/path`). Exactly one of `url` or `service` must be specified.
+    # url gives the location of the webhook, in standard URL form (`scheme://host:port/path`). Exactly one of `url` or `service` must be specified.
     # The `host` should not refer to a service running in the cluster; use the `service` field instead. The host might be resolved via external DNS in some apiservers (e.g., `kube-apiserver` cannot resolve in-cluster DNS as that would be a layering violation). `host` may also be an IP address.
     # Please note that using `localhost` or `127.0.0.1` as a `host` is risky unless you take great care to run this webhook on all hosts which run an apiserver which might need to make calls to this webhook. Such installs are likely to be non-portable, i.e., not easy to turn up in a new cluster.
     # The scheme must be "https"; the URL must begin with "https://".
