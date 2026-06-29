@@ -197,9 +197,9 @@ module Kubernetes
     property disruption_mode : DisruptionMode?
     # Name is a unique identifier for the PodGroupTemplate within the Workload. It must be a DNS label. This field is immutable.
     property name : String?
-    # Priority is the value of priority of pod groups created from this template. Various system components use this field to find the priority of the pod group. When Priority Admission Controller is enabled, it prevents users from setting this field. The admission controller populates this field from PriorityClassName. The higher the value, the higher the priority. This field is immutable.
+    # Priority is the value of priority of pod groups created from this template. Various system components use this field to find the priority of the pod group. The higher the value, the higher the priority. This field is immutable.
     property priority : Int32?
-    # PriorityClassName indicates the priority that should be considered when scheduling a pod group created from this template. If no priority class is specified, admission control can set this to the global default priority class if it exists. Otherwise, pod groups created from this template will have the priority set to zero. This field is immutable.
+    # PriorityClassName indicates the priority that should be considered when scheduling a pod group created from this template. This field is immutable.
     @[::JSON::Field(key: "priorityClassName")]
     @[::YAML::Field(key: "priorityClassName")]
     property priority_class_name : String?
