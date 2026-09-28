@@ -39,7 +39,7 @@ module Kubernetes
     property handler : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
     # overhead represents the resource overhead associated with running a pod for a given RuntimeClass. For more details, see
     # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-overhead/

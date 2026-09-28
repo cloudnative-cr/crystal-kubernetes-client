@@ -21,6 +21,93 @@ module Kubernetes
       get(path) { |res| yield res }
     end
 
+    # list or watch objects of kind CompositePodGroup
+    # GET /apis/scheduling.k8s.io/v1alpha3/compositepodgroups
+    def list_scheduling_v1alpha3_composite_pod_group_for_all_namespaces(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/compositepodgroups"
+      get(path) { |res| yield res }
+    end
+
+    # delete collection of CompositePodGroup
+    # DELETE /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups
+    def delete_scheduling_v1alpha3_collection_namespaced_composite_pod_group(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      delete(path) { |res| yield res }
+    end
+
+    # list or watch objects of kind CompositePodGroup
+    # GET /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups
+    def list_scheduling_v1alpha3_namespaced_composite_pod_group(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # create a CompositePodGroup
+    # POST /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups
+    def create_scheduling_v1alpha3_namespaced_composite_pod_group(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      post(path, params) { |res| yield res }
+    end
+
+    # delete a CompositePodGroup
+    # DELETE /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}
+    def delete_scheduling_v1alpha3_namespaced_composite_pod_group(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      delete(path) { |res| yield res }
+    end
+
+    # read the specified CompositePodGroup
+    # GET /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}
+    def read_scheduling_v1alpha3_namespaced_composite_pod_group(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # partially update the specified CompositePodGroup
+    # PATCH /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}
+    def patch_scheduling_v1alpha3_namespaced_composite_pod_group(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      patch(path, params) { |res| yield res }
+    end
+
+    # replace the specified CompositePodGroup
+    # PUT /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}
+    def replace_scheduling_v1alpha3_namespaced_composite_pod_group(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      put(path, params) { |res| yield res }
+    end
+
+    # read status of the specified CompositePodGroup
+    # GET /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}/status
+    def read_scheduling_v1alpha3_namespaced_composite_pod_group_status(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # partially update status of the specified CompositePodGroup
+    # PATCH /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}/status
+    def patch_scheduling_v1alpha3_namespaced_composite_pod_group_status(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      patch(path, params) { |res| yield res }
+    end
+
+    # replace status of the specified CompositePodGroup
+    # PUT /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}/status
+    def replace_scheduling_v1alpha3_namespaced_composite_pod_group_status(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/compositepodgroups/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      put(path, params) { |res| yield res }
+    end
+
     # delete collection of PodGroup
     # DELETE /apis/scheduling.k8s.io/v1alpha3/namespaces/{namespace}/podgroups
     def delete_scheduling_v1alpha3_collection_namespaced_pod_group(**params, &)
@@ -161,6 +248,29 @@ module Kubernetes
     # GET /apis/scheduling.k8s.io/v1alpha3/podgroups
     def list_scheduling_v1alpha3_pod_group_for_all_namespaces(**params, &)
       path = "/apis/scheduling.k8s.io/v1alpha3/podgroups"
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of CompositePodGroup. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/scheduling.k8s.io/v1alpha3/watch/compositepodgroups
+    def watch_scheduling_v1alpha3_composite_pod_group_list_for_all_namespaces(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/watch/compositepodgroups"
+      get(path) { |res| yield res }
+    end
+
+    # watch individual changes to a list of CompositePodGroup. deprecated: use the 'watch' parameter with a list operation instead.
+    # GET /apis/scheduling.k8s.io/v1alpha3/watch/namespaces/{namespace}/compositepodgroups
+    def watch_scheduling_v1alpha3_namespaced_composite_pod_group_list(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/watch/namespaces/{namespace}/compositepodgroups"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # watch changes to an object of kind CompositePodGroup. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.
+    # GET /apis/scheduling.k8s.io/v1alpha3/watch/namespaces/{namespace}/compositepodgroups/{name}
+    def watch_scheduling_v1alpha3_namespaced_composite_pod_group(**params, &)
+      path = "/apis/scheduling.k8s.io/v1alpha3/watch/namespaces/{namespace}/compositepodgroups/{name}"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
       get(path) { |res| yield res }
     end
 
