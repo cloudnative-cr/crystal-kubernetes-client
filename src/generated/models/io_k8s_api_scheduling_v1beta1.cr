@@ -58,40 +58,6 @@ module Kubernetes
     property min_group_count : Int32?
   end
 
-  # CompositePodGroup represents a runtime instance of pod groups grouped together. CompositePodGroups are created by workload controllers (LWS, JobSet, etc...) from Workload.compositePodGroupTemplates. CompositePodGroup API enablement is toggled by the CompositePodGroup feature gate.
-  struct CompositePodGroup
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[::JSON::Field(key: "apiVersion")]
-    @[::YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # metadata is the standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-    property metadata : ObjectMeta?
-    # spec defines the desired state of the CompositePodGroup.
-    property spec : CompositePodGroupSpec?
-    # status represents the current observed state of the CompositePodGroup.
-    property status : CompositePodGroupStatus?
-  end
-
-  # CompositePodGroupList contains a list of CompositePodGroup resources.
-  struct CompositePodGroupList
-    include Kubernetes::Serializable
-
-    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    @[::JSON::Field(key: "apiVersion")]
-    @[::YAML::Field(key: "apiVersion")]
-    property api_version : String?
-    # Items is the list of CompositePodGroups.
-    property items : Array(CompositePodGroup)?
-    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    property kind : String?
-    # Standard list metadata.
-    property metadata : ListMeta?
-  end
-
   # CompositePodGroupSchedulingConstraints defines scheduling constraints (e.g. topology) for a CompositePodGroup.
   struct CompositePodGroupSchedulingConstraints
     include Kubernetes::Serializable
@@ -108,65 +74,6 @@ module Kubernetes
     property basic : CompositeBasicSchedulingPolicy?
     # gang specifies that the groups of this composite group should be scheduled using all-or-nothing semantics. Setting this field at group creation time opts this group to gang scheduling; this field cannot be set or unset afterward. The minGroupCount field within Gang scheduling policy remains mutable after group creation.
     property gang : CompositeGangSchedulingPolicy?
-  end
-
-  # CompositePodGroupSpec defines the desired state of CompositePodGroup.
-  struct CompositePodGroupSpec
-    include Kubernetes::Serializable
-
-    # disruptionMode defines the mode in which a given CompositePodGroup can be disrupted. Controllers are expected to fill this field by copying it from a CompositePodGroupTemplate. One of Single, All. Defaults to Single if unset. This field is immutable.
-    @[::JSON::Field(key: "disruptionMode")]
-    @[::YAML::Field(key: "disruptionMode")]
-    property disruption_mode : CompositeDisruptionMode?
-    # parentCompositePodGroupName contains the name of the parent composite pod group within the same namespace as this composite pod group. It must be a DNS name. If it's nil, then this composite pod group is a root of a workload's hierarchy. This field is immutable.
-    @[::JSON::Field(key: "parentCompositePodGroupName")]
-    @[::YAML::Field(key: "parentCompositePodGroupName")]
-    property parent_composite_pod_group_name : String?
-    # preemptionPolicy is the Policy for preempting pods/podgroups with lower priority. One of Never, PreemptLowerPriority. Defaults to PreemptLowerPriority if unset. When Priority Admission Controller is enabled, it populates this field from PriorityClassName, and defaults to PreemptLowerPriority if value is unset in PriorityClass. This field is immutable. This field is available only when the PodGroupPreemptionPolicy feature gate is enabled.
-    @[::JSON::Field(key: "preemptionPolicy")]
-    @[::YAML::Field(key: "preemptionPolicy")]
-    property preemption_policy : String?
-    # priority is the value of priority of this composite pod group. Various system components use this field to find the priority of the composite pod group. When Priority Admission Controller is enabled, it prevents users from setting this field. The admission controller populates this field from PriorityClassName. The higher the value, the higher the priority. This field is immutable.
-    property priority : Int32?
-    # priorityClassName defines the priority that should be considered when scheduling this CompositePodGroup. Controllers are expected to fill this field by copying it from a CompositePodGroupTemplate. If left unspecified, it is validated and resolved similarly to the PriorityClassName field in Pods (i.e. if no priority class is specified, admission control can set this to the global default priority class if it exists. Otherwise, the composite pod group's priority will be zero). This field is immutable.
-    @[::JSON::Field(key: "priorityClassName")]
-    @[::YAML::Field(key: "priorityClassName")]
-    property priority_class_name : String?
-    # schedulingConstraints defines optional scheduling constraints (e.g. topology) for this CompositePodGroup. Controllers are expected to fill this field by copying it from a CompositePodGroupTemplate. This field is immutable.
-    @[::JSON::Field(key: "schedulingConstraints")]
-    @[::YAML::Field(key: "schedulingConstraints")]
-    property scheduling_constraints : CompositePodGroupSchedulingConstraints?
-    # schedulingPolicy defines the scheduling policy for this instance of the CompositePodGroup. Controllers are expected to fill this field by copying it from a CompositePodGroupTemplate.
-    @[::JSON::Field(key: "schedulingPolicy")]
-    @[::YAML::Field(key: "schedulingPolicy")]
-    property scheduling_policy : CompositePodGroupSchedulingPolicy?
-    # workloadRef references an optional CompositePodGroup template within the Workload object that was used to create the CompositePodGroup. This field is required. This field is immutable.
-    @[::JSON::Field(key: "workloadRef")]
-    @[::YAML::Field(key: "workloadRef")]
-    property workload_ref : WorkloadReference?
-  end
-
-  # CompositePodGroupStatus represents information about the status of a composite pod group.
-  struct CompositePodGroupStatus
-    include Kubernetes::Serializable
-
-    # conditions represent the latest observations of the CompositePodGroup's state.
-    # Known condition types: - "CompositePodGroupInitiallyScheduled": Indicates whether the overall scheduling requirement
-    # for the subtree under this CompositePodGroup has been satisfied. Once this condition
-    # transitions to True, it serves as a terminal state and will never revert to False,
-    # even if pods are subsequently deleted and group constraints are no longer met.
-    # - "DisruptionTarget": Indicates whether the CompositePodGroup is about to be terminated
-    # due to disruption such as preemption.
-    # Known reasons for the CompositePodGroupInitiallyScheduled condition: - "Unschedulable": The CompositePodGroup's subtree could not be placed due to resource constraints,
-    # affinity/anti-affinity, or topological constraints.
-    # - "SchedulerError": The CompositePodGroup cannot be scheduled due to some internal error
-    # that occurred during scheduling.
-    # - "Invalid": Set to True when kube-scheduler detects an invalid group layout during
-    # runtime validation. The `message` field details the specific layout violation (such as
-    # a detected cycle, exceeding the maximum depth of 4, or referencing multiple distinct Workloads).
-    # Known reasons for the DisruptionTarget condition: - "PreemptionByScheduler": The CompositePodGroup was targeted by the scheduler's preemption loop
-    # to free up capacity for higher-priority preemptors.
-    property conditions : Array(Condition)?
   end
 
   # CompositePodGroupTemplate represents a template for a CompositePodGroup with a scheduling policy.
@@ -433,7 +340,7 @@ module Kubernetes
   struct TypedLocalObjectReference
     include Kubernetes::Serializable
 
-    # apiGroup is the group for the resource being referenced. If APIGroup is empty, the specified Kind must be in the core API group. For any other third-party types, setting APIGroup is required. It must be a DNS subdomain.
+    # apiGroup is the group for the resource being referenced. If apiGroup is empty, the specified Kind must be in the core API group. For any other third-party types, setting apiGroup is required. It must be a DNS subdomain.
     @[::JSON::Field(key: "apiGroup")]
     @[::YAML::Field(key: "apiGroup")]
     property api_group : String?
@@ -467,81 +374,12 @@ module Kubernetes
     @[::JSON::Field(key: "apiVersion")]
     @[::YAML::Field(key: "apiVersion")]
     property api_version : String?
-    # Items is the list of Workloads.
+    # items is the list of Workloads.
     property items : Array(Workload)?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard list metadata.
+    # metadata is the standard list metadata.
     property metadata : ListMeta?
-  end
-
-  # WorkloadPodGroupAllDisruptionMode indicates that all pods in the group must be disrupted together.
-  struct WorkloadPodGroupAllDisruptionMode
-    include Kubernetes::Serializable
-  end
-
-  # WorkloadPodGroupBasicSchedulingPolicy indicates standard Kubernetes scheduling behavior.
-  struct WorkloadPodGroupBasicSchedulingPolicy
-    include Kubernetes::Serializable
-  end
-
-  # WorkloadPodGroupDisruptionMode defines how individual pods within a group can be disrupted. Exactly one mode must be set.
-  struct WorkloadPodGroupDisruptionMode
-    include Kubernetes::Serializable
-
-    # all specifies that all pods in the group must be disrupted together.
-    property all : WorkloadPodGroupAllDisruptionMode?
-    # single specifies that pods can be disrupted independently from each other.
-    property single : WorkloadPodGroupSingleDisruptionMode?
-  end
-
-  # WorkloadPodGroupGangSchedulingPolicy defines the parameters for gang (all-or-nothing) scheduling.
-  struct WorkloadPodGroupGangSchedulingPolicy
-    include Kubernetes::Serializable
-
-    # minCount is the minimum number of pods that must be scheduled at the same time for the scheduler to admit the entire group. This field is optional. If it is not specified, the controller should inject a context-specific sane default (e.g., parallelism for a Job). If set, it must be a positive integer.
-    @[::JSON::Field(key: "minCount")]
-    @[::YAML::Field(key: "minCount")]
-    property min_count : Int32?
-  end
-
-  # WorkloadPodGroupResourceClaim references a dynamic resource claim that is shared across pods in the group.
-  struct WorkloadPodGroupResourceClaim
-    include Kubernetes::Serializable
-
-    # name uniquely identifies this resource claim inside the group. This field is required. It must be a DNS_LABEL.
-    property name : String?
-    # resourceClaimName is the name of a ResourceClaim object in the same namespace. This field is optional. If it is not specified, no resource claim is used. If set, it must be a DNS subdomain.
-    @[::JSON::Field(key: "resourceClaimName")]
-    @[::YAML::Field(key: "resourceClaimName")]
-    property resource_claim_name : String?
-    # resourceClaimTemplateName is the name of a ResourceClaimTemplate object in the same namespace. This field is optional. If it is not specified, no resource claim template is used. If set, it must be a DNS subdomain.
-    @[::JSON::Field(key: "resourceClaimTemplateName")]
-    @[::YAML::Field(key: "resourceClaimTemplateName")]
-    property resource_claim_template_name : String?
-  end
-
-  # WorkloadPodGroupSchedulingConstraints defines leaf-level scheduling constraints, such as topology.
-  struct WorkloadPodGroupSchedulingConstraints
-    include Kubernetes::Serializable
-
-    # topology specifies desired topological placements for all pods within the pod group. If unset, no topology placement is requested.
-    property topology : Array(TopologyConstraint)?
-  end
-
-  # WorkloadPodGroupSchedulingPolicy defines the scheduling policy for a group of pods managed by a workload controller. Exactly one policy must be set.
-  struct WorkloadPodGroupSchedulingPolicy
-    include Kubernetes::Serializable
-
-    # basic specifies that standard, pod-by-pod Kubernetes scheduling behavior should be used.
-    property basic : WorkloadPodGroupBasicSchedulingPolicy?
-    # gang specifies all-or-nothing scheduling semantics.
-    property gang : WorkloadPodGroupGangSchedulingPolicy?
-  end
-
-  # WorkloadPodGroupSingleDisruptionMode indicates that individual pods can be disrupted independently.
-  struct WorkloadPodGroupSingleDisruptionMode
-    include Kubernetes::Serializable
   end
 
   # WorkloadReference references the Workload object together with the template that was used to create a particular PodGroup.

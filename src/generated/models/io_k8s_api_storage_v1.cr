@@ -27,7 +27,7 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata. metadata.Name indicates the name of the CSI driver that this object refers to; it MUST be the same name returned by the CSI GetPluginName() call for that driver. The driver name must be 63 characters or less, beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), dots (.), and alphanumerics between. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard object metadata. metadata.Name indicates the name of the CSI driver that this object refers to; it MUST be the same name returned by the CSI GetPluginName() call for that driver. The driver name must be 63 characters or less, beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), dots (.), and alphanumerics between. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
     # spec represents the specification of the CSI Driver.
     property spec : CSIDriverSpec?
@@ -79,10 +79,10 @@ module Kubernetes
     @[::JSON::Field(key: "podInfoOnMount")]
     @[::YAML::Field(key: "podInfoOnMount")]
     property pod_info_on_mount : Bool?
-    # PreventPodSchedulingIfMissing indicates that the CSI driver wants to prevent pod scheduling if the CSI driver on the node is missing.
+    # preventPodSchedulingIfMissing indicates that the CSI driver wants to prevent pod scheduling if the CSI driver on the node is missing.
     # Enabling this option will prevent the scheduler (or any other component which embeds default scheduler such as cluster-autoscaler) from scheduling pods to nodes where CSI driver is not installed.
     # For components(such as cluster-autoscaler) that embed the scheduler and run pod placement simulations using scheduler plugins, they MUST be aware of CSI driver registration information via CSINode object. They must create simulated CSINode objects in addition to Node objects during scheduling simulation, otherwise if PreventPodSchedulingIfMissing is enabled globally for CSIDriver object, any newly created node may be rejected by the scheduler because of missing CSI driver information from the node.
-    # This is an alpha feature and requires the VolumeLimitScaling feature gate to be enabled. Default is "false".
+    # This is a beta feature and requires the VolumeLimitScaling feature gate to be enabled. Default is "false".
     @[::JSON::Field(key: "preventPodSchedulingIfMissing")]
     @[::YAML::Field(key: "preventPodSchedulingIfMissing")]
     property prevent_pod_scheduling_if_missing : Bool?
@@ -143,10 +143,12 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object's metadata. metadata.name must be the Kubernetes node name.
+    # metadata is the standard object metadata. metadata.name must be the Kubernetes node name.
     property metadata : ObjectMeta?
     # spec is the specification of CSINode
     property spec : CSINodeSpec?
+    # status contains health and status information for the node's storage.
+    property status : CSINodeStatus?
   end
 
   # CSINodeDriver holds information about the specification of one CSI driver installed on a node
@@ -191,6 +193,16 @@ module Kubernetes
     property drivers : Array(CSINodeDriver)?
   end
 
+  # CSINodeStatus contains health and status information for storage on a node.
+  struct CSINodeStatus
+    include Kubernetes::Serializable
+
+    # storageHealth contains backend health reports for CSI drivers registered on the node.
+    @[::JSON::Field(key: "storageHealth")]
+    @[::YAML::Field(key: "storageHealth")]
+    property storage_health : Array(StorageHealth)?
+  end
+
   # CSIStorageCapacity stores the result of one CSI GetCapacity call. For a given StorageClass, this describes the available capacity in a particular topology segment.  This can be used when considering where to instantiate new PersistentVolumes.
   # For example this can express things like: - StorageClass "standard" has "1234 GiB" available in "topology.kubernetes.io/zone=us-east1" - StorageClass "localssd" has "10 GiB" available in "kubernetes.io/hostname=knode-abc123"
   # The following three cases all imply that no capacity is available for a certain combination: - no object exists with suitable topology and storage class name - such an object exists, but the capacity is unset - such an object exists, but the capacity is zero
@@ -213,7 +225,7 @@ module Kubernetes
     @[::JSON::Field(key: "maximumVolumeSize")]
     @[::YAML::Field(key: "maximumVolumeSize")]
     property maximum_volume_size : Quantity?
-    # Standard object's metadata. The name has no particular meaning. It must be a DNS subdomain (dots allowed, 253 characters). To ensure that there are no conflicts with other CSI drivers on the cluster, the recommendation is to use csisc-<uuid>, a generated name, or a reverse-domain name which ends with the unique CSI driver name.
+    # metadata is the standard object metadata. The name has no particular meaning. It must be a DNS subdomain (dots allowed, 253 characters). To ensure that there are no conflicts with other CSI drivers on the cluster, the recommendation is to use csisc-<uuid>, a generated name, or a reverse-domain name which ends with the unique CSI driver name.
     # Objects are namespaced.
     # More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
@@ -262,7 +274,7 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
     # mountOptions controls the mountOptions for dynamically provisioned PersistentVolumes of this storage class. e.g. ["ro", "soft"]. Not validated - mount of the PVs will simply fail if one is invalid.
     @[::JSON::Field(key: "mountOptions")]
@@ -298,6 +310,42 @@ module Kubernetes
     property metadata : ListMeta?
   end
 
+  # StorageHealth contains storage backend health reported by a CSI driver on a node.
+  struct StorageHealth
+    include Kubernetes::Serializable
+
+    # healthConditions are the adverse storage backend conditions reported by the CSI driver. At most 16 conditions may be reported.
+    @[::JSON::Field(key: "healthConditions")]
+    @[::YAML::Field(key: "healthConditions")]
+    property health_conditions : Array(StorageHealthCondition)?
+    # name is the CSI driver name, matching CSINodeDriver.name.
+    property name : String?
+  end
+
+  # StorageHealthCondition represents an adverse health condition reported by a CSI driver for its storage backend on a node.
+  struct StorageHealthCondition
+    include Kubernetes::Serializable
+
+    # accessMode is the access mode affected. Nil means all access modes are affected.
+    @[::JSON::Field(key: "accessMode")]
+    @[::YAML::Field(key: "accessMode")]
+    property access_mode : String?
+    # lastTransitionTime is when this condition first appeared at its current state.
+    @[::JSON::Field(key: "lastTransitionTime")]
+    @[::YAML::Field(key: "lastTransitionTime")]
+    property last_transition_time : Time?
+    # message is a human-readable description. Maximum permitted length of a message is 1024 characters.
+    property message : String?
+    # reason is a brief CamelCase machine-parseable reason. Maximum permitted length of a reason is 256 characters.
+    property reason : String?
+    # status is the health status category. One of "StorageUnreachable", "StorageDegraded".
+    property status : String?
+    # volumeMode is the volume mode affected. Nil means both are affected.
+    @[::JSON::Field(key: "volumeMode")]
+    @[::YAML::Field(key: "volumeMode")]
+    property volume_mode : String?
+  end
+
   # TokenRequest contains parameters of a service account token.
   struct TokenRequest
     include Kubernetes::Serializable
@@ -321,7 +369,7 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
     # spec represents specification of the desired attach/detach volume behavior. Populated by the Kubernetes system.
     property spec : VolumeAttachmentSpec?
@@ -401,13 +449,13 @@ module Kubernetes
     @[::JSON::Field(key: "apiVersion")]
     @[::YAML::Field(key: "apiVersion")]
     property api_version : String?
-    # Name of the CSI driver This field is immutable.
+    # driverName is the name of the CSI driver This field is immutable.
     @[::JSON::Field(key: "driverName")]
     @[::YAML::Field(key: "driverName")]
     property driver_name : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
     # parameters hold volume attributes defined by the CSI driver. These values are opaque to the Kubernetes and are passed directly to the CSI driver. The underlying storage provider supports changing these attributes on an existing volume, however the parameters field itself is immutable. To invoke a volume update, a new VolumeAttributesClass should be created with new parameters, and the PersistentVolumeClaim should be updated to reference the new VolumeAttributesClass.
     # This field is required and must contain at least one key/value pair. The keys cannot be empty, and the maximum number of parameters is 512, with a cumulative max size of 256K. If the CSI driver rejects invalid parameters, the target PersistentVolumeClaim will be set to an "Infeasible" state in the modifyVolumeStatus field.

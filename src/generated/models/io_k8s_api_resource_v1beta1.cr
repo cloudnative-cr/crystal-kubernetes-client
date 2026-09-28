@@ -50,14 +50,14 @@ module Kubernetes
   struct AllocationResult
     include Kubernetes::Serializable
 
-    # AllocationTimestamp stores the time when the resources were allocated. This field is not guaranteed to be set, in which case that time is unknown.
+    # allocationTimestamp stores the time when the resources were allocated. This field is not guaranteed to be set, in which case that time is unknown.
     # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gate.
     @[::JSON::Field(key: "allocationTimestamp")]
     @[::YAML::Field(key: "allocationTimestamp")]
     property allocation_timestamp : Time?
-    # Devices is the result of allocating devices.
+    # devices is the result of allocating devices.
     property devices : DeviceAllocationResult?
-    # NodeSelector defines where the allocated resources are available. If unset, they are available everywhere.
+    # nodeSelector defines where the allocated resources are available. If unset, they are available everywhere.
     @[::JSON::Field(key: "nodeSelector")]
     @[::YAML::Field(key: "nodeSelector")]
     property node_selector : NodeSelector?
@@ -67,63 +67,63 @@ module Kubernetes
   struct BasicDevice
     include Kubernetes::Serializable
 
-    # AllNodes indicates that all nodes have access to the device.
+    # allNodes indicates that all nodes have access to the device.
     # Must only be set if Spec.PerDeviceNodeSelection is set to true. At most one of NodeName, NodeSelector and AllNodes can be set.
     @[::JSON::Field(key: "allNodes")]
     @[::YAML::Field(key: "allNodes")]
     property all_nodes : Bool?
-    # AllowMultipleAllocations marks whether the device is allowed to be allocated to multiple DeviceRequests.
+    # allowMultipleAllocations marks whether the device is allowed to be allocated to multiple DeviceRequests.
     # If AllowMultipleAllocations is set to true, the device can be allocated more than once, and all of its capacity is consumable, regardless of whether the requestPolicy is defined or not.
     @[::JSON::Field(key: "allowMultipleAllocations")]
     @[::YAML::Field(key: "allowMultipleAllocations")]
     property allow_multiple_allocations : Bool?
-    # Attributes defines the set of attributes for this device. The name of each attribute must be unique in that set.
+    # attributes defines the set of attributes for this device. The name of each attribute must be unique in that set.
     # The maximum number of attributes and capacities combined is 32.
     property attributes : Hash(String, DeviceAttribute)?
-    # BindingConditions defines the conditions for proceeding with binding. All of these conditions must be set in the per-device status conditions with a value of True to proceed with binding the pod to the node while scheduling the pod.
+    # bindingConditions defines the conditions for proceeding with binding. All of these conditions must be set in the per-device status conditions with a value of True to proceed with binding the pod to the node while scheduling the pod.
     # The maximum number of binding conditions is 4.
     # The conditions must be a valid condition type string.
     # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindingConditions")]
     @[::YAML::Field(key: "bindingConditions")]
     property binding_conditions : Array(String)?
-    # BindingFailureConditions defines the conditions for binding failure. They may be set in the per-device status conditions. If any is true, a binding failure occurred.
+    # bindingFailureConditions defines the conditions for binding failure. They may be set in the per-device status conditions. If any is true, a binding failure occurred.
     # The maximum number of binding failure conditions is 4.
     # The conditions must be a valid condition type string.
     # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindingFailureConditions")]
     @[::YAML::Field(key: "bindingFailureConditions")]
     property binding_failure_conditions : Array(String)?
-    # BindsToNode indicates if the usage of an allocation involving this device has to be limited to exactly the node that was chosen when allocating the claim. If set to true, the scheduler will set the ResourceClaim.Status.Allocation.NodeSelector to match the node where the allocation was made.
+    # bindsToNode indicates if the usage of an allocation involving this device has to be limited to exactly the node that was chosen when allocating the claim. If set to true, the scheduler will set the ResourceClaim.Status.Allocation.NodeSelector to match the node where the allocation was made.
     # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindsToNode")]
     @[::YAML::Field(key: "bindsToNode")]
     property binds_to_node : Bool?
-    # Capacity defines the set of capacities for this device. The name of each capacity must be unique in that set.
+    # capacity defines the set of capacities for this device. The name of each capacity must be unique in that set.
     # The maximum number of attributes and capacities combined is 32.
     property capacity : Hash(String, DeviceCapacity)?
-    # ConsumesCounters defines a list of references to sharedCounters and the set of counters that the device will consume from those counter sets.
+    # consumesCounters defines a list of references to sharedCounters and the set of counters that the device will consume from those counter sets.
     # There can only be a single entry per counterSet.
     # The maximum number of device counter consumptions per device is 2.
     @[::JSON::Field(key: "consumesCounters")]
     @[::YAML::Field(key: "consumesCounters")]
     property consumes_counters : Array(DeviceCounterConsumption)?
-    # NodeAllocatableResourceMappings defines the mapping of node resources that are managed by the DRA driver exposing this device. This includes resources currently reported in v1.Node `status.allocatable` that are not extended resources (see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#extended-resources). Examples include "cpu", "memory", "ephemeral-storage", and hugepages. In addition to standard requests made through the Pod `spec`, these resources can also be requested through claims and allocated by the DRA driver. For example, a CPU DRA driver might allocate exclusive CPUs or auxiliary node memory dependencies of an accelerator device. The keys of this map are the node-allocatable resource names (e.g., "cpu", "memory"). Extended resource names are not permitted as keys.
-    @[::JSON::Field(key: "nodeAllocatableResourceMappings")]
-    @[::YAML::Field(key: "nodeAllocatableResourceMappings")]
-    property node_allocatable_resource_mappings : Hash(String, NodeAllocatableResourceMapping)?
-    # NodeName identifies the node where the device is available.
+    # nodeAllocatableResources defines the mapping of node resources that are managed by the DRA driver exposing this device. This includes resources currently reported in v1.Node `status.allocatable` that are not extended resources (see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#extended-resources). Examples include "cpu", "memory", "ephemeral-storage", and hugepages. In addition to standard requests made through the Pod `spec`, these resources can also be requested through claims and allocated by the DRA driver. For example, a CPU DRA driver might allocate exclusive CPUs or auxiliary node memory dependencies of an accelerator device. The keys of this map are the node-allocatable resource names (e.g., "cpu", "memory"). Extended resource names are not permitted as keys.
+    @[::JSON::Field(key: "nodeAllocatableResources")]
+    @[::YAML::Field(key: "nodeAllocatableResources")]
+    property node_allocatable_resources : Hash(String, NodeAllocatableResource)?
+    # nodeName identifies the node where the device is available.
     # Must only be set if Spec.PerDeviceNodeSelection is set to true. At most one of NodeName, NodeSelector and AllNodes can be set.
     @[::JSON::Field(key: "nodeName")]
     @[::YAML::Field(key: "nodeName")]
     property node_name : String?
-    # NodeSelector defines the nodes where the device is available.
+    # nodeSelector defines the nodes where the device is available.
     # Must use exactly one term.
     # Must only be set if Spec.PerDeviceNodeSelection is set to true. At most one of NodeName, NodeSelector and AllNodes can be set.
     @[::JSON::Field(key: "nodeSelector")]
     @[::YAML::Field(key: "nodeSelector")]
     property node_selector : NodeSelector?
-    # If specified, these are the driver-defined taints.
+    # taints if specified, these are the driver-defined taints.
     # The maximum number of taints is 16. If taints are set for any device in a ResourceSlice, then the maximum number of allowed devices per ResourceSlice is 64 instead of 128.
     # This is a beta field and requires enabling the DRADeviceTaints feature gate.
     property taints : Array(DeviceTaint)?
@@ -133,7 +133,7 @@ module Kubernetes
   struct CELDeviceSelector
     include Kubernetes::Serializable
 
-    # Expression is a CEL expression which evaluates a single device. It must evaluate to true when the device under consideration satisfies the desired criteria, and false when it does not. Any other result is an error and causes allocation of devices to abort.
+    # expression is a CEL expression which evaluates a single device. It must evaluate to true when the device under consideration satisfies the desired criteria, and false when it does not. Any other result is an error and causes allocation of devices to abort.
     # The expression's input is an object named "device", which carries the following properties:
     # - driver (string): the name of the driver which defines this device.
     # - attributes (map[string]object): the device's attributes, grouped by prefix
@@ -169,16 +169,16 @@ module Kubernetes
   struct CapacityRequestPolicy
     include Kubernetes::Serializable
 
-    # Default specifies how much of this capacity is consumed by a request that does not contain an entry for it in DeviceRequest's Capacity.
+    # default specifies how much of this capacity is consumed by a request that does not contain an entry for it in DeviceRequest's Capacity.
     property default : Quantity?
-    # ValidRange defines an acceptable quantity value range in consuming requests.
+    # validRange defines an acceptable quantity value range in consuming requests.
     # If this field is set, Default must be defined and it must fall within the defined ValidRange.
     # If the requested amount does not fall within the defined range, the request violates the policy, and this device cannot be allocated.
     # If the request doesn't contain this capacity entry, Default value is used.
     @[::JSON::Field(key: "validRange")]
     @[::YAML::Field(key: "validRange")]
     property valid_range : CapacityRequestPolicyRange?
-    # ValidValues defines a set of acceptable quantity values in consuming requests.
+    # validValues defines a set of acceptable quantity values in consuming requests.
     # Must not contain more than 10 entries. Must be sorted in ascending order.
     # If this field is set, Default must be defined and it must be included in ValidValues list.
     # If the requested amount does not match any valid value but smaller than some valid values, the scheduler calculates the smallest valid value that is greater than or equal to the request. That is: min(ceil(requestedValue) ∈ validValues), where requestedValue ≤ max(validValues).
@@ -189,6 +189,7 @@ module Kubernetes
   end
 
   # CapacityRequestPolicyRange defines a valid range for consumable capacity values.
+  # If the DRAFractionalCapacityRange feature gate is enabled and at least one of Min, Max, or Step is a fractional quantity (i.e. its value is not an integer), milli-unit arithmetic is used instead, supporting values with up to 3 decimal places (e.g. 100m = 0.1). The largest supported value then is 1000 times smaller compared to using 64-bit integers. Otherwise, all comparisons use 64-bit integer arithmetic via resource.Quantity.Value().
   # - If the requested amount is less than Min, it is rounded up to the Min value.
   # - If Step is set and the requested amount is between Min and Max but not aligned with Step,
   # it will be rounded up to the next value equal to Min + (n * Step).
@@ -198,13 +199,13 @@ module Kubernetes
   struct CapacityRequestPolicyRange
     include Kubernetes::Serializable
 
-    # Max defines the upper limit for capacity that can be requested.
+    # max defines the upper limit for capacity that can be requested.
     # Max must be less than or equal to the capacity value. Min and requestPolicy.default must be less than or equal to the maximum.
     property max : Quantity?
-    # Min specifies the minimum capacity allowed for a consumption request.
+    # min specifies the minimum capacity allowed for a consumption request.
     # Min must be greater than or equal to zero, and less than or equal to the capacity value. requestPolicy.default must be more than or equal to the minimum.
     property min : Quantity?
-    # Step defines the step size between valid capacity amounts within the range.
+    # step defines the step size between valid capacity amounts within the range.
     # Max (if set) and requestPolicy.default must be a multiple of Step. Min + Step must be less than or equal to the capacity value.
     property step : Quantity?
   end
@@ -213,7 +214,7 @@ module Kubernetes
   struct CapacityRequirements
     include Kubernetes::Serializable
 
-    # Requests represent individual device resource requests for distinct resources, all of which must be provided by the device.
+    # requests represent individual device resource requests for distinct resources, all of which must be provided by the device.
     # This value is used as an additional filtering condition against the available capacity on the device. This is semantically equivalent to a CEL selector with `device.capacity[<domain>].<name>.compareTo(quantity(<request quantity>)) >= 0`. For example, device.capacity['test-driver.cdi.k8s.io'].counters.compareTo(quantity('2')) >= 0.
     # When a requestPolicy is defined, the requested amount is adjusted upward to the nearest valid value based on the policy. If the requested amount cannot be adjusted to a valid value—because it exceeds what the requestPolicy allows— the device is considered ineligible for allocation.
     # For any capacity that is not explicitly requested: - If no requestPolicy is set, the default consumed capacity is equal to the full device capacity
@@ -227,7 +228,7 @@ module Kubernetes
   struct Counter
     include Kubernetes::Serializable
 
-    # Value defines how much of a certain device counter is available.
+    # value defines how much of a certain device counter is available.
     property value : Quantity?
   end
 
@@ -236,10 +237,10 @@ module Kubernetes
   struct CounterSet
     include Kubernetes::Serializable
 
-    # Counters defines the set of counters for this CounterSet The name of each counter must be unique in that set and must be a DNS label.
+    # counters defines the set of counters for this CounterSet The name of each counter must be unique in that set and must be a DNS label.
     # The maximum number of counters is 32.
     property counters : Hash(String, Counter)?
-    # Name defines the name of the counter set. It must be a DNS label.
+    # name defines the name of the counter set. It must be a DNS label.
     property name : String?
   end
 
@@ -247,9 +248,9 @@ module Kubernetes
   struct Device
     include Kubernetes::Serializable
 
-    # Basic defines one device instance.
+    # basic defines one device instance.
     property basic : BasicDevice?
-    # Name is unique identifier among all devices managed by the driver in the pool. It must be a DNS label.
+    # name is unique identifier among all devices managed by the driver in the pool. It must be a DNS label.
     property name : String?
   end
 
@@ -257,12 +258,12 @@ module Kubernetes
   struct DeviceAllocationConfiguration
     include Kubernetes::Serializable
 
-    # Opaque provides driver-specific configuration parameters.
+    # opaque provides driver-specific configuration parameters.
     property opaque : OpaqueDeviceConfiguration?
-    # Requests lists the names of requests where the configuration applies. If empty, its applies to all requests.
+    # requests lists the names of requests where the configuration applies. If empty, its applies to all requests.
     # References to subrequests must include the name of the main request and may include the subrequest using the format <main request>[/<subrequest>]. If just the main request is given, the configuration applies to all subrequests.
     property requests : Array(String)?
-    # Source records whether the configuration comes from a class and thus is not something that a normal user would have been able to set or from a claim.
+    # source records whether the configuration comes from a class and thus is not something that a normal user would have been able to set or from a claim.
     property source : String?
   end
 
@@ -270,10 +271,10 @@ module Kubernetes
   struct DeviceAllocationResult
     include Kubernetes::Serializable
 
-    # This field is a combination of all the claim and class configuration parameters. Drivers can distinguish between those based on a flag.
+    # config is a combination of all the claim and class configuration parameters. Drivers can distinguish between those based on a flag.
     # This includes configuration parameters for drivers which have no allocated devices in the result because it is up to the drivers which configuration parameters they support. They can silently ignore unknown configuration parameters.
     property config : Array(DeviceAllocationConfiguration)?
-    # Results lists all allocated devices.
+    # results lists all allocated devices.
     property results : Array(DeviceRequestAllocationResult)?
   end
 
@@ -281,23 +282,23 @@ module Kubernetes
   struct DeviceAttribute
     include Kubernetes::Serializable
 
-    # BoolValue is a true/false value.
+    # bool is a true/false value.
     property bool : Bool?
-    # BoolValues is a non-empty list of true/false values.
+    # bools is a non-empty list of true/false values.
     property bools : Array(Bool)?
-    # IntValue is a number.
+    # int is a number.
     property int : Int64?
-    # IntValues is a non-empty list of numbers.
+    # ints is a non-empty list of numbers.
     # This is an alpha field and requires enabling the DRAListTypeAttributes feature gate.
     property ints : Array(Int64)?
-    # StringValue is a string. Must not be longer than 64 characters.
+    # string is a string. Must not be longer than 64 characters.
     property string : String?
-    # StringValues is a non-empty list of strings. Each string must not be longer than 64 characters.
+    # strings is a non-empty list of strings. Each string must not be longer than 64 characters.
     # This is an alpha field and requires enabling the DRAListTypeAttributes feature gate.
     property strings : Array(String)?
-    # VersionValue is a semantic version according to semver.org spec 2.0.0. Must not be longer than 64 characters.
+    # version is a semantic version according to semver.org spec 2.0.0. Must not be longer than 64 characters.
     property version : String?
-    # VersionValues is a non-empty list of semantic versions according to semver.org spec 2.0.0. Each version string must not be longer than 64 characters.
+    # versions is a non-empty list of semantic versions according to semver.org spec 2.0.0. Each version string must not be longer than 64 characters.
     # This is an alpha field and requires enabling the DRAListTypeAttributes feature gate.
     property versions : Array(String)?
   end
@@ -306,13 +307,13 @@ module Kubernetes
   struct DeviceCapacity
     include Kubernetes::Serializable
 
-    # RequestPolicy defines how this DeviceCapacity must be consumed when the device is allowed to be shared by multiple allocations.
+    # requestPolicy defines how this DeviceCapacity must be consumed when the device is allowed to be shared by multiple allocations.
     # The Device must have allowMultipleAllocations set to true in order to set a requestPolicy.
     # If unset, capacity requests are unconstrained: requests can consume any amount of capacity, as long as the total consumed across all allocations does not exceed the device's defined capacity. If request is also unset, default is the full capacity value.
     @[::JSON::Field(key: "requestPolicy")]
     @[::YAML::Field(key: "requestPolicy")]
     property request_policy : CapacityRequestPolicy?
-    # Value defines how much of a certain capacity that device has.
+    # value defines how much of a certain capacity that device has.
     # This field reflects the fixed total capacity and does not change. The consumed amount is tracked separately by scheduler and does not affect this value.
     property value : Quantity?
   end
@@ -321,11 +322,11 @@ module Kubernetes
   struct DeviceClaim
     include Kubernetes::Serializable
 
-    # This field holds configuration for multiple potential drivers which could satisfy requests in this claim. It is ignored while allocating the claim.
+    # config holds configuration for multiple potential drivers which could satisfy requests in this claim. It is ignored while allocating the claim.
     property config : Array(DeviceClaimConfiguration)?
-    # These constraints must be satisfied by the set of devices that get allocated for the claim.
+    # constraints must be satisfied by the set of devices that get allocated for the claim.
     property constraints : Array(DeviceConstraint)?
-    # Requests represent individual requests for distinct devices which must all be satisfied. If empty, nothing needs to be allocated.
+    # requests represent individual requests for distinct devices which must all be satisfied. If empty, nothing needs to be allocated.
     property requests : Array(DeviceRequest)?
   end
 
@@ -333,15 +334,14 @@ module Kubernetes
   struct DeviceClaimConfiguration
     include Kubernetes::Serializable
 
-    # Opaque provides driver-specific configuration parameters.
+    # opaque provides driver-specific configuration parameters.
     property opaque : OpaqueDeviceConfiguration?
-    # Requests lists the names of requests where the configuration applies. If empty, it applies to all requests.
+    # requests lists the names of requests where the configuration applies. If empty, it applies to all requests.
     # References to subrequests must include the name of the main request and may include the subrequest using the format <main request>[/<subrequest>]. If just the main request is given, the configuration applies to all subrequests.
     property requests : Array(String)?
   end
 
   # DeviceClass is a vendor- or admin-provided resource that contains device configuration and selectors. It can be referenced in the device requests of a claim to apply these presets. Cluster scoped.
-  # This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
   struct DeviceClass
     include Kubernetes::Serializable
 
@@ -351,9 +351,9 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata
+    # metadata is the standard object metadata.
     property metadata : ObjectMeta?
-    # Spec defines what can be allocated and how to configure it.
+    # spec defines what can be allocated and how to configure it.
     # This is mutable. Consumers have to be prepared for classes changing at any time, either because they get updated or replaced. Claim allocations are done once based on whatever was set in classes at the time of allocation.
     # Changing the spec automatically increments the metadata.generation number.
     property spec : DeviceClassSpec?
@@ -363,7 +363,7 @@ module Kubernetes
   struct DeviceClassConfiguration
     include Kubernetes::Serializable
 
-    # Opaque provides driver-specific configuration parameters.
+    # opaque provides driver-specific configuration parameters.
     property opaque : OpaqueDeviceConfiguration?
   end
 
@@ -387,14 +387,14 @@ module Kubernetes
   struct DeviceClassSpec
     include Kubernetes::Serializable
 
-    # Config defines configuration parameters that apply to each device that is claimed via this class. Some classses may potentially be satisfied by multiple drivers, so each instance of a vendor configuration applies to exactly one driver.
+    # config defines configuration parameters that apply to each device that is claimed via this class. Some classses may potentially be satisfied by multiple drivers, so each instance of a vendor configuration applies to exactly one driver.
     # They are passed to the driver, but are not considered while allocating the claim.
     property config : Array(DeviceClassConfiguration)?
-    # ExtendedResourceName is the extended resource name for the devices of this class. The devices of this class can be used to satisfy a pod's extended resource requests. It has the same format as the name of a pod's extended resource. It should be unique among all the device classes in a cluster. If two device classes have the same name, then the class created later is picked to satisfy a pod's extended resource requests. If two classes are created at the same time, then the name of the class lexicographically sorted first is picked.
+    # extendedResourceName is the extended resource name for the devices of this class. The devices of this class can be used to satisfy a pod's extended resource requests. It has the same format as the name of a pod's extended resource. It should be unique among all the device classes in a cluster. If two device classes have the same name, then the class created later is picked to satisfy a pod's extended resource requests. If two classes are created at the same time, then the name of the class lexicographically sorted first is picked.
     @[::JSON::Field(key: "extendedResourceName")]
     @[::YAML::Field(key: "extendedResourceName")]
     property extended_resource_name : String?
-    # Each selector must be satisfied by a device which is claimed via this class.
+    # selectors must be satisfied by a device which is claimed via this class.
     property selectors : Array(DeviceSelector)?
   end
 
@@ -402,7 +402,7 @@ module Kubernetes
   struct DeviceConstraint
     include Kubernetes::Serializable
 
-    # DistinctAttribute requires that all devices in question have this attribute and that its type and value are unique across those devices.
+    # distinctAttribute requires that all devices in question have this attribute and that its type and value are unique across those devices.
     # When the DRAListTypeAttributes feature gate is enabled, comparison uses set semantics (i.e., element order and duplicates are ignored): list-valued attributes must be pairwise disjoint across devices. Scalar values are treated as singleton sets for backward compatibility.
     # This acts as the inverse of MatchAttribute.
     # This constraint is used to avoid allocating multiple requests to the same device by ensuring attribute-level differentiation.
@@ -410,14 +410,14 @@ module Kubernetes
     @[::JSON::Field(key: "distinctAttribute")]
     @[::YAML::Field(key: "distinctAttribute")]
     property distinct_attribute : String?
-    # MatchAttribute requires that all devices in question have this attribute and that its type and value are the same across those devices.
+    # matchAttribute requires that all devices in question have this attribute and that its type and value are the same across those devices.
     # For example, if you specified "dra.example.com/numa" (a hypothetical example!), then only devices in the same NUMA node will be chosen. A device which does not have that attribute will not be chosen. All devices should use a value of the same type for this attribute because that is part of its specification, but if one device doesn't, then it also will not be chosen.
     # When the DRAListTypeAttributes feature gate is enabled, comparison uses set semantics(i.e., element order and duplicates are ignored): list-valued attributes match when the intersection across all devices is non-empty. Scalar values are treated as singleton sets for backward compatibility.
     # Must include the domain qualifier.
     @[::JSON::Field(key: "matchAttribute")]
     @[::YAML::Field(key: "matchAttribute")]
     property match_attribute : String?
-    # Requests is a list of the one or more requests in this claim which must co-satisfy this constraint. If a request is fulfilled by multiple devices, then all of the devices must satisfy the constraint. If this is not specified, this constraint applies to all requests in this claim.
+    # requests is a list of the one or more requests in this claim which must co-satisfy this constraint. If a request is fulfilled by multiple devices, then all of the devices must satisfy the constraint. If this is not specified, this constraint applies to all requests in this claim.
     # References to subrequests must include the name of the main request and may include the subrequest using the format <main request>[/<subrequest>]. If just the main request is given, the constraint applies to all subrequests.
     property requests : Array(String)?
   end
@@ -426,26 +426,51 @@ module Kubernetes
   struct DeviceCounterConsumption
     include Kubernetes::Serializable
 
-    # CounterSet is the name of the set from which the counters defined will be consumed.
+    # compatibilityGroups is a list of opaque group names for this counter set consumption.
+    # Devices that consume counters from the same counter set may only be allocated at the same time ("co-allocated") if they all share at least one common group: the intersection of the CompatibilityGroups of all co-allocated devices on that counter set must be non-empty. Devices that consume from different counter sets are never compared via this field.
+    # An unset field, an explicit nil, and an empty list are equivalent and mean "no groups": such a device is only co-allocatable with sibling devices on the same counter set that also have no groups, and is never co-allocatable with a device that declares one or more groups.
+    # Group names are opaque and meaningful only within the publishing driver's pool.
+    # The maximum number of groups is 2, and the names must be unique.
+    @[::JSON::Field(key: "compatibilityGroups")]
+    @[::YAML::Field(key: "compatibilityGroups")]
+    property compatibility_groups : Array(String)?
+    # counterSet is the name of the set from which the counters defined will be consumed.
     @[::JSON::Field(key: "counterSet")]
     @[::YAML::Field(key: "counterSet")]
     property counter_set : String?
-    # Counters defines the counters that will be consumed by the device.
+    # counters defines the counters that will be consumed by the device.
     # The maximum number of counters is 32.
     property counters : Hash(String, Counter)?
+  end
+
+  # DeviceDerivedAttribute defines a derived attribute computed via CEL.
+  struct DeviceDerivedAttribute
+    include Kubernetes::Serializable
+
+    # expression is a CEL expression evaluated against each candidate device. The expression must evaluate to a primitive scalar (string, integer, boolean, or semver) or a list of these scalars ([]string, []int64, []bool, []semver) to act as a virtual grouping key. Any other return type is an error and causes CEL evaluation for the device to fail.
+    # The expression's input is an object named "device", which carries the same properties as in a CELDeviceSelector.
+    # When pod scheduling encounters CEL runtime errors (such as looking up an attribute that isn't defined) for some devices, it will abort allocation and fail scheduling for the Pod. Surfacing evaluation errors immediately prevents silent topology matching failures that are extremely hard to detect. A robust expression should, for example, check for the existence of attributes before referencing them to avoid runtime evaluation errors.
+    # The expression gets evaluated after a device has passed the other selector expressions for the request in which this expression is used. This allows writing expressions that are tailored towards the specific devices being requested (for example, by assuming the device is from a certain vendor and skipping those checks).
+    # The length of the expression must be smaller or equal to 10 Ki. The cost of evaluating it is also limited based on the estimated number of logical steps; the combined cost of all derived attributes in a claim is capped by a shared CEL cost budget.
+    property expression : String?
+    # name is the identifier for this derived attribute, used in constraints.
+    # It must be a DNS subdomain followed by a slash ("/") followed by a C identifier (e.g. "example.com/numaNode" or "derived/numaNode").
+    # If the chosen name matches an existing physical attribute from a driver, the derived attribute's expression will shadow the physical attribute, and its evaluated value will be used in constraints instead. When the goal is to define a derived attribute that is only used within the ResourceClaim and not meant to shadow an existing attribute, use a domain prefix that no DRA driver should be using (e.g. "derived/myAttribute").
+    # It is not valid to define a derived attribute that isn't used in at least one constraint.
+    property name : String?
   end
 
   # DeviceRequest is a request for devices required for a claim. This is typically a request for a single resource like a device, but can also ask for several identical devices.
   struct DeviceRequest
     include Kubernetes::Serializable
 
-    # AdminAccess indicates that this is a claim for administrative access to the device(s). Claims with AdminAccess are expected to be used for monitoring or other management services for a device.  They ignore all ordinary claims to the device with respect to access modes and any resource allocations.
+    # adminAccess indicates that this is a claim for administrative access to the device(s). Claims with AdminAccess are expected to be used for monitoring or other management services for a device.  They ignore all ordinary claims to the device with respect to access modes and any resource allocations.
     # This field can only be set when deviceClassName is set and no subrequests are specified in the firstAvailable list.
     # This is an alpha field and requires enabling the DRAAdminAccess feature gate. Admin access is disabled if this field is unset or set to false, otherwise it is enabled.
     @[::JSON::Field(key: "adminAccess")]
     @[::YAML::Field(key: "adminAccess")]
     property admin_access : Bool?
-    # AllocationMode and its related fields define how devices are allocated to satisfy this request. Supported values are:
+    # allocationMode and its related fields define how devices are allocated to satisfy this request. Supported values are:
     # - ExactCount: This request is for a specific number of devices.
     # This is the default. The exact number is provided in the
     # count field.
@@ -459,32 +484,40 @@ module Kubernetes
     @[::JSON::Field(key: "allocationMode")]
     @[::YAML::Field(key: "allocationMode")]
     property allocation_mode : String?
-    # Capacity define resource requirements against each capacity.
+    # capacity define resource requirements against each capacity.
     # If this field is unset and the device supports multiple allocations, the default value will be applied to each capacity according to requestPolicy. For the capacity that has no requestPolicy, default is the full capacity value.
     # Applies to each device allocation. If Count > 1, the request fails if there aren't enough devices that meet the requirements. If AllocationMode is set to All, the request fails if there are devices that otherwise match the request, and have this capacity, with a value >= the requested amount, but which cannot be allocated to this request.
     property capacity : CapacityRequirements?
-    # Count is used only when the count mode is "ExactCount". Must be greater than zero. If AllocationMode is ExactCount and this field is not specified, the default is one.
+    # count is used only when the count mode is "ExactCount". Must be greater than zero. If AllocationMode is ExactCount and this field is not specified, the default is one.
     # This field can only be set when deviceClassName is set and no subrequests are specified in the firstAvailable list.
     property count : Int64?
-    # DeviceClassName references a specific DeviceClass, which can define additional configuration and selectors to be inherited by this request.
+    # derivedAttributes defines a set of virtual attributes computed via CEL expressions for each candidate device. These virtual attributes can be referenced in `.devices.constraints` to align and match different devices (e.g., co-allocating a GPU and a NIC on the same NUMA node) even if their drivers publish different attributes. Derived attributes are not available via `device.attributes` in the CEL environment when evaluating selector expressions.
+    # Derived attributes allow you to extract, transform, or normalize topology information (such as extracting a NUMA index from a complex topology string or renaming a vendor-specific attribute) into a common virtual attribute name at scheduling time. The scheduler then evaluates these virtual attributes exactly like static attributes when matching constraints.
+    # Every derived attribute defined in this list must be referenced by at least one MatchAttribute or DistinctAttribute constraint in the `.devices.constraints` list.
+    # The maximum number of derived attributes is 32.
+    # This is an alpha field and requires enabling the DRADerivedAttributes feature gate.
+    @[::JSON::Field(key: "derivedAttributes")]
+    @[::YAML::Field(key: "derivedAttributes")]
+    property derived_attributes : Array(DeviceDerivedAttribute)?
+    # deviceClassName references a specific DeviceClass, which can define additional configuration and selectors to be inherited by this request.
     # A class is required if no subrequests are specified in the firstAvailable list and no class can be set if subrequests are specified in the firstAvailable list. Which classes are available depends on the cluster.
     # Administrators may use this to restrict which devices may get requested by only installing classes with selectors for permitted devices. If users are free to request anything without restrictions, then administrators can create an empty DeviceClass for users to reference.
     @[::JSON::Field(key: "deviceClassName")]
     @[::YAML::Field(key: "deviceClassName")]
     property device_class_name : String?
-    # FirstAvailable contains subrequests, of which exactly one will be satisfied by the scheduler to satisfy this request. It tries to satisfy them in the order in which they are listed here. So if there are two entries in the list, the scheduler will only check the second one if it determines that the first one cannot be used.
+    # firstAvailable contains subrequests, of which exactly one will be satisfied by the scheduler to satisfy this request. It tries to satisfy them in the order in which they are listed here. So if there are two entries in the list, the scheduler will only check the second one if it determines that the first one cannot be used.
     # This field may only be set in the entries of DeviceClaim.Requests.
     # DRA does not yet implement scoring, so the scheduler will select the first set of devices that satisfies all the requests in the claim. And if the requirements can be satisfied on more than one node, other scheduling features will determine which node is chosen. This means that the set of devices allocated to a claim might not be the optimal set available to the cluster. Scoring will be implemented later.
     @[::JSON::Field(key: "firstAvailable")]
     @[::YAML::Field(key: "firstAvailable")]
     property first_available : Array(DeviceSubRequest)?
-    # Name can be used to reference this request in a pod.spec.containers[].resources.claims entry and in a constraint of the claim.
+    # name can be used to reference this request in a pod.spec.containers[].resources.claims entry and in a constraint of the claim.
     # Must be a DNS label and unique among all DeviceRequests in a ResourceClaim.
     property name : String?
-    # Selectors define criteria which must be satisfied by a specific device in order for that device to be considered for this request. All selectors must be satisfied for a device to be considered.
+    # selectors define criteria which must be satisfied by a specific device in order for that device to be considered for this request. All selectors must be satisfied for a device to be considered.
     # This field can only be set when deviceClassName is set and no subrequests are specified in the firstAvailable list.
     property selectors : Array(DeviceSelector)?
-    # If specified, the request's tolerations.
+    # tolerations if specified, the request's tolerations.
     # Tolerations for NoSchedule are required to allocate a device which has a taint with that effect. The same applies to NoExecute.
     # In addition, should any of the allocated devices get tainted with NoExecute after allocation and that effect is not tolerated, then all pods consuming the ResourceClaim get deleted to evict them. The scheduler will not let new pods reserve the claim while it has these tainted devices. Once all pods are evicted, the claim will get deallocated.
     # The maximum number of tolerations is 16.
@@ -497,43 +530,47 @@ module Kubernetes
   struct DeviceRequestAllocationResult
     include Kubernetes::Serializable
 
-    # AdminAccess indicates that this device was allocated for administrative access. See the corresponding request field for a definition of mode.
+    # adminAccess indicates that this device was allocated for administrative access. See the corresponding request field for a definition of mode.
     # This is an alpha field and requires enabling the DRAAdminAccess feature gate. Admin access is disabled if this field is unset or set to false, otherwise it is enabled.
     @[::JSON::Field(key: "adminAccess")]
     @[::YAML::Field(key: "adminAccess")]
     property admin_access : Bool?
-    # BindingConditions contains a copy of the BindingConditions from the corresponding ResourceSlice at the time of allocation.
+    # bindingConditions contains a copy of the BindingConditions from the corresponding ResourceSlice at the time of allocation.
     # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindingConditions")]
     @[::YAML::Field(key: "bindingConditions")]
     property binding_conditions : Array(String)?
-    # BindingFailureConditions contains a copy of the BindingFailureConditions from the corresponding ResourceSlice at the time of allocation.
+    # bindingFailureConditions contains a copy of the BindingFailureConditions from the corresponding ResourceSlice at the time of allocation.
     # This is a beta field and requires enabling the DRADeviceBindingConditions and DRAResourceClaimDeviceStatus feature gates.
     @[::JSON::Field(key: "bindingFailureConditions")]
     @[::YAML::Field(key: "bindingFailureConditions")]
     property binding_failure_conditions : Array(String)?
-    # ConsumedCapacity tracks the amount of capacity consumed per device as part of the claim request. The consumed amount may differ from the requested amount: it is rounded up to the nearest valid value based on the device’s requestPolicy if applicable (i.e., may not be less than the requested amount).
+    # consumedCapacity tracks the amount of capacity consumed per device as part of the claim request. The consumed amount may differ from the requested amount: it is rounded up to the nearest valid value based on the device’s requestPolicy if applicable (i.e., may not be less than the requested amount).
     # The total consumed capacity for each device must not exceed the DeviceCapacity's Value.
     # This field is populated only for devices that allow multiple allocations. All capacity entries are included, even if the consumed amount is zero.
     @[::JSON::Field(key: "consumedCapacity")]
     @[::YAML::Field(key: "consumedCapacity")]
     property consumed_capacity : Hash(String, Quantity)?
-    # Device references one device instance via its name in the driver's resource pool. It must be a DNS label.
+    # device references one device instance via its name in the driver's resource pool. It must be a DNS label.
     property device : String?
-    # Driver specifies the name of the DRA driver whose kubelet plugin should be invoked to process the allocation once the claim is needed on a node.
+    # driver specifies the name of the DRA driver whose kubelet plugin should be invoked to process the allocation once the claim is needed on a node.
     # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters.
     property driver : String?
-    # This name together with the driver name and the device name field identify which device was allocated (`<driver name>/<pool name>/<device name>`).
+    # pool is the name together with the driver name and the device name field identify which device was allocated (`<driver name>/<pool name>/<device name>`).
     # Must not be longer than 253 characters and may contain one or more DNS sub-domains separated by slashes.
     property pool : String?
-    # Request is the name of the request in the claim which caused this device to be allocated. If it references a subrequest in the firstAvailable list on a DeviceRequest, this field must include both the name of the main request and the subrequest using the format <main request>/<subrequest>.
+    # request is the name of the request in the claim which caused this device to be allocated. If it references a subrequest in the firstAvailable list on a DeviceRequest, this field must include both the name of the main request and the subrequest using the format <main request>/<subrequest>.
     # Multiple devices may have been allocated per request.
     property request : String?
-    # ShareID uniquely identifies an individual allocation share of the device, used when the device supports multiple simultaneous allocations. It serves as an additional map key to differentiate concurrent shares of the same device.
+    # shareID uniquely identifies an individual allocation share of the device, used when the device supports multiple simultaneous allocations. It serves as an additional map key to differentiate concurrent shares of the same device.
     @[::JSON::Field(key: "shareID")]
     @[::YAML::Field(key: "shareID")]
     property share_id : String?
-    # A copy of all tolerations specified in the request at the time when the device got allocated.
+    # skipNodeOperations lists node-local resource operations (gRPC calls) that will be skipped for this allocated device when determining whether operations are necessary on the node. If all allocated devices for a driver in a claim skip an operation, that gRPC call will be skipped. It is a copy of the ResourceSlice.spec.skipNodeOperations value at the time when the device was allocated.
+    @[::JSON::Field(key: "skipNodeOperations")]
+    @[::YAML::Field(key: "skipNodeOperations")]
+    property skip_node_operations : Array(String)?
+    # tolerations is a copy of all tolerations specified in the request at the time when the device got allocated.
     # The maximum number of tolerations is 16.
     # This is a beta field and requires enabling the DRADeviceTaints feature gate.
     property tolerations : Array(DeviceToleration)?
@@ -543,7 +580,7 @@ module Kubernetes
   struct DeviceSelector
     include Kubernetes::Serializable
 
-    # CEL contains a CEL expression for selecting a device.
+    # cel contains a CEL expression for selecting a device.
     property cel : CELDeviceSelector?
   end
 
@@ -552,7 +589,7 @@ module Kubernetes
   struct DeviceSubRequest
     include Kubernetes::Serializable
 
-    # AllocationMode and its related fields define how devices are allocated to satisfy this subrequest. Supported values are:
+    # allocationMode and its related fields define how devices are allocated to satisfy this subrequest. Supported values are:
     # - ExactCount: This request is for a specific number of devices.
     # This is the default. The exact number is provided in the
     # count field.
@@ -564,24 +601,32 @@ module Kubernetes
     @[::JSON::Field(key: "allocationMode")]
     @[::YAML::Field(key: "allocationMode")]
     property allocation_mode : String?
-    # Capacity define resource requirements against each capacity.
+    # capacity define resource requirements against each capacity.
     # If this field is unset and the device supports multiple allocations, the default value will be applied to each capacity according to requestPolicy. For the capacity that has no requestPolicy, default is the full capacity value.
     # Applies to each device allocation. If Count > 1, the request fails if there aren't enough devices that meet the requirements. If AllocationMode is set to All, the request fails if there are devices that otherwise match the request, and have this capacity, with a value >= the requested amount, but which cannot be allocated to this request.
     property capacity : CapacityRequirements?
-    # Count is used only when the count mode is "ExactCount". Must be greater than zero. If AllocationMode is ExactCount and this field is not specified, the default is one.
+    # count is used only when the count mode is "ExactCount". Must be greater than zero. If AllocationMode is ExactCount and this field is not specified, the default is one.
     property count : Int64?
-    # DeviceClassName references a specific DeviceClass, which can define additional configuration and selectors to be inherited by this subrequest.
+    # derivedAttributes defines a set of virtual attributes computed via CEL expressions for each candidate device. These virtual attributes can be referenced in `.devices.constraints` to align and match different devices (e.g., co-allocating a GPU and a NIC on the same NUMA node) even if their drivers publish different attributes. Derived attributes are not available via `device.attributes` in the CEL environment when evaluating selector expressions.
+    # Derived attributes allow you to extract, transform, or normalize topology information (such as extracting a NUMA index from a complex topology string or renaming a vendor-specific attribute) into a common virtual attribute name at scheduling time. The scheduler then evaluates these virtual attributes exactly like static attributes when matching constraints.
+    # Every derived attribute defined in this list must be referenced by at least one MatchAttribute or DistinctAttribute constraint in the `.devices.constraints` list.
+    # The maximum number of derived attributes is 32.
+    # This is an alpha field and requires enabling the DRADerivedAttributes feature gate.
+    @[::JSON::Field(key: "derivedAttributes")]
+    @[::YAML::Field(key: "derivedAttributes")]
+    property derived_attributes : Array(DeviceDerivedAttribute)?
+    # deviceClassName references a specific DeviceClass, which can define additional configuration and selectors to be inherited by this subrequest.
     # A class is required. Which classes are available depends on the cluster.
     # Administrators may use this to restrict which devices may get requested by only installing classes with selectors for permitted devices. If users are free to request anything without restrictions, then administrators can create an empty DeviceClass for users to reference.
     @[::JSON::Field(key: "deviceClassName")]
     @[::YAML::Field(key: "deviceClassName")]
     property device_class_name : String?
-    # Name can be used to reference this subrequest in the list of constraints or the list of configurations for the claim. References must use the format <main request>/<subrequest>.
+    # name can be used to reference this subrequest in the list of constraints or the list of configurations for the claim. References must use the format <main request>/<subrequest>.
     # Must be a DNS label.
     property name : String?
-    # Selectors define criteria which must be satisfied by a specific device in order for that device to be considered for this subrequest. All selectors must be satisfied for a device to be considered.
+    # selectors define criteria which must be satisfied by a specific device in order for that device to be considered for this subrequest. All selectors must be satisfied for a device to be considered.
     property selectors : Array(DeviceSelector)?
-    # If specified, the request's tolerations.
+    # tolerations if specified, the request's tolerations.
     # Tolerations for NoSchedule are required to allocate a device which has a taint with that effect. The same applies to NoExecute.
     # In addition, should any of the allocated devices get tainted with NoExecute after allocation and that effect is not tolerated, then all pods consuming the ResourceClaim get deleted to evict them. The scheduler will not let new pods reserve the claim while it has these tainted devices. Once all pods are evicted, the claim will get deallocated.
     # The maximum number of tolerations is 16.
@@ -593,17 +638,17 @@ module Kubernetes
   struct DeviceTaint
     include Kubernetes::Serializable
 
-    # The effect of the taint on claims that do not tolerate the taint and through such claims on the pods using them.
+    # effect is the effect of the taint on claims that do not tolerate the taint and through such claims on the pods using them.
     # Valid effects are None, NoSchedule and NoExecute. PreferNoSchedule as used for nodes is not valid here. More effects may get added in the future. Consumers must treat unknown effects like None.
     property effect : String?
-    # The taint key to be applied to a device. Must be a label name.
+    # key is the taint key to be applied to a device. Must be a label name.
     property key : String?
-    # TimeAdded represents the time at which the taint was added or (only in a DeviceTaintRule) the effect was modified. Added automatically during create or update if not set.
+    # timeAdded represents the time at which the taint was added or (only in a DeviceTaintRule) the effect was modified. Added automatically during create or update if not set.
     # In addition, in a DeviceTaintRule a value provided during an update gets replaced with the current time if the provided value is the same as the old one and the new effect is different. Changing the key and/or value while keeping the effect unchanged is possible and does not update the time stamp because the eviction which uses it is either already started (NoExecute) or not started yet (NoEffect, NoSchedule).
     @[::JSON::Field(key: "timeAdded")]
     @[::YAML::Field(key: "timeAdded")]
     property time_added : Time?
-    # The taint value corresponding to the taint key. Must be a label value.
+    # value is the taint value corresponding to the taint key. Must be a label value.
     property value : String?
   end
 
@@ -611,17 +656,17 @@ module Kubernetes
   struct DeviceToleration
     include Kubernetes::Serializable
 
-    # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule and NoExecute.
+    # effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule and NoExecute.
     property effect : String?
-    # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys. Must be a label name.
+    # key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys. Must be a label name.
     property key : String?
-    # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a ResourceClaim can tolerate all taints of a particular category.
+    # operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a ResourceClaim can tolerate all taints of a particular category.
     property operator : String?
-    # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system. If larger than zero, the time when the pod needs to be evicted is calculated as <time when taint was adedd> + <toleration seconds>.
+    # tolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system. If larger than zero, the time when the pod needs to be evicted is calculated as <time when taint was adedd> + <toleration seconds>.
     @[::JSON::Field(key: "tolerationSeconds")]
     @[::YAML::Field(key: "tolerationSeconds")]
     property toleration_seconds : Int64?
-    # Value is the taint value the toleration matches to. If the operator is Exists, the value must be empty, otherwise just a regular string. Must be a label value.
+    # value is the taint value the toleration matches to. If the operator is Exists, the value must be empty, otherwise just a regular string. Must be a label value.
     property value : String?
   end
 
@@ -629,63 +674,77 @@ module Kubernetes
   struct NetworkDeviceData
     include Kubernetes::Serializable
 
-    # HardwareAddress represents the hardware address (e.g. MAC Address) of the device's network interface.
+    # hardwareAddress represents the hardware address (e.g. MAC Address) of the device's network interface.
     # Must not be longer than 128 bytes.
     @[::JSON::Field(key: "hardwareAddress")]
     @[::YAML::Field(key: "hardwareAddress")]
     property hardware_address : String?
-    # InterfaceName specifies the name of the network interface associated with the allocated device. This might be the name of a physical or virtual network interface being configured in the pod.
+    # interfaceName specifies the name of the network interface associated with the allocated device. This might be the name of a physical or virtual network interface being configured in the pod.
     # Must not be longer than 256 bytes.
     @[::JSON::Field(key: "interfaceName")]
     @[::YAML::Field(key: "interfaceName")]
     property interface_name : String?
-    # IPs lists the network addresses assigned to the device's network interface. This can include both IPv4 and IPv6 addresses. The IPs are in the CIDR notation, which includes both the address and the associated subnet mask. e.g.: "192.0.2.5/24" for IPv4 and "2001:db8::5/64" for IPv6.
+    # ips lists the network addresses assigned to the device's network interface. This can include both IPv4 and IPv6 addresses. The IPs are in the CIDR notation, which includes both the address and the associated subnet mask. e.g.: "192.0.2.5/24" for IPv4 and "2001:db8::5/64" for IPv6.
     # Must not contain more than 16 entries.
     property ips : Array(String)?
   end
 
-  # NodeAllocatableResourceMapping defines the translation between the DRA device/capacity units requested to the corresponding quantity of the node allocatable resource.
-  struct NodeAllocatableResourceMapping
+  # NodeAllocatableMapping defines how a DRA allocation directly translates into a node allocatable resource quantity. The mapping can be derived from either the count of allocated devices or the specific capacity consumed. These options are mutually exclusive. Kubelet adds this mapped resource quantity from claim to both requests and limits at the pod-level cgroup, and to limits at the container-level cgroup for each container referencing the claim.
+  struct NodeAllocatableMapping
     include Kubernetes::Serializable
 
-    # AllocationMultiplier is used as a multiplier for the allocated device count or the allocated capacity in the claim. It defaults to 1 if not specified. How the field is used also depends on whether `capacityKey` is set. 1.  If `capacityKey` is NOT set: `allocationMultiplier` multiplies the device count allocated to the claim.
-    # a. A DRA driver representing each CPU core as a device would have
-    # {ResourceName: "cpu", allocationMultiplier: "2"} in its
-    # `nodeAllocatableResourceMappings`. If 4 devices are allocated to the claim,
-    # 4 * 2 CPUs would be considered as allocated and subtracted from the node's capacity.
-    # b. A GPU device that needs additional node memory per GPU allocation would
-    # have {ResourceName: "memory", allocationMultiplier: "2Gi"}.  Each allocated
-    # GPU device instance of this type will account for 2Gi of memory.
-    # 2.  If `capacityKey` IS set: `allocationMultiplier` is multiplied by the amount of that capacity consumed.
-    # The final node allocatable resource amount is `consumedCapacity[capacityKey]` * `allocationMultiplier`.
-    # For example, if a Device's capacity "dra.example.com/cores" is consumed,
-    # and each "core" provides 2 "cpu"s, the mapping would be:
-    # {ResourceName: "cpu", capacityKey: "dra.example.com/cores", allocationMultiplier: "2"}.
-    # If a claim consumes 8 "dra.example.com/cores", the CPU footprint is 8 * 2 = 16.
-    @[::JSON::Field(key: "allocationMultiplier")]
-    @[::YAML::Field(key: "allocationMultiplier")]
-    property allocation_multiplier : Quantity?
-    # CapacityKey references a capacity name defined as a key in the `spec.devices[*].capacity` map. When this field is set, the value associated with this key in the `status.allocation.devices.results[*].consumedCapacity` map (for a specific claim allocation) determines the base quantity for the node allocatable resource. If `allocationMultiplier` is also set, it is multiplied with the base quantity. For example, if `spec.devices[*].capacity` has an entry "dra.example.com/memory": "128Gi", and this field is set to "dra.example.com/memory", then for a claim allocation that consumes { "dra.example.com/memory": "4Gi" } the base quantity for the node allocatable resource mapping will be "4Gi", and `allocationMultiplier` should be omitted or set to "1".
+    # capacityKey references a capacity name defined as a key in the `spec.devices[*].capacity` map. When this field is set, the value associated with this key in the `status.allocation.devices.results[*].consumedCapacity` map (for a specific claim allocation) determines the base quantity for the node allocatable resource. `capacityMultiplier` must also be set and is multiplied with the base quantity. For example, if `spec.devices[*].capacity` has an entry "dra.example.com/memory": "128Gi", and this field is set to "dra.example.com/memory", then for a claim allocation that consumes { "dra.example.com/memory": "4Gi" } the base quantity for the node allocatable resource mapping will be "4Gi". The final node allocatable resource amount is `consumedCapacity[capacityKey]` * `capacityMultiplier`.
     @[::JSON::Field(key: "capacityKey")]
     @[::YAML::Field(key: "capacityKey")]
     property capacity_key : String?
+    # capacityMultiplier is used as a multiplier for the allocated capacity consumed. It is only valid if `capacityKey` is set. The final node allocatable resource amount is `consumedCapacity[capacityKey]` * `capacityMultiplier`. For example, if a Device's capacity "dra.example.com/cores" is consumed, and each "core" provides 2 "cpu"s, the mapping would be: {ResourceName: "cpu", capacityKey: "dra.example.com/cores", capacityMultiplier: "2"}. If a claim consumes 8 "dra.example.com/cores", the CPU footprint is 8 * 2 = 16.
+    @[::JSON::Field(key: "capacityMultiplier")]
+    @[::YAML::Field(key: "capacityMultiplier")]
+    property capacity_multiplier : Quantity?
+    # deviceMultiplier is used as a multiplier for the allocated device count in the claim. The final node allocatable resource amount is `deviceCount` * `deviceMultiplier`. For example, a DRA driver representing each cache complex (CCX) as a device would have {ResourceName: "cpu", deviceMultiplier: "8"} in its `nodeAllocatableResources`. If 2 devices (CCX) are allocated to the claim, 2 * 8 = 16 CPUs would be considered as allocated. It is only valid when `capacityKey` and `capacityMultiplier` are not set.
+    @[::JSON::Field(key: "deviceMultiplier")]
+    @[::YAML::Field(key: "deviceMultiplier")]
+    property device_multiplier : Quantity?
+  end
+
+  # NodeAllocatableOverhead defines auxiliary resource overheads incurred when allocating a device. Overheads can be specified as a fixed cost per pod referencing the claim, a variable cost per container reference, or both. Kubelet accounts for this overhead by adding it to both the pod-level and container-level cgroups of referencing containers.
+  struct NodeAllocatableOverhead
+    include Kubernetes::Serializable
+
+    # perContainer is applied per container reference to the claim. This models overhead scaling linearly with the number of containers actively using the device. When both PerPod and PerContainer are specified, the total overhead allocated for each pod referencing the claim is computed as: Quantity = PerPod + (PerContainer * NumReferences) Kubelet accounts for this overhead in cgroups: - Pod-level cgroup (requests and limits): Kubelet adds PerPod + (PerContainer * NumReferences). - Container-level cgroup (limits only): Kubelet adds PerPod + PerContainer for each referencing container. This allows any single container to access the pod-level overhead, while the parent cgroup caps the total usage to account for PerPod exactly once.
+    @[::JSON::Field(key: "perContainer")]
+    @[::YAML::Field(key: "perContainer")]
+    property per_container : Quantity?
+    # perPod is overhead applied once per pod referencing the claim on this node. This is a flat overhead incurred for every pod referencing the claim.
+    @[::JSON::Field(key: "perPod")]
+    @[::YAML::Field(key: "perPod")]
+    property per_pod : Quantity?
+  end
+
+  # NodeAllocatableResource defines the translation between the DRA device/capacity units requested to the corresponding quantity of the node allocatable resource. At least one of Mapping or Overhead must be specified. Not specifying either is an invalid configuration.
+  struct NodeAllocatableResource
+    include Kubernetes::Serializable
+
+    # mapping is used when the device directly models a node allocatable resource like standard CPU or memory (e.g., with a CPU DRA driver). The calculated quantity is accounted for exactly once per claim instance on the node. To prevent node cgroup isolation friction, the scheduler explicitly blocks sharing mapped device claims across multiple pods.
+    property mapping : NodeAllocatableMapping?
+    # overhead contains fields for modeling auxiliary overhead incurred on node allocatable resources when allocating devices that are not themselves modeling a node allocatable resource (e.g., host memory overhead for GPUs). Sharing overhead-mapped claims across multiple pods is allowed. The node allocatable overhead is accounted for individually for each pod referencing the claim. Overhead is always subtracted from the node's allocatable capacity for the resource, even when mapping is specified for the same resource. Eg: If a device models memory capacity per socket as a consumable capacity pool via Mapping (with CapacityKey), any overhead specified for the same resource will be subtracted from the node's general allocatable capacity and not from the per-socket capacity pool in Mapping.
+    property overhead : NodeAllocatableOverhead?
   end
 
   # OpaqueDeviceConfiguration contains configuration parameters for a driver in a format defined by the driver vendor.
   struct OpaqueDeviceConfiguration
     include Kubernetes::Serializable
 
-    # Driver is used to determine which kubelet plugin needs to be passed these configuration parameters.
+    # driver is used to determine which kubelet plugin needs to be passed these configuration parameters.
     # An admission policy provided by the driver developer could use this to decide whether it needs to validate them.
     # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters.
     property driver : String?
-    # Parameters can contain arbitrary data. It is the responsibility of the driver developer to handle validation and versioning. Typically this includes self-identification and a version ("kind" + "apiVersion" for Kubernetes types), with conversion between different versions.
+    # parameters can contain arbitrary data. It is the responsibility of the driver developer to handle validation and versioning. Typically this includes self-identification and a version ("kind" + "apiVersion" for Kubernetes types), with conversion between different versions.
     # The length of the raw data must be smaller or equal to 10 Ki.
     property parameters : RawExtension?
   end
 
   # ResourceClaim describes a request for access to resources in the cluster, for use by workloads. For example, if a workload needs an accelerator device with specific properties, this is how that request is expressed. The status stanza tracks whether this claim has been satisfied and what specific resources have been allocated.
-  # This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
   struct ResourceClaim
     include Kubernetes::Serializable
 
@@ -695,11 +754,11 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata
+    # metadata is the standard object metadata.
     property metadata : ObjectMeta?
-    # Spec describes what is being requested and how to configure it. The spec is immutable.
+    # spec describes what is being requested and how to configure it. The spec is immutable.
     property spec : ResourceClaimSpec?
-    # Status describes whether the claim is ready to use and what has been allocated.
+    # status describes whether the claim is ready to use and what has been allocated.
     property status : ResourceClaimStatus?
   end
 
@@ -707,15 +766,15 @@ module Kubernetes
   struct ResourceClaimConsumerReference
     include Kubernetes::Serializable
 
-    # APIGroup is the group for the resource being referenced. It is empty for the core API. This matches the group in the APIVersion that is used when creating the resources.
+    # apiGroup is the group for the resource being referenced. It is empty for the core API. This matches the group in the APIVersion that is used when creating the resources.
     @[::JSON::Field(key: "apiGroup")]
     @[::YAML::Field(key: "apiGroup")]
     property api_group : String?
-    # Name is the name of resource being referenced.
+    # name is the name of resource being referenced.
     property name : String?
-    # Resource is the type of resource being referenced, for example "pods".
+    # resource is the type of resource being referenced, for example "pods".
     property resource : String?
-    # UID identifies exactly one incarnation of the resource.
+    # uid identifies exactly one incarnation of the resource.
     property uid : String?
   end
 
@@ -739,7 +798,7 @@ module Kubernetes
   struct ResourceClaimSpec
     include Kubernetes::Serializable
 
-    # Devices defines how to request devices.
+    # devices defines how to request devices.
     property devices : DeviceClaim?
   end
 
@@ -747,11 +806,11 @@ module Kubernetes
   struct ResourceClaimStatus
     include Kubernetes::Serializable
 
-    # Allocation is set once the claim has been allocated successfully.
+    # allocation is set once the claim has been allocated successfully.
     property allocation : AllocationResult?
-    # Devices contains the status of each device allocated for this claim, as reported by the driver. This can include driver-specific information. Entries are owned by their respective drivers.
+    # devices contains the status of each device allocated for this claim, as reported by the driver. This can include driver-specific information. Entries are owned by their respective drivers.
     property devices : Array(AllocatedDeviceStatus)?
-    # ReservedFor indicates which entities are currently allowed to use the claim. A Pod which references a ResourceClaim which is not reserved for that Pod will not be started. A claim that is in use or might be in use because it has been reserved must not get deallocated.
+    # reservedFor indicates which entities are currently allowed to use the claim. A Pod which references a ResourceClaim which is not reserved for that Pod will not be started. A claim that is in use or might be in use because it has been reserved must not get deallocated.
     # In a cluster with multiple scheduler instances, two pods might get scheduled concurrently by different schedulers. When they reference the same ResourceClaim which already has reached its maximum number of consumers, only one pod can be scheduled.
     # Both schedulers try to add their pod to the claim.status.reservedFor field, but only the update that reaches the API server first gets stored. The other one fails with an error and the scheduler which issued it knows that it must put the pod back into the queue, waiting for the ResourceClaim to become usable again.
     # There can be at most 256 such reservations. This may get increased in the future, but not reduced.
@@ -761,7 +820,6 @@ module Kubernetes
   end
 
   # ResourceClaimTemplate is used to produce ResourceClaim objects.
-  # This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
   struct ResourceClaimTemplate
     include Kubernetes::Serializable
 
@@ -771,9 +829,9 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata
+    # metadata is the standard object metadata.
     property metadata : ObjectMeta?
-    # Describes the ResourceClaim that is to be generated.
+    # spec describes the ResourceClaim that is to be generated.
     # This field is immutable. A ResourceClaim will get created by the control plane for a Pod when needed and then not get updated anymore.
     property spec : ResourceClaimTemplateSpec?
   end
@@ -798,9 +856,9 @@ module Kubernetes
   struct ResourceClaimTemplateSpec
     include Kubernetes::Serializable
 
-    # ObjectMeta may contain labels and annotations that will be copied into the ResourceClaim when creating it. No other fields are allowed and will be rejected during validation.
+    # metadata may contain labels and annotations that will be copied into the ResourceClaim when creating it. No other fields are allowed and will be rejected during validation.
     property metadata : ObjectMeta?
-    # Spec for the ResourceClaim. The entire content is copied unchanged into the ResourceClaim that gets created from this template. The same fields as in a ResourceClaim are also valid here.
+    # spec for the ResourceClaim. The entire content is copied unchanged into the ResourceClaim that gets created from this template. The same fields as in a ResourceClaim are also valid here.
     property spec : ResourceClaimSpec?
   end
 
@@ -808,13 +866,13 @@ module Kubernetes
   struct ResourcePool
     include Kubernetes::Serializable
 
-    # Generation tracks the change in a pool over time. Whenever a driver changes something about one or more of the resources in a pool, it must change the generation in all ResourceSlices which are part of that pool. Consumers of ResourceSlices should only consider resources from the pool with the highest generation number. The generation may be reset by drivers, which should be fine for consumers, assuming that all ResourceSlices in a pool are updated to match or deleted.
+    # generation tracks the change in a pool over time. Whenever a driver changes something about one or more of the resources in a pool, it must change the generation in all ResourceSlices which are part of that pool. Consumers of ResourceSlices should only consider resources from the pool with the highest generation number. The generation may be reset by drivers, which should be fine for consumers, assuming that all ResourceSlices in a pool are updated to match or deleted.
     # Combined with ResourceSliceCount, this mechanism enables consumers to detect pools which are comprised of multiple ResourceSlices and are in an incomplete state.
     property generation : Int64?
-    # Name is used to identify the pool. For node-local devices, this is often the node name, but this is not required.
+    # name is used to identify the pool. For node-local devices, this is often the node name, but this is not required. A field selector can be used to list only ResourceSlice objects belonging to a certain pool.
     # It must not be longer than 253 characters and must consist of one or more DNS sub-domains separated by slashes. This field is immutable.
     property name : String?
-    # ResourceSliceCount is the total number of ResourceSlices in the pool at this generation number. Must be greater than zero.
+    # resourceSliceCount is the total number of ResourceSlices in the pool at this generation number. Must be greater than zero.
     # Consumers can use this to check whether they have seen all ResourceSlices belonging to the same pool.
     @[::JSON::Field(key: "resourceSliceCount")]
     @[::YAML::Field(key: "resourceSliceCount")]
@@ -826,7 +884,6 @@ module Kubernetes
   # Whenever a driver needs to update a pool, it increments the pool.Spec.Pool.Generation number and updates all ResourceSlices with that new number and new resource definitions. A consumer must only use ResourceSlices with the highest generation number and ignore all others.
   # When allocating all resources in a pool matching certain criteria or when looking for the best solution among several different alternatives, a consumer should check the number of ResourceSlices in a pool (included in each ResourceSlice) to determine whether its view of a pool is complete and if not, should wait until the driver has completed updating the pool.
   # For resources that are not local to a node, the node name is not set. Instead, the driver may use a node selector to specify where the devices are available.
-  # This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
   struct ResourceSlice
     include Kubernetes::Serializable
 
@@ -836,9 +893,9 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # Standard object metadata
+    # metadata is the standard object metadata.
     property metadata : ObjectMeta?
-    # Contains the information published by the driver.
+    # spec contains the information published by the driver.
     # Changing the spec automatically increments the metadata.generation number.
     property spec : ResourceSliceSpec?
   end
@@ -863,43 +920,57 @@ module Kubernetes
   struct ResourceSliceSpec
     include Kubernetes::Serializable
 
-    # AllNodes indicates that all nodes have access to the resources in the pool.
+    # allNodes indicates that all nodes have access to the resources in the pool.
     # Exactly one of NodeName, NodeSelector, AllNodes, and PerDeviceNodeSelection must be set.
     @[::JSON::Field(key: "allNodes")]
     @[::YAML::Field(key: "allNodes")]
     property all_nodes : Bool?
-    # Devices lists some or all of the devices in this pool.
+    # devices lists some or all of the devices in this pool.
     # Must not have more than 128 entries. If any device uses taints or consumes counters the limit is 64.
     # Only one of Devices and SharedCounters can be set in a ResourceSlice.
     property devices : Array(Device)?
-    # Driver identifies the DRA driver providing the capacity information. A field selector can be used to list only ResourceSlice objects with a certain driver name.
+    # driver identifies the DRA driver providing the capacity information. A field selector can be used to list only ResourceSlice objects with a certain driver name.
     # Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. It should use only lower case characters. This field is immutable.
     property driver : String?
-    # NodeName identifies the node which provides the resources in this pool. A field selector can be used to list only ResourceSlice objects belonging to a certain node.
+    # nodeName identifies the node which provides the resources in this pool. A field selector can be used to list only ResourceSlice objects belonging to a certain node.
     # This field can be used to limit access from nodes to ResourceSlices with the same node name. It also indicates to autoscalers that adding new nodes of the same type as some old node might also make new resources available.
     # Exactly one of NodeName, NodeSelector, AllNodes, and PerDeviceNodeSelection must be set. This field is immutable.
     @[::JSON::Field(key: "nodeName")]
     @[::YAML::Field(key: "nodeName")]
     property node_name : String?
-    # NodeSelector defines which nodes have access to the resources in the pool, when that pool is not limited to a single node.
+    # nodeSelector defines which nodes have access to the resources in the pool, when that pool is not limited to a single node.
     # Must use exactly one term.
     # Exactly one of NodeName, NodeSelector, AllNodes, and PerDeviceNodeSelection must be set.
     @[::JSON::Field(key: "nodeSelector")]
     @[::YAML::Field(key: "nodeSelector")]
     property node_selector : NodeSelector?
-    # PerDeviceNodeSelection defines whether the access from nodes to resources in the pool is set on the ResourceSlice level or on each device. If it is set to true, every device defined the ResourceSlice must specify this individually.
+    # partitionTypeAttribute names a string device attribute (by fully qualified name, e.g. "gpu.example.com/profile") whose value labels each device with its partition type, such as "Full" or "Half" for a MIG-style GPU.
+    # When set, every partitionable device in the slice must carry the attribute and devices sharing a value must share the same ConsumesCounters cost.
+    @[::JSON::Field(key: "partitionTypeAttribute")]
+    @[::YAML::Field(key: "partitionTypeAttribute")]
+    property partition_type_attribute : String?
+    # perDeviceNodeSelection defines whether the access from nodes to resources in the pool is set on the ResourceSlice level or on each device. If it is set to true, every device defined the ResourceSlice must specify this individually.
     # Exactly one of NodeName, NodeSelector, AllNodes, and PerDeviceNodeSelection must be set.
     @[::JSON::Field(key: "perDeviceNodeSelection")]
     @[::YAML::Field(key: "perDeviceNodeSelection")]
     property per_device_node_selection : Bool?
-    # Pool describes the pool that this ResourceSlice belongs to.
+    # pool describes the pool that this ResourceSlice belongs to.
     property pool : ResourcePool?
-    # SharedCounters defines a list of counter sets, each of which has a name and a list of counters available.
+    # sharedCounters defines a list of counter sets, each of which has a name and a list of counters available.
     # The names of the counter sets must be unique in the ResourcePool.
     # Only one of Devices and SharedCounters can be set in a ResourceSlice.
     # The maximum number of counter sets is 8.
     @[::JSON::Field(key: "sharedCounters")]
     @[::YAML::Field(key: "sharedCounters")]
     property shared_counters : Array(CounterSet)?
+    # skipNodeOperations lists node-local resource operations (gRPC calls) that will be skipped for the devices in this slice when determining whether operations are necessary on the node. If all allocated devices for a driver in a claim skip an operation, that gRPC call will be skipped. Valid values are:
+    # - "NodePrepareResources": NodePrepareResources gRPC calls are skipped. This
+    # value cannot be specified unless "NodeUnprepareResources" is also listed
+    # (or "*" is specified).
+    # - "NodeUnprepareResources": NodeUnprepareResources gRPC calls are skipped. - "*": All node-local resource operations are skipped.
+    # Other values may be added in the future. The kubelet must ignore unknown values.
+    @[::JSON::Field(key: "skipNodeOperations")]
+    @[::YAML::Field(key: "skipNodeOperations")]
+    property skip_node_operations : Array(String)?
   end
 end
