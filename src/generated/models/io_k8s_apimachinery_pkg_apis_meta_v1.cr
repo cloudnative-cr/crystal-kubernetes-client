@@ -263,7 +263,7 @@ module Kubernetes
     @[::YAML::Field(key: "selfLink")]
     property self_link : String?
     # shardInfo is set when the list is a filtered subset of the full collection, as selected by a shard selector on the request. It echoes back the selector so clients can verify which shard they received and merge sharded responses. Clients should not cache sharded list responses as a full representation of the collection.
-    # This is an alpha field and requires enabling the ShardedListAndWatch feature gate.
+    # This is a beta field and is enabled by default via the ShardedListAndWatch feature gate.
     @[::JSON::Field(key: "shardInfo")]
     @[::YAML::Field(key: "shardInfo")]
     property shard_info : ShardInfo?

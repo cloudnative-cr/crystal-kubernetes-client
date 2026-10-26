@@ -31,6 +31,7 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
+    # metadata is the standard object's metadata.
     property metadata : ObjectMeta?
     # spec contains the certificate request, and is immutable after creation. Only the request, signerName, expirationSeconds, and usages fields can be set on creation. Other fields are derived by Kubernetes and cannot be modified by users.
     property spec : CertificateSigningRequestSpec?
@@ -124,8 +125,8 @@ module Kubernetes
     # uid contains the uid of the user that created the CertificateSigningRequest. Populated by the API server on creation and immutable.
     property uid : String?
     # usages specifies a set of key usages requested in the issued certificate.
-    # Requests for TLS client certificates typically request: "digital signature", "key encipherment", "client auth".
-    # Requests for TLS serving certificates typically request: "key encipherment", "digital signature", "server auth".
+    # Requests for TLS client certificates typically request: "digital signature", "client auth".
+    # Requests for TLS serving certificates typically request: "digital signature", "server auth".
     # Valid values are:
     # "signing", "digital signature", "content commitment",
     # "key encipherment", "key agreement", "data encipherment",
@@ -134,6 +135,7 @@ module Kubernetes
     # "code signing", "email protection", "s/mime",
     # "ipsec end system", "ipsec tunnel", "ipsec user",
     # "timestamping", "ocsp signing", "microsoft sgc", "netscape sgc"
+    # When request contains a x509 certificate signing request signed with an ML-DSA key, usages must contain at least one of "digital signature", "content commitment", "cert sign", or "crl sign" and must not contain "key encipherment", "key agreement", "data encipherment", "encipher only", or "decipher only".
     property usages : Array(String)?
     # username contains the name of the user that created the CertificateSigningRequest. Populated by the API server on creation and immutable.
     property username : String?
@@ -162,5 +164,181 @@ module Kubernetes
     property certificate : String?
     # conditions applied to the request. Known conditions are "Approved", "Denied", and "Failed".
     property conditions : Array(CertificateSigningRequestCondition)?
+  end
+
+  # ClusterTrustBundle is a cluster-scoped container for X.509 trust anchors (root certificates).
+  # ClusterTrustBundle objects are considered to be readable by any authenticated user in the cluster, because they can be mounted by pods using the `clusterTrustBundle` projection.  All service accounts have read access to ClusterTrustBundles by default.  Users who only have namespace-level access to a cluster can read ClusterTrustBundles by impersonating a serviceaccount that they have access to.
+  # It can be optionally associated with a particular signer, in which case it contains one valid set of trust anchors for that signer. Signers may have multiple associated ClusterTrustBundles; each is an independent set of trust anchors for that signer. Admission control is used to enforce that only users with permissions on the signer can create or modify the corresponding bundle.
+  struct ClusterTrustBundle
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # metadata contains the object metadata.
+    property metadata : ObjectMeta?
+    # spec contains the signer (if any) and trust anchors.
+    property spec : ClusterTrustBundleSpec?
+  end
+
+  # ClusterTrustBundleList is a collection of ClusterTrustBundle objects
+  struct ClusterTrustBundleList
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # items is a collection of ClusterTrustBundle objects
+    property items : Array(ClusterTrustBundle)?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # metadata contains the list metadata.
+    property metadata : ListMeta?
+  end
+
+  # ClusterTrustBundleSpec contains the signer and trust anchors.
+  struct ClusterTrustBundleSpec
+    include Kubernetes::Serializable
+
+    # signerName indicates the associated signer, if any.
+    # In order to create or update a ClusterTrustBundle that sets signerName, you must have the following cluster-scoped permission: group=certificates.k8s.io resource=signers resourceName=<the signer name> verb=attest.
+    # If signerName is not empty, then the ClusterTrustBundle object must be named with the signer name as a prefix (translating slashes to colons). For example, for the signer name `example.com/foo`, valid ClusterTrustBundle object names include `example.com:foo:abc` and `example.com:foo:v1`.
+    # If signerName is empty, then the ClusterTrustBundle object's name must not have such a prefix.
+    # List/watch requests for ClusterTrustBundles can filter on this field using a `spec.signerName=NAME` field selector.
+    @[::JSON::Field(key: "signerName")]
+    @[::YAML::Field(key: "signerName")]
+    property signer_name : String?
+    # trustBundle contains the individual X.509 trust anchors for this bundle, as PEM bundle of PEM-wrapped, DER-formatted X.509 certificates.
+    # The data must consist only of PEM certificate blocks that parse as valid X.509 certificates.  Each certificate must include a basic constraints extension with the CA bit set.  The API server will reject objects that contain duplicate certificates, or that use PEM block headers.
+    # Users of ClusterTrustBundles, including Kubelet, are free to reorder and deduplicate certificate blocks in this file according to their own logic, as well as to drop PEM block headers and inter-block data.
+    @[::JSON::Field(key: "trustBundle")]
+    @[::YAML::Field(key: "trustBundle")]
+    property trust_bundle : String?
+  end
+
+  # PodCertificateRequest encodes a pod requesting a certificate from a given signer.
+  # Kubelets use this API to implement podCertificate projected volumes
+  struct PodCertificateRequest
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # metadata contains the object metadata.
+    property metadata : ObjectMeta?
+    # spec contains the details about the certificate being requested.
+    property spec : PodCertificateRequestSpec?
+    # status contains the issued certificate, and a standard set of conditions.
+    property status : PodCertificateRequestStatus?
+  end
+
+  # PodCertificateRequestList is a collection of PodCertificateRequest objects
+  struct PodCertificateRequestList
+    include Kubernetes::Serializable
+
+    # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+    @[::JSON::Field(key: "apiVersion")]
+    @[::YAML::Field(key: "apiVersion")]
+    property api_version : String?
+    # items is a collection of PodCertificateRequest objects
+    property items : Array(PodCertificateRequest)?
+    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    property kind : String?
+    # metadata contains the list metadata.
+    property metadata : ListMeta?
+  end
+
+  # PodCertificateRequestSpec describes the certificate request.  All fields are immutable after creation.
+  struct PodCertificateRequestSpec
+    include Kubernetes::Serializable
+
+    # maxExpirationSeconds is the maximum lifetime permitted for the certificate.
+    # If omitted, kube-apiserver will set it to 86400(24 hours). kube-apiserver will reject values shorter than 3600 (1 hour).  The maximum allowable value is 7862400 (91 days).
+    # The signer implementation is then free to issue a certificate with any lifetime *shorter* than MaxExpirationSeconds, but no shorter than 3600 seconds (1 hour).  This constraint is enforced by kube-apiserver. `kubernetes.io` signers will never issue certificates with a lifetime longer than 24 hours.
+    @[::JSON::Field(key: "maxExpirationSeconds")]
+    @[::YAML::Field(key: "maxExpirationSeconds")]
+    property max_expiration_seconds : Int32?
+    # nodeName is the name of the node the pod is assigned to.
+    @[::JSON::Field(key: "nodeName")]
+    @[::YAML::Field(key: "nodeName")]
+    property node_name : String?
+    # nodeUID is the UID of the node the pod is assigned to.
+    @[::JSON::Field(key: "nodeUID")]
+    @[::YAML::Field(key: "nodeUID")]
+    property node_uid : String?
+    # podName is the name of the pod into which the certificate will be mounted.
+    @[::JSON::Field(key: "podName")]
+    @[::YAML::Field(key: "podName")]
+    property pod_name : String?
+    # podUID is the UID of the pod into which the certificate will be mounted.
+    @[::JSON::Field(key: "podUID")]
+    @[::YAML::Field(key: "podUID")]
+    property pod_uid : String?
+    # serviceAccountName is the name of the service account the pod is running as.
+    @[::JSON::Field(key: "serviceAccountName")]
+    @[::YAML::Field(key: "serviceAccountName")]
+    property service_account_name : String?
+    # serviceAccountUID is the UID of the service account the pod is running as.
+    @[::JSON::Field(key: "serviceAccountUID")]
+    @[::YAML::Field(key: "serviceAccountUID")]
+    property service_account_uid : String?
+    # signerName indicates the requested signer.
+    # All signer names beginning with `kubernetes.io` are reserved for use by the Kubernetes project.  There is currently one well-known signer documented by the Kubernetes project, `kubernetes.io/kube-apiserver-client-pod`, which will issue client certificates understood by kube-apiserver.  It is currently unimplemented.
+    @[::JSON::Field(key: "signerName")]
+    @[::YAML::Field(key: "signerName")]
+    property signer_name : String?
+    # stubPKCS10Request is a PKCS#10 certificate signing request (DER-serialized) generated by Kubelet using the subject private key.
+    # Most signer implementations will ignore the contents of the CSR except to extract the subject public key. The API server automatically verifies the CSR signature during admission, so the signer does not need to repeat the verification.  CSRs generated by kubelet are completely empty.
+    # The subject public key must be one of RSA3072, RSA4096, ECDSAP256, ECDSAP384, ECDSAP521, ED25519, MLDSA44, MLDSA65, or MLDSA87. Note that this list may be expanded in the future.
+    # Signer implementations do not need to support all key types supported by kube-apiserver and kubelet.  If a signer does not support the key type used for a given PodCertificateRequest, it must deny the request by setting a status.conditions entry with a type of "Denied" and a reason of "UnsupportedKeyType". It may also suggest a key type that it does support in the message field.
+    @[::JSON::Field(key: "stubPKCS10Request")]
+    @[::YAML::Field(key: "stubPKCS10Request")]
+    property stub_pkcs10_request : String?
+    # unverifiedUserAnnotations allow pod authors to pass additional information to the signer implementation.  Kubernetes does not restrict or validate this metadata in any way.
+    # Entries are subject to the same validation as object metadata annotations, with the addition that all keys must be domain-prefixed. No restrictions are placed on values, except an overall size limitation on the entire field.
+    # Signers should document the keys and values they support.  Signers should deny requests that contain keys they do not recognize.
+    @[::JSON::Field(key: "unverifiedUserAnnotations")]
+    @[::YAML::Field(key: "unverifiedUserAnnotations")]
+    property unverified_user_annotations : Hash(String, String)?
+  end
+
+  # PodCertificateRequestStatus describes the status of the request, and holds the certificate data if the request is issued.
+  struct PodCertificateRequestStatus
+    include Kubernetes::Serializable
+
+    # beginRefreshAt is the time at which the kubelet should begin trying to refresh the certificate.  This field is set via the /status subresource, and must be set at the same time as certificateChain.  Once populated, this field is immutable.
+    # This field is only a hint.  Kubelet may start refreshing before or after this time if necessary.
+    @[::JSON::Field(key: "beginRefreshAt")]
+    @[::YAML::Field(key: "beginRefreshAt")]
+    property begin_refresh_at : Time?
+    # certificateChain is populated with an issued certificate by the signer. This field is set via the /status subresource. Once populated, this field is immutable.
+    # If the certificate signing request is denied, a condition of type "Denied" is added and this field remains empty. If the signer cannot issue the certificate, a condition of type "Failed" is added and this field remains empty.
+    # Validation requirements:
+    # 1. certificateChain must consist of one or more PEM-formatted certificates.
+    # 2. Each entry must be a valid PEM-wrapped, DER-encoded ASN.1 Certificate as
+    # described in section 4 of RFC5280.
+    # If more than one block is present, and the definition of the requested spec.signerName does not indicate otherwise, the first block is the issued certificate, and subsequent blocks should be treated as intermediate certificates and presented in TLS handshakes.  When projecting the chain into a pod volume, kubelet will drop any data in-between the PEM blocks, as well as any PEM block headers.
+    @[::JSON::Field(key: "certificateChain")]
+    @[::YAML::Field(key: "certificateChain")]
+    property certificate_chain : String?
+    # conditions applied to the request.
+    # The types "Issued", "Denied", and "Failed" have special handling.  At most one of these conditions may be present, and they must have status "True".
+    # If the request is denied with `Reason=UnsupportedKeyType`, the signer may suggest a key type that will work in the message field.
+    property conditions : Array(Condition)?
+    # notAfter is the time at which the certificate expires.  The value must be the same as the notAfter value in the leaf certificate in certificateChain.  This field is set via the /status subresource.  Once populated, it is immutable.  The signer must set this field at the same time it sets certificateChain.
+    @[::JSON::Field(key: "notAfter")]
+    @[::YAML::Field(key: "notAfter")]
+    property not_after : Time?
+    # notBefore is the time at which the certificate becomes valid.  The value must be the same as the notBefore value in the leaf certificate in certificateChain.  This field is set via the /status subresource.  Once populated, it is immutable. The signer must set this field at the same time it sets certificateChain.
+    @[::JSON::Field(key: "notBefore")]
+    @[::YAML::Field(key: "notBefore")]
+    property not_before : Time?
   end
 end
