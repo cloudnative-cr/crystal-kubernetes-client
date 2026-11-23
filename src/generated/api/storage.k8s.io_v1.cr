@@ -127,6 +127,30 @@ module Kubernetes
       put(path, params) { |res| yield res }
     end
 
+    # read status of the specified CSINode
+    # GET /apis/storage.k8s.io/v1/csinodes/{name}/status
+    def read_storage_v1_csi_node_status(**params, &)
+      path = "/apis/storage.k8s.io/v1/csinodes/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # partially update status of the specified CSINode
+    # PATCH /apis/storage.k8s.io/v1/csinodes/{name}/status
+    def patch_storage_v1_csi_node_status(**params, &)
+      path = "/apis/storage.k8s.io/v1/csinodes/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      patch(path, params) { |res| yield res }
+    end
+
+    # replace status of the specified CSINode
+    # PUT /apis/storage.k8s.io/v1/csinodes/{name}/status
+    def replace_storage_v1_csi_node_status(**params, &)
+      path = "/apis/storage.k8s.io/v1/csinodes/{name}/status"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      put(path, params) { |res| yield res }
+    end
+
     # list or watch objects of kind CSIStorageCapacity
     # GET /apis/storage.k8s.io/v1/csistoragecapacities
     def list_storage_v1_csi_storage_capacity_for_all_namespaces(**params, &)

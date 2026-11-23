@@ -17,6 +17,74 @@ require "yaml"
 require "../../serialization"
 
 module Kubernetes
+  # AuthorizationOptions contains options for specifying the client's authorization abilities.
+  struct AuthorizationOptions
+    include Kubernetes::Serializable
+
+    # handledDecisionTypes specifies what decision types the client can handle in the context it is in. Currently valid values are: - [Allow, Deny, NoOpinion] (for conditions-unaware clients) or - [Allow, Deny, NoOpinion, ConditionsMap, Union, ...] (for conditions-aware clients) If the authorizer would like to return conditions, but the client does not opt in to handle those here,
+    # the authorizer must fail closed to a safe unconditional decision
+    # (Deny if any Deny conditions were present, otherwise NoOpinion).
+    # Order does not matter in this slice; set semantics should be used. The server does not reject unrecognized decision types, but focuses on whether the client supports a mode that the server does. All clients must support "classic", conditions-unaware authorization.
+    @[::JSON::Field(key: "handledDecisionTypes")]
+    @[::YAML::Field(key: "handledDecisionTypes")]
+    property handled_decision_types : Array(String)?
+  end
+
+  # Condition represents a single authorization condition to be evaluated against data available later in the request chain, e.g. objects available in admission.
+  struct Condition
+    include Kubernetes::Serializable
+
+    # condition returns a string encoding of the condition to be evaluated. It is a pure, deterministic function from ConditionsData to a boolean (or error). Might or might not be human-readable. Optional, if the ID alone is enough for the authorizer to know how to evaluate the condition.
+    property condition : String?
+    # description is an optional human-friendly description that can be shown as an error message or for debugging. Optional.
+    property description : String?
+    # id uniquely identifies this condition within the scope of the authorizer that authored it and ConditionsMap it is part of. Validated as a Kubernetes label key. Any domain of form *.k8s.io or *.kubernetes.io is reserved for Kubernetes use.
+    property id : String?
+    # type describes the type of the condition, if there are multiple possibilities. Should be formatted as a Kubernetes label key. Any domain of form *.k8s.io or *.kubernetes.io is reserved for Kubernetes use. authorizer.kubernetes.io/cel is a conditions type for CEL, handled by kube-apiserver. Optional. Can be omitted if the authorizer already knows how to evaluate the condition.
+    property type : String?
+  end
+
+  # ConditionsAwareDecision represents one authorizer's decision. It is an enum type, with variants described in ConditionsAwareDecisionType, plus a reason and error.
+  struct ConditionsAwareDecision
+    include Kubernetes::Serializable
+
+    # allow represents an unconditional Allow decision. Must be non-null when type == "Allow", otherwise this field must be unset.
+    property allow : UnconditionalDecision?
+    # conditionsMap represents a conditional decision, modelled as a map of conditions. Must be non-null when type == "ConditionsMap", otherwise this field must be unset.
+    @[::JSON::Field(key: "conditionsMap")]
+    @[::YAML::Field(key: "conditionsMap")]
+    property conditions_map : ConditionsMap?
+    # deny represents an unconditional Deny decision. Must be non-null when type == "Deny", otherwise this field must be unset.
+    property deny : UnconditionalDecision?
+    # noOpinion represents an unconditional NoOpinion decision. Must be non-null when type == "NoOpinion", otherwise this field must be unset.
+    @[::JSON::Field(key: "noOpinion")]
+    @[::YAML::Field(key: "noOpinion")]
+    property no_opinion : UnconditionalDecision?
+    # type describes the type of the decision, and acts as an enum discriminator.
+    property type : String?
+    # union forms an ordered tree of decisions, where the union decision is represented by an internal node, and all other decision types are leaf nodes. During evaluation, the leaf decisions are evaluated in depth-first order, until an Allow or Deny decision is found. The order of the decisions should match the order of the authorizers in the union authorizer for interpretability, but the authorizerName is the map key. At least one of the leaves must be of type ConditionsMap, as otherwise the union could be trivially reduced to just a single Allow/Deny/NoOpinion.
+    # Must have at least one element when type == "Union", otherwise this field must be unset.
+    property union : Array(NamedConditionsAwareDecision)?
+  end
+
+  # ConditionsMap represents a map of conditions, keyed by ID across all conditions, across all effects. The ConditionsMap must have at least one Allow condition or at least one Deny condition. It cannot contain more than 128 conditions in total. The conditions are evaluated against data available later, to determine whether the authorizer that authored the conditions allows or denies the request. If all conditions in the map evaluate to false, the final decision must be NoOpinion.
+  struct ConditionsMap
+    include Kubernetes::Serializable
+
+    # allowConditions contains the conditions with Allow effect. If any such condition evaluates to true, the ConditionsMap as a whole must evaluate to Allow.
+    @[::JSON::Field(key: "allowConditions")]
+    @[::YAML::Field(key: "allowConditions")]
+    property allow_conditions : Array(Condition)?
+    # denyConditions contains the conditions with Deny effect. If any such condition evaluates to true or error, the ConditionsMap as a whole must evaluate to Deny.
+    @[::JSON::Field(key: "denyConditions")]
+    @[::YAML::Field(key: "denyConditions")]
+    property deny_conditions : Array(Condition)?
+    # noOpinionConditions contains the conditions with NoOpinion effect. If any such condition evaluates to true or error, the ConditionsMap as a whole must evaluate to NoOpinion.
+    @[::JSON::Field(key: "noOpinionConditions")]
+    @[::YAML::Field(key: "noOpinionConditions")]
+    property no_opinion_conditions : Array(Condition)?
+  end
+
   # FieldSelectorAttributes indicates a field limited access. Webhook authors are encouraged to * ensure rawSelector and requirements are not both set * consider the requirements field if set * not try to parse or consider the rawSelector field if set. This is to avoid another CVE-2022-2880 (i.e. getting different systems to agree on how exactly to parse a query is not something we want), see https://www.oxeye.io/resources/golang-parameter-smuggling-attack for more details. For the *SubjectAccessReview endpoints of the kube-apiserver: * If rawSelector is empty and requirements are empty, the request is not limited. * If rawSelector is present and requirements are empty, the rawSelector will be parsed and limited if the parsing succeeds. * If rawSelector is empty and requirements are present, the requirements should be honored * If rawSelector is present and requirements are present, the request is invalid.
   struct FieldSelectorAttributes
     include Kubernetes::Serializable
@@ -57,6 +125,18 @@ module Kubernetes
     property spec : SubjectAccessReviewSpec?
     # status is filled in by the server and indicates whether the request is allowed or not
     property status : SubjectAccessReviewStatus?
+  end
+
+  # NamedConditionsAwareDecision is a named ConditionsAwareDecision, returned by a unioned authorizer.
+  struct NamedConditionsAwareDecision
+    include Kubernetes::Serializable
+
+    # authorizerName details the name of the authorizer that authored the condition, such that the right Decision can be paired with the right authorizer when evaluating the conditions, even across API server replicas. The name must be stable over time. This name must be unique within a given union authorizer, not necessarily globally.
+    @[::JSON::Field(key: "authorizerName")]
+    @[::YAML::Field(key: "authorizerName")]
+    property authorizer_name : String?
+    # decision carries the inner decision returned from the authorizer.
+    property decision : ConditionsAwareDecision?
   end
 
   # NonResourceAttributes includes the authorization attributes available for non-resource requests to the Authorizer interface
@@ -150,6 +230,10 @@ module Kubernetes
   struct SelfSubjectAccessReviewSpec
     include Kubernetes::Serializable
 
+    # authorizationOptions contains options for specifying the client's authorization abilities. If unset, only unconditional authorization is supported, for backwards-compatibility. Requires the ConditionalAuthorization feature to be enabled.
+    @[::JSON::Field(key: "authorizationOptions")]
+    @[::YAML::Field(key: "authorizationOptions")]
+    property authorization_options : AuthorizationOptions?
     # nonResourceAttributes describes information for a non-resource access request
     @[::JSON::Field(key: "nonResourceAttributes")]
     @[::YAML::Field(key: "nonResourceAttributes")]
@@ -208,6 +292,10 @@ module Kubernetes
   struct SubjectAccessReviewSpec
     include Kubernetes::Serializable
 
+    # authorizationOptions contains options for specifying the client's authorization abilities. If unset, only unconditional authorization is supported, for backwards-compatibility. Requires the ConditionalAuthorization feature to be enabled.
+    @[::JSON::Field(key: "authorizationOptions")]
+    @[::YAML::Field(key: "authorizationOptions")]
+    property authorization_options : AuthorizationOptions?
     # extra corresponds to the user.Info.GetExtra() method from the authenticator.  Since that is input to the authorizer it needs a reflection here.
     property extra : Hash(String, Array(String))?
     # groups is the groups you're testing for.
@@ -230,9 +318,13 @@ module Kubernetes
   struct SubjectAccessReviewStatus
     include Kubernetes::Serializable
 
-    # allowed is required. True if the action would be allowed, false otherwise.
+    # allowed is true if the action would be allowed, false otherwise. allowed=true is mutually exclusive with denied=true and conditionalDecision != nil.
     property allowed : Bool?
-    # denied is optional. True if the action would be denied, otherwise false. If both allowed is false and denied is false, then the authorizer has no opinion on whether to authorize the action. Denied may not be true if Allowed is true.
+    # conditionalDecision represents a conditional decision returned by the authorizer. When conditionalDecision is set, allowed, denied, reason and evaluationError must have their zero values. The top-level decision type should be ConditionsAwareDecisionTypeConditionsMap or ConditionsAwareDecisionTypeUnion, as Allow/Deny/NoOpinion decisions can be represented with SubjectAccessReviewStatus.Allowed and SubjectAccessReviewStatus.Denied alone. May only be set if spec.authorizationOptions.handledDecisionTypes includes `ConditionsMap` and `Union`. Requires the ConditionalAuthorization feature to be enabled.
+    @[::JSON::Field(key: "conditionalDecision")]
+    @[::YAML::Field(key: "conditionalDecision")]
+    property conditional_decision : ConditionsAwareDecision?
+    # denied is optional. True if the action would be denied, otherwise false If allowed is false, denied is false, and conditionalDecision is unset, then the authorizer has no opinion on whether to authorize the action. denied=true is mutually exclusive with allowed=true and conditionalDecision != nil.
     property denied : Bool?
     # evaluationError is an indication that some error occurred during the authorization check. It is entirely possible to get an error and be able to continue determine authorization status in spite of it. For instance, RBAC can be missing a role, but enough roles are still present and bound to reason about the request.
     @[::JSON::Field(key: "evaluationError")]
@@ -260,5 +352,17 @@ module Kubernetes
     @[::JSON::Field(key: "resourceRules")]
     @[::YAML::Field(key: "resourceRules")]
     property resource_rules : Array(ResourceRule)?
+  end
+
+  # UnconditionalDecision represents the data associated with an unconditional decision.
+  struct UnconditionalDecision
+    include Kubernetes::Serializable
+
+    # evaluationError is an indication that some error occurred during the authorization check. It is entirely possible to get an error and be able to continue determine authorization status in spite of it. For instance, RBAC can be missing a role, but enough roles are still present and bound to reason about the request.
+    @[::JSON::Field(key: "evaluationError")]
+    @[::YAML::Field(key: "evaluationError")]
+    property evaluation_error : String?
+    # reason is optional. It indicates why a request was allowed or denied.
+    property reason : String?
   end
 end
