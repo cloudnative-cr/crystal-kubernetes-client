@@ -27,7 +27,7 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
     # spec contains the specification of the Lease. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
     property spec : LeaseSpec?
@@ -69,7 +69,7 @@ module Kubernetes
     @[::JSON::Field(key: "leaseTransitions")]
     @[::YAML::Field(key: "leaseTransitions")]
     property lease_transitions : Int32?
-    # PreferredHolder signals to a lease holder that the lease has a more optimal holder and should be given up. This field can only be set if Strategy is also set.
+    # preferredHolder signals to a lease holder that the lease has a more optimal holder and should be given up. This field can only be set if Strategy is also set.
     @[::JSON::Field(key: "preferredHolder")]
     @[::YAML::Field(key: "preferredHolder")]
     property preferred_holder : String?
@@ -77,7 +77,7 @@ module Kubernetes
     @[::JSON::Field(key: "renewTime")]
     @[::YAML::Field(key: "renewTime")]
     property renew_time : MicroTime?
-    # Strategy indicates the strategy for picking the leader for coordinated leader election. If the field is not specified, there is no active coordination for this lease. (Alpha) Using this field requires the CoordinatedLeaderElection feature gate to be enabled.
+    # strategy indicates the strategy for picking the leader for coordinated leader election. If the field is not specified, there is no active coordination for this lease. (Alpha) Using this field requires the CoordinatedLeaderElection feature gate to be enabled.
     property strategy : String?
   end
 end

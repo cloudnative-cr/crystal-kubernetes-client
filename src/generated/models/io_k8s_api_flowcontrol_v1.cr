@@ -21,12 +21,12 @@ module Kubernetes
   struct ExemptPriorityLevelConfiguration
     include Kubernetes::Serializable
 
-    # `lendablePercent` prescribes the fraction of the level's NominalCL that can be borrowed by other priority levels.  This value of this field must be between 0 and 100, inclusive, and it defaults to 0. The number of seats that other levels can borrow from this level, known as this level's LendableConcurrencyLimit (LendableCL), is defined as follows.
+    # lendablePercent prescribes the fraction of the level's NominalCL that can be borrowed by other priority levels.  This value of this field must be between 0 and 100, inclusive, and it defaults to 0. The number of seats that other levels can borrow from this level, known as this level's LendableConcurrencyLimit (LendableCL), is defined as follows.
     # LendableCL(i) = round( NominalCL(i) * lendablePercent(i)/100.0 )
     @[::JSON::Field(key: "lendablePercent")]
     @[::YAML::Field(key: "lendablePercent")]
     property lendable_percent : Int32?
-    # `nominalConcurrencyShares` (NCS) contributes to the computation of the NominalConcurrencyLimit (NominalCL) of this level. This is the number of execution seats nominally reserved for this priority level. This DOES NOT limit the dispatching from this priority level but affects the other priority levels through the borrowing mechanism. The server's concurrency limit (ServerCL) is divided among all the priority levels in proportion to their NCS values:
+    # nominalConcurrencyShares (NCS) contributes to the computation of the NominalConcurrencyLimit (NominalCL) of this level. This is the number of execution seats nominally reserved for this priority level. This DOES NOT limit the dispatching from this priority level but affects the other priority levels through the borrowing mechanism. The server's concurrency limit (ServerCL) is divided among all the priority levels in proportion to their NCS values:
     # NominalCL(i)  = ceil( ServerCL * NCS(i) / sum_ncs ) sum_ncs = sum[priority level k] NCS(k)
     # Bigger numbers mean a larger nominal concurrency limit, at the expense of every other priority level. This field has a default value of zero.
     @[::JSON::Field(key: "nominalConcurrencyShares")]
@@ -38,7 +38,7 @@ module Kubernetes
   struct FlowDistinguisherMethod
     include Kubernetes::Serializable
 
-    # `type` is the type of flow distinguisher method The supported types are "ByUser" and "ByNamespace". Required.
+    # type is the type of flow distinguisher method The supported types are "ByUser" and "ByNamespace". Required.
     property type : String?
   end
 
@@ -52,11 +52,11 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # `metadata` is the standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
-    # `spec` is the specification of the desired behavior of a FlowSchema. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+    # spec is the specification of the desired behavior of a FlowSchema. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
     property spec : FlowSchemaSpec?
-    # `status` is the current status of a FlowSchema. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+    # status is the current status of a FlowSchema. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
     property status : FlowSchemaStatus?
   end
 
@@ -64,17 +64,17 @@ module Kubernetes
   struct FlowSchemaCondition
     include Kubernetes::Serializable
 
-    # `lastTransitionTime` is the last time the condition transitioned from one status to another.
+    # lastTransitionTime is the last time the condition transitioned from one status to another.
     @[::JSON::Field(key: "lastTransitionTime")]
     @[::YAML::Field(key: "lastTransitionTime")]
     property last_transition_time : Time?
-    # `message` is a human-readable message indicating details about last transition.
+    # message is a human-readable message indicating details about last transition.
     property message : String?
-    # `reason` is a unique, one-word, CamelCase reason for the condition's last transition.
+    # reason is a unique, one-word, CamelCase reason for the condition's last transition.
     property reason : String?
-    # `status` is the status of the condition. Can be True, False, Unknown. Required.
+    # status is the status of the condition. Should be specified and set to one of True, False, Unknown.
     property status : String?
-    # `type` is the type of the condition. Required.
+    # type is the type of the condition. Required.
     property type : String?
   end
 
@@ -98,19 +98,19 @@ module Kubernetes
   struct FlowSchemaSpec
     include Kubernetes::Serializable
 
-    # `distinguisherMethod` defines how to compute the flow distinguisher for requests that match this schema. `nil` specifies that the distinguisher is disabled and thus will always be the empty string.
+    # distinguisherMethod defines how to compute the flow distinguisher for requests that match this schema. `nil` specifies that the distinguisher is disabled and thus will always be the empty string.
     @[::JSON::Field(key: "distinguisherMethod")]
     @[::YAML::Field(key: "distinguisherMethod")]
     property distinguisher_method : FlowDistinguisherMethod?
-    # `matchingPrecedence` is used to choose among the FlowSchemas that match a given request. The chosen FlowSchema is among those with the numerically lowest (which we take to be logically highest) MatchingPrecedence.  Each MatchingPrecedence value must be ranged in [1,10000]. Note that if the precedence is not specified, it will be set to 1000 as default.
+    # matchingPrecedence is used to choose among the FlowSchemas that match a given request. The chosen FlowSchema is among those with the numerically lowest (which we take to be logically highest) MatchingPrecedence.  Each MatchingPrecedence value must be ranged in [1,10000]. Note that if the precedence is not specified, it will be set to 1000 as default.
     @[::JSON::Field(key: "matchingPrecedence")]
     @[::YAML::Field(key: "matchingPrecedence")]
     property matching_precedence : Int32?
-    # `priorityLevelConfiguration` should reference a PriorityLevelConfiguration in the cluster. If the reference cannot be resolved, the FlowSchema will be ignored and marked as invalid in its status. Required.
+    # priorityLevelConfiguration should reference a PriorityLevelConfiguration in the cluster. If the reference cannot be resolved, the FlowSchema will be ignored and marked as invalid in its status. Required.
     @[::JSON::Field(key: "priorityLevelConfiguration")]
     @[::YAML::Field(key: "priorityLevelConfiguration")]
     property priority_level_configuration : PriorityLevelConfigurationReference?
-    # `rules` describes which requests will match this flow schema. This FlowSchema matches a request if and only if at least one member of rules matches the request. if it is an empty slice, there will be no requests matching the FlowSchema.
+    # rules describes which requests will match this flow schema. This FlowSchema matches a request if and only if at least one member of rules matches the request. if it is an empty slice, there will be no requests matching the FlowSchema.
     property rules : Array(PolicyRulesWithSubjects)?
   end
 
@@ -134,9 +134,9 @@ module Kubernetes
   struct LimitResponse
     include Kubernetes::Serializable
 
-    # `queuing` holds the configuration parameters for queuing. This field may be non-empty only if `type` is `"Queue"`.
+    # queuing holds the configuration parameters for queuing. This field may be non-empty only if `type` is `"Queue"`.
     property queuing : QueuingConfiguration?
-    # `type` is "Queue" or "Reject". "Queue" means that requests that can not be executed upon arrival are held in a queue until they can be executed or a queuing limit is reached. "Reject" means that requests that can not be executed upon arrival are rejected. Required.
+    # type is "Queue" or "Reject". "Queue" means that requests that can not be executed upon arrival are held in a queue until they can be executed or a queuing limit is reached. "Reject" means that requests that can not be executed upon arrival are rejected. Required.
     property type : String?
   end
 
@@ -146,22 +146,22 @@ module Kubernetes
   struct LimitedPriorityLevelConfiguration
     include Kubernetes::Serializable
 
-    # `borrowingLimitPercent`, if present, configures a limit on how many seats this priority level can borrow from other priority levels. The limit is known as this level's BorrowingConcurrencyLimit (BorrowingCL) and is a limit on the total number of seats that this level may borrow at any one time. This field holds the ratio of that limit to the level's nominal concurrency limit. When this field is non-nil, it must hold a non-negative integer and the limit is calculated as follows.
+    # borrowingLimitPercent configures a limit on how many seats this priority level can borrow from other priority levels, if present. The limit is known as this level's BorrowingConcurrencyLimit (BorrowingCL) and is a limit on the total number of seats that this level may borrow at any one time. This field holds the ratio of that limit to the level's nominal concurrency limit. When this field is non-nil, it must hold a non-negative integer and the limit is calculated as follows.
     # BorrowingCL(i) = round( NominalCL(i) * borrowingLimitPercent(i)/100.0 )
     # The value of this field can be more than 100, implying that this priority level can borrow a number of seats that is greater than its own nominal concurrency limit (NominalCL). When this field is left `nil`, the limit is effectively infinite.
     @[::JSON::Field(key: "borrowingLimitPercent")]
     @[::YAML::Field(key: "borrowingLimitPercent")]
     property borrowing_limit_percent : Int32?
-    # `lendablePercent` prescribes the fraction of the level's NominalCL that can be borrowed by other priority levels. The value of this field must be between 0 and 100, inclusive, and it defaults to 0. The number of seats that other levels can borrow from this level, known as this level's LendableConcurrencyLimit (LendableCL), is defined as follows.
+    # lendablePercent prescribes the fraction of the level's NominalCL that can be borrowed by other priority levels. The value of this field must be between 0 and 100, inclusive, and it defaults to 0. The number of seats that other levels can borrow from this level, known as this level's LendableConcurrencyLimit (LendableCL), is defined as follows.
     # LendableCL(i) = round( NominalCL(i) * lendablePercent(i)/100.0 )
     @[::JSON::Field(key: "lendablePercent")]
     @[::YAML::Field(key: "lendablePercent")]
     property lendable_percent : Int32?
-    # `limitResponse` indicates what to do with requests that can not be executed right now
+    # limitResponse indicates what to do with requests that can not be executed right now
     @[::JSON::Field(key: "limitResponse")]
     @[::YAML::Field(key: "limitResponse")]
     property limit_response : LimitResponse?
-    # `nominalConcurrencyShares` (NCS) contributes to the computation of the NominalConcurrencyLimit (NominalCL) of this level. This is the number of execution seats available at this priority level. This is used both for requests dispatched from this priority level as well as requests dispatched from other priority levels borrowing seats from this level. The server's concurrency limit (ServerCL) is divided among the Limited priority levels in proportion to their NCS values:
+    # nominalConcurrencyShares (NCS) contributes to the computation of the NominalConcurrencyLimit (NominalCL) of this level. This is the number of execution seats available at this priority level. This is used both for requests dispatched from this priority level as well as requests dispatched from other priority levels borrowing seats from this level. The server's concurrency limit (ServerCL) is divided among the Limited priority levels in proportion to their NCS values:
     # NominalCL(i)  = ceil( ServerCL * NCS(i) / sum_ncs ) sum_ncs = sum[priority level k] NCS(k)
     # Bigger numbers mean a larger nominal concurrency limit, at the expense of every other priority level.
     # If not specified, this field defaults to a value of 30.
@@ -175,7 +175,7 @@ module Kubernetes
   struct NonResourcePolicyRule
     include Kubernetes::Serializable
 
-    # `nonResourceURLs` is a set of url prefixes that a user should have access to and may not be empty. For example:
+    # nonResourceURLs is a set of url prefixes that a user should have access to and may not be empty. For example:
     # - "/healthz" is legal
     # - "/hea*" is illegal
     # - "/hea" is legal but matches nothing
@@ -185,7 +185,7 @@ module Kubernetes
     @[::JSON::Field(key: "nonResourceURLs")]
     @[::YAML::Field(key: "nonResourceURLs")]
     property non_resource_ur_ls : Array(String)?
-    # `verbs` is a list of matching verbs and may not be empty. "*" matches all verbs. If it is present, it must be the only entry. Required.
+    # verbs is a list of matching verbs and may not be empty. "*" matches all verbs. If it is present, it must be the only entry. Required.
     property verbs : Array(String)?
   end
 
@@ -193,11 +193,11 @@ module Kubernetes
   struct PolicyRulesWithSubjects
     include Kubernetes::Serializable
 
-    # `nonResourceRules` is a list of NonResourcePolicyRules that identify matching requests according to their verb and the target non-resource URL.
+    # nonResourceRules is a list of NonResourcePolicyRules that identify matching requests according to their verb and the target non-resource URL.
     @[::JSON::Field(key: "nonResourceRules")]
     @[::YAML::Field(key: "nonResourceRules")]
     property non_resource_rules : Array(NonResourcePolicyRule)?
-    # `resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.
+    # resourceRules is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.
     @[::JSON::Field(key: "resourceRules")]
     @[::YAML::Field(key: "resourceRules")]
     property resource_rules : Array(ResourcePolicyRule)?
@@ -215,11 +215,11 @@ module Kubernetes
     property api_version : String?
     # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
     property kind : String?
-    # `metadata` is the standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+    # metadata is the standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     property metadata : ObjectMeta?
-    # `spec` is the specification of the desired behavior of a "request-priority". More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+    # spec is the specification of the desired behavior of a "request-priority". More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
     property spec : PriorityLevelConfigurationSpec?
-    # `status` is the current status of a "request-priority". More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+    # status is the current status of a "request-priority". More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
     property status : PriorityLevelConfigurationStatus?
   end
 
@@ -227,17 +227,17 @@ module Kubernetes
   struct PriorityLevelConfigurationCondition
     include Kubernetes::Serializable
 
-    # `lastTransitionTime` is the last time the condition transitioned from one status to another.
+    # lastTransitionTime is the last time the condition transitioned from one status to another.
     @[::JSON::Field(key: "lastTransitionTime")]
     @[::YAML::Field(key: "lastTransitionTime")]
     property last_transition_time : Time?
-    # `message` is a human-readable message indicating details about last transition.
+    # message is a human-readable message indicating details about last transition.
     property message : String?
-    # `reason` is a unique, one-word, CamelCase reason for the condition's last transition.
+    # reason is a unique, one-word, CamelCase reason for the condition's last transition.
     property reason : String?
-    # `status` is the status of the condition. Can be True, False, Unknown. Required.
+    # status is the status of the condition. Should be specified and set to one of True, False, Unknown.
     property status : String?
-    # `type` is the type of the condition. Required.
+    # type is the type of the condition. Required.
     property type : String?
   end
 
@@ -261,7 +261,7 @@ module Kubernetes
   struct PriorityLevelConfigurationReference
     include Kubernetes::Serializable
 
-    # `name` is the name of the priority level configuration being referenced Required.
+    # name is the name of the priority level configuration being referenced Required.
     property name : String?
   end
 
@@ -269,11 +269,11 @@ module Kubernetes
   struct PriorityLevelConfigurationSpec
     include Kubernetes::Serializable
 
-    # `exempt` specifies how requests are handled for an exempt priority level. This field MUST be empty if `type` is `"Limited"`. This field MAY be non-empty if `type` is `"Exempt"`. If empty and `type` is `"Exempt"` then the default values for `ExemptPriorityLevelConfiguration` apply.
+    # exempt specifies how requests are handled for an exempt priority level. This field MUST be empty if `type` is `"Limited"`. This field MAY be non-empty if `type` is `"Exempt"`. If empty and `type` is `"Exempt"` then the default values for `ExemptPriorityLevelConfiguration` apply.
     property exempt : ExemptPriorityLevelConfiguration?
-    # `limited` specifies how requests are handled for a Limited priority level. This field must be non-empty if and only if `type` is `"Limited"`.
+    # limited specifies how requests are handled for a Limited priority level. This field must be non-empty if and only if type is `"Limited"`.
     property limited : LimitedPriorityLevelConfiguration?
-    # `type` indicates whether this priority level is subject to limitation on request execution.  A value of `"Exempt"` means that requests of this priority level are not subject to a limit (and thus are never queued) and do not detract from the capacity made available to other priority levels.  A value of `"Limited"` means that (a) requests of this priority level _are_ subject to limits and (b) some of the server's limited capacity is made available exclusively to this priority level. Required.
+    # type indicates whether this priority level is subject to limitation on request execution.  A value of `"Exempt"` means that requests of this priority level are not subject to a limit (and thus are never queued) and do not detract from the capacity made available to other priority levels.  A value of `"Limited"` means that (a) requests of this priority level _are_ subject to limits and (b) some of the server's limited capacity is made available exclusively to this priority level. Required.
     property type : String?
   end
 
@@ -289,15 +289,15 @@ module Kubernetes
   struct QueuingConfiguration
     include Kubernetes::Serializable
 
-    # `handSize` is a small positive number that configures the shuffle sharding of requests into queues.  When enqueuing a request at this priority level the request's flow identifier (a string pair) is hashed and the hash value is used to shuffle the list of queues and deal a hand of the size specified here.  The request is put into one of the shortest queues in that hand. `handSize` must be no larger than `queues`, and should be significantly smaller (so that a few heavy flows do not saturate most of the queues).  See the user-facing documentation for more extensive guidance on setting this field.  This field has a default value of 8.
+    # handSize is a small positive number that configures the shuffle sharding of requests into queues.  When enqueuing a request at this priority level the request's flow identifier (a string pair) is hashed and the hash value is used to shuffle the list of queues and deal a hand of the size specified here.  The request is put into one of the shortest queues in that hand. `handSize` must be no larger than `queues`, and should be significantly smaller (so that a few heavy flows do not saturate most of the queues).  See the user-facing documentation for more extensive guidance on setting this field.  This field has a default value of 8.
     @[::JSON::Field(key: "handSize")]
     @[::YAML::Field(key: "handSize")]
     property hand_size : Int32?
-    # `queueLengthLimit` is the maximum number of requests allowed to be waiting in a given queue of this priority level at a time; excess requests are rejected.  This value must be positive.  If not specified, it will be defaulted to 50.
+    # queueLengthLimit is the maximum number of requests allowed to be waiting in a given queue of this priority level at a time; excess requests are rejected.  This value must be positive.  If not specified, it will be defaulted to 50.
     @[::JSON::Field(key: "queueLengthLimit")]
     @[::YAML::Field(key: "queueLengthLimit")]
     property queue_length_limit : Int32?
-    # `queues` is the number of queues for this priority level. The queues exist independently at each apiserver. The value must be positive.  Setting it to 1 effectively precludes shufflesharding and thus makes the distinguisher method of associated flow schemas irrelevant.  This field has a default value of 64.
+    # queues is the number of queues for this priority level. The queues exist independently at each apiserver. The value must be positive.  Setting it to 1 effectively precludes shufflesharding and thus makes the distinguisher method of associated flow schemas irrelevant.  This field has a default value of 64.
     property queues : Int32?
   end
 
@@ -305,19 +305,19 @@ module Kubernetes
   struct ResourcePolicyRule
     include Kubernetes::Serializable
 
-    # `apiGroups` is a list of matching API groups and may not be empty. "*" matches all API groups and, if present, must be the only entry. Required.
+    # apiGroups is a list of matching API groups and may not be empty. "*" matches all API groups and, if present, must be the only entry. Required.
     @[::JSON::Field(key: "apiGroups")]
     @[::YAML::Field(key: "apiGroups")]
     property api_groups : Array(String)?
-    # `clusterScope` indicates whether to match requests that do not specify a namespace (which happens either because the resource is not namespaced or the request targets all namespaces). If this field is omitted or false then the `namespaces` field must contain a non-empty list.
+    # clusterScope indicates whether to match requests that do not specify a namespace (which happens either because the resource is not namespaced or the request targets all namespaces). If this field is omitted or false then the `namespaces` field must contain a non-empty list.
     @[::JSON::Field(key: "clusterScope")]
     @[::YAML::Field(key: "clusterScope")]
     property cluster_scope : Bool?
-    # `namespaces` is a list of target namespaces that restricts matches.  A request that specifies a target namespace matches only if either (a) this list contains that target namespace or (b) this list contains "*".  Note that "*" matches any specified namespace but does not match a request that _does not specify_ a namespace (see the `clusterScope` field for that). This list may be empty, but only if `clusterScope` is true.
+    # namespaces is a list of target namespaces that restricts matches.  A request that specifies a target namespace matches only if either (a) this list contains that target namespace or (b) this list contains "*".  Note that "*" matches any specified namespace but does not match a request that _does not specify_ a namespace (see the `clusterScope` field for that). This list may be empty, but only if `clusterScope` is true.
     property namespaces : Array(String)?
-    # `resources` is a list of matching resources (i.e., lowercase and plural) with, if desired, subresource.  For example, [ "services", "nodes/status" ].  This list may not be empty. "*" matches all resources and, if present, must be the only entry. Required.
+    # resources is a list of matching resources (i.e., lowercase and plural) with, if desired, subresource.  For example, [ "services", "nodes/status" ].  This list may not be empty. "*" matches all resources and, if present, must be the only entry. Required.
     property resources : Array(String)?
-    # `verbs` is a list of matching verbs and may not be empty. "*" matches all verbs and, if present, must be the only entry. Required.
+    # verbs is a list of matching verbs and may not be empty. "*" matches all verbs and, if present, must be the only entry. Required.
     property verbs : Array(String)?
   end
 
@@ -325,9 +325,9 @@ module Kubernetes
   struct ServiceAccountSubject
     include Kubernetes::Serializable
 
-    # `name` is the name of matching ServiceAccount objects, or "*" to match regardless of name. Required.
+    # name is the name of matching ServiceAccount objects, or "*" to match regardless of name. Required.
     property name : String?
-    # `namespace` is the namespace of matching ServiceAccount objects. Required.
+    # namespace is the namespace of matching ServiceAccount objects. Required.
     property namespace : String?
   end
 
@@ -335,15 +335,15 @@ module Kubernetes
   struct Subject
     include Kubernetes::Serializable
 
-    # `group` matches based on user group name.
+    # group matches based on user group name.
     property group : GroupSubject?
-    # `kind` indicates which one of the other fields is non-empty. Required
+    # kind indicates which one of the other fields is non-empty. Required
     property kind : String?
-    # `serviceAccount` matches ServiceAccounts.
+    # serviceAccount matches ServiceAccounts.
     @[::JSON::Field(key: "serviceAccount")]
     @[::YAML::Field(key: "serviceAccount")]
     property service_account : ServiceAccountSubject?
-    # `user` matches based on username.
+    # user matches based on username.
     property user : UserSubject?
   end
 
@@ -351,7 +351,7 @@ module Kubernetes
   struct UserSubject
     include Kubernetes::Serializable
 
-    # `name` is the username that matches, or "*" to match all usernames. Required.
+    # name is the username that matches, or "*" to match all usernames. Required.
     property name : String?
   end
 end

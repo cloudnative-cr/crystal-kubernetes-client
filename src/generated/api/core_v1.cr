@@ -470,6 +470,30 @@ module Kubernetes
       post(path, params) { |res| yield res }
     end
 
+    # read dynamic of the specified Pod
+    # GET /api/v1/namespaces/{namespace}/pods/{name}/dynamic
+    def read_core_v1_namespaced_pod_dynamic(**params, &)
+      path = "/api/v1/namespaces/{namespace}/pods/{name}/dynamic"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      get(path) { |res| yield res }
+    end
+
+    # partially update dynamic of the specified Pod
+    # PATCH /api/v1/namespaces/{namespace}/pods/{name}/dynamic
+    def patch_core_v1_namespaced_pod_dynamic(**params, &)
+      path = "/api/v1/namespaces/{namespace}/pods/{name}/dynamic"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      patch(path, params) { |res| yield res }
+    end
+
+    # replace dynamic of the specified Pod
+    # PUT /api/v1/namespaces/{namespace}/pods/{name}/dynamic
+    def replace_core_v1_namespaced_pod_dynamic(**params, &)
+      path = "/api/v1/namespaces/{namespace}/pods/{name}/dynamic"
+      params.each { |k, v| path = path.gsub("{#{k}}", v.to_s) }
+      put(path, params) { |res| yield res }
+    end
+
     # read ephemeralcontainers of the specified Pod
     # GET /api/v1/namespaces/{namespace}/pods/{name}/ephemeralcontainers
     def read_core_v1_namespaced_pod_ephemeralcontainers(**params, &)
